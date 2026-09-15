@@ -59,7 +59,7 @@
 | 分類 | 必要なもの | 備考 |
 |---|---|---|
 | OS | Linux（Ubuntu 22.04 LTS等） | 開発者間でバージョンを揃える |
-| PHP | 8.3系 | 拡張：mbstring, xml, curl, zip, pdo_mysql, bcmath, gd, intl, fileinfo |
+| PHP | 8.3系 | Xserver推奨バージョンのため採用（技術仕様書1章参照）。拡張：mbstring, xml, curl, zip, pdo_mysql, bcmath, gd, intl, fileinfo |
 | Composer | 2系（最新） | PHP依存パッケージ管理 |
 | Node.js | 20系（LTS） | npm経由でVue.js・Tailwind CSSをビルド（`npm run build`／`npm run dev`） |
 | MySQL | 8.0系 | 開発用DBサーバー（本番と同バージョンに揃える） |
