@@ -19,32 +19,33 @@
 
 ## 開発体制
 
-- 開発者2名による共同開発。
+- 開発者2名（山本・奥野）による共同開発。
 - 作業は `main` から派生したブランチ（`feature/*`・`fix/*`・`docs/*`）で行い、Pull Requestを経て `main` にマージする（リポジトリ構造定義書5章参照）。
 - 2名が並行して別ブランチで作業するため、着手前に `main` を取り込み、マイグレーションファイルのタイムスタンプ・テーブル変更の重複や衝突がないか確認する。
 - 相手が作業中のブランチを直接pushで上書きしない。レビュー・マージの合意はPR上で行う。
 
-### 担当分担（案）
+### 担当分担
 
-以下の順序で作成する（データベース→職員マスタ→ログイン画面→残り3マスタ→予約・シフト申請→予約一覧→承認）。開発者A／Bは仮称で、実際の割り振りは各自の得意領域に応じて入れ替えてよい。
+- **山本**：車両マスタ（`VehicleController`／`Masters/Vehicles.vue`）
+- **奥野**：車両マスタ以外の全工程
 
-1. **データベース**（共同）：全テーブルのマイグレーション一式（技術仕様書4章）
-2. **職員マスタ**（共同）：`StaffController`／`Masters/Staff.vue`。ログイン認証が職員データを参照するため、ログイン画面より先に用意する
-3. **ログイン画面**（共同）：`AuthController`／`Auth/Login.vue`、アカウントロック判定・ログインログ（技術仕様書6章）
-4. **残り3マスタ**（分担）：
-   - 開発者A：`ClientController`／`Masters/Clients.vue`（利用者マスタ）
-   - 開発者B：`SupportTypeController`／`Masters/SupportTypes.vue`（支援内容マスタ）、`VehicleController`／`Masters/Vehicles.vue`（車両マスタ）
-5. **予約・シフト申請**（分担）：
-   - 開発者A：シフト申請フォーム（`ShiftController`／`Shifts/Form.vue`、6.5参照）
-   - 開発者B：予約申請フォーム＋空き日時検索（`ReservationController`／`Reservations/Create.vue`、`VehicleAssignmentService`、6.4参照）
-6. **予約一覧（トップ画面）**（共同）：`Reservations/Index.vue`。シフト・予約両方の情報を表示するため、5で分担した2名ですり合わせながら仕上げる（6.3参照）
-7. **承認画面**（共同）：`ApprovalController`／`Approvals/Index.vue`。シフト・予約共通の画面のため、5の両実装がそろってから仕上げる（6.6参照）
+以下の順序で作成する（データベース→職員マスタ→ログイン画面→残り3マスタ→予約・シフト申請→予約一覧→承認）。
 
-この順序には含まれていないが、実装時に必要になる項目：
-- 監査ログ（`AuditLogger`、技術仕様書5.3） — 全操作から共通で呼び出すため、4・5と並行してどちらかが先行実装してもよい
-- 権限制御：`ShiftPolicy`（開発者A）、`ReservationPolicy`（開発者B）（リポジトリ構造定義書2.7参照） — 5と同時に実装する
-- 予約忘れ検知バッチ（`MissedBookingDetectionService`、技術仕様書5.2） — 7の後、仕上げとして実装する
-- 非機能要件の最終確認（パスワードポリシー・セッションタイムアウト・SSL/TLS等） — 7の後、リリース前に確認する
+1. **データベース**（奥野）：全テーブルのマイグレーション一式（技術仕様書4章）
+2. **職員マスタ**（奥野）：`StaffController`／`Masters/Staff.vue`。ログイン認証が職員データを参照するため、ログイン画面より先に用意する
+3. **ログイン画面**（奥野）：`AuthController`／`Auth/Login.vue`、アカウントロック判定・ログインログ（技術仕様書6章）
+4. **残り3マスタ**：
+   - 奥野：`ClientController`／`Masters/Clients.vue`（利用者マスタ）、`SupportTypeController`／`Masters/SupportTypes.vue`（支援内容マスタ）
+   - 山本：`VehicleController`／`Masters/Vehicles.vue`（車両マスタ）
+5. **予約・シフト申請**（奥野）：シフト申請フォーム（`ShiftController`／`Shifts/Form.vue`、6.5参照）、予約申請フォーム＋空き日時検索（`ReservationController`／`Reservations/Create.vue`、`VehicleAssignmentService`、6.4参照）
+6. **予約一覧（トップ画面）**（奥野）：`Reservations/Index.vue`（6.3参照）
+7. **承認画面**（奥野）：`ApprovalController`／`Approvals/Index.vue`（6.6参照）
+
+この順序には含まれていないが、実装時に必要になる項目（いずれも奥野）：
+- 監査ログ（`AuditLogger`、技術仕様書5.3）
+- 権限制御：`ShiftPolicy`／`ReservationPolicy`（リポジトリ構造定義書2.7参照）
+- 予約忘れ検知バッチ（`MissedBookingDetectionService`、技術仕様書5.2）
+- 非機能要件の最終確認（パスワードポリシー・セッションタイムアウト・SSL/TLS等）
 
 ## 開発環境
 
@@ -66,4 +67,4 @@
 | SSH | 開発者2名分の個別ユーザーアカウント・公開鍵登録 | rootアカウントの共用は避ける |
 
 - `.env` は開発者ごとに用意し、Git管理対象外とする（リポジトリ構造定義書1.1参照）。
-- 同一サーバー上で2名が同時に開発するため、作業ディレクトリ・DBスキーマ（例：`helpstation_dev_yamamoto`／`helpstation_dev_yamada`）・`php artisan serve`使用時のポート番号は開発者ごとに分け、衝突を避ける。
+- 同一サーバー上で2名が同時に開発するため、作業ディレクトリ・DBスキーマ（例：`helpstation_dev_yamamoto`／`helpstation_dev_okuno`）・`php artisan serve`使用時のポート番号は開発者ごとに分け、衝突を避ける。
