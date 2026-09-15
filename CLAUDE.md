@@ -68,3 +68,55 @@
 
 - `.env` は開発者ごとに用意し、Git管理対象外とする（リポジトリ構造定義書1.1参照）。
 - 同一サーバー上で2名が同時に開発するため、作業ディレクトリ・DBスキーマ（例：`helpstation_dev_yamamoto`／`helpstation_dev_okuno`）・`php artisan serve`使用時のポート番号は開発者ごとに分け、衝突を避ける。
+
+### 環境構築手順
+
+Ubuntu 22.04 LTSを想定した手順。他のディストリビューションの場合はパッケージ名・導入方法を読み替える。
+
+```bash
+# 1. パッケージ更新
+sudo apt update && sudo apt upgrade -y
+
+# 2. PHP 8.3系＋拡張機能（Ubuntu標準リポジトリにない場合はppa:ondrej/phpを追加）
+sudo add-apt-repository ppa:ondrej/php -y
+sudo apt update
+sudo apt install -y php8.3 php8.3-cli php8.3-fpm php8.3-mbstring php8.3-xml \
+  php8.3-curl php8.3-zip php8.3-mysql php8.3-bcmath php8.3-gd php8.3-intl
+
+# 3. Composer
+curl -sS https://getcomposer.org/installer | php
+sudo mv composer.phar /usr/local/bin/composer
+
+# 4. Node.js 20系（LTS）
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# 5. MySQL 8.0
+sudo apt install -y mysql-server
+sudo mysql_secure_installation
+
+# 6. Git
+sudo apt install -y git
+
+# 7. 開発者ごとのSSHユーザー作成・公開鍵登録
+sudo adduser yamamoto
+sudo adduser okuno
+# 各自 ~/.ssh/authorized_keys に公開鍵を登録
+
+# 8. リポジトリのクローンと依存関係インストール（各開発者が自分のホームディレクトリで）
+git clone <repo-url>
+cd helpstation
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+
+# 9. 開発者ごとのDB作成・.env設定・マイグレーション
+mysql -u root -p -e "CREATE DATABASE helpstation_dev_yamamoto;"
+# .envのDB_DATABASEを自分のDB名に設定してから
+php artisan migrate --seed
+
+# 10. 開発サーバー起動（ポートは開発者ごとに分ける）
+php artisan serve --port=8001
+npm run dev
+```
