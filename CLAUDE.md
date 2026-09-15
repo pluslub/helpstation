@@ -26,22 +26,35 @@
 
 ### 担当分担（案）
 
-機能単位で分担し、両者に依存する基盤部分は先に共同で片付ける。開発者A／Bは仮称で、実際の割り振りは各自の得意領域に応じて入れ替えてよい。
+機能単位で分担し、両者に依存する基盤部分は先に共同で片付ける。開発者A／Bは仮称で、実際の割り振りは各自の得意領域に応じて入れ替えてよい。ファイル・クラス名はリポジトリ構造定義書2章に対応する。
 
 **フェーズ0（共同・先行して着手）**
-- DBマイグレーション一式（技術仕様書4章の全テーブル）
-- 認証基盤（ログイン、アカウントロック、セッションタイムアウト、技術仕様書6章）
-- 4マスタ（職員・利用者・支援内容・車両）のCRUD・論理削除・削除済み一覧・復元（6.8参照）※実装パターンが共通のため、どちらか一方が着手し、もう一方はレビューする形でもよい
+- DBマイグレーション一式：`staff`, `staff_default_schedules`, `clients`, `client_default_staff`, `client_fixed_days_of_week`, `support_types`, `vehicles`, `shifts`, `shift_details`, `reservations`, `reservation_staff`（技術仕様書4章）
+- 認証基盤：`AuthController`（ログイン画面）、ログイン成功・失敗ログ、アカウントロック判定（`failed_login_count`等）、セッションタイムアウト設定（技術仕様書6章）
+- マスタ共通処理：`HasSoftDeletableMaster`トレイト（一覧・登録・変更・削除・削除済み一覧・復元の共通ロジック、リポジトリ構造定義書2.2参照）
+- 4マスタのController・Vueページは2名で分担：
+  - 開発者A：`StaffController`／`Masters/Staff.vue`、`SupportTypeController`／`Masters/SupportTypes.vue`
+  - 開発者B：`ClientController`／`Masters/Clients.vue`、`VehicleController`／`Masters/Vehicles.vue`
 
 **フェーズ1（機能単位で分担）**
-- 開発者A：シフト管理機能（6.5 シフト申請フォーム、デフォルト勤務時間、年間労働時間上限の計算・表示、シフト未申請／未承認アラート）
-- 開発者B：予約管理機能（6.4 予約申請フォーム・空き日時検索3パターン、`VehicleAssignmentService`による配車優先度・車両空き判定・再割当、予約未承認アラート）
+- 開発者A：シフト管理機能
+  - Model：`Shift`、`ShiftDetail`、`StaffDefaultSchedule`
+  - Controller／Vue：`ShiftController`／`Shifts/Form.vue`（6.5 シフト申請フォーム）
+  - ロジック：デフォルト勤務時間の初期表示、当月労働時間合計・年間労働時間上限に対する残り時間の計算、「申請後は変更不可」制御
+  - アラート：シフト未申請アラート・シフト未承認アラートの判定（ログインコントローラー拡張、6.2参照）
+- 開発者B：予約管理機能
+  - Model：`Reservation`、`reservation_staff`中間テーブルのリレーション
+  - Controller／Vue：`ReservationController`／`Reservations/Index.vue`・`Reservations/Create.vue`（6.4 予約申請フォーム・空き日時検索3パターンのタブ切替、`GET /reservations/available-slots`）
+  - Service：`VehicleAssignmentService`（配車優先度・車両空き判定・再割当、技術仕様書5.1）
+  - アラート：予約未承認アラートの判定（6.2参照）
 
 **フェーズ2（共同・統合）**
-- 承認画面（6.6、シフト・予約共通の画面のため、フェーズ1の両実装がそろってから一緒に仕上げる）
-- 監査ログ（`AuditLogger`。全操作から共通で呼び出されるため、フェーズ1と並行してどちらかが先行実装してもよい）
-- 予約忘れ検知バッチ（`MissedBookingDetectionService`）
-- 非機能要件の最終確認（パスワードポリシー・セッションタイムアウト・SSL/TLS等）
+- 承認画面：`ApprovalController`／`Approvals/Index.vue`（6.6、シフト・予約共通の画面のため、フェーズ1の両実装がそろってから一緒に仕上げる。開発者Aがシフト編集・承認部分、開発者Bが予約編集・削除・承認部分を担当し、画面統合のみ共同作業とする案でよい）
+- 権限制御：`ShiftPolicy`（開発者A）、`ReservationPolicy`（開発者B）（リポジトリ構造定義書2.7参照）
+- 監査ログ：`AuditLogger`（技術仕様書5.3。全操作から共通で呼び出されるため、フェーズ1と並行してどちらかが先行実装してもよい）
+- 予約忘れ検知バッチ：`MissedBookingDetectionService`／`DetectMissedBookings`コマンド（技術仕様書5.2、開発者Bが予約領域の延長として担当する案でよい）
+- 非機能要件の最終確認：パスワードポリシー・セッションタイムアウト・SSL/TLS等（技術仕様書6章）
+- Feature Test（画面・操作単位の受け入れテスト）は各自が自分の担当機能分を作成し、共通基盤（フェーズ0）分は共同で分担する
 
 ## 開発環境
 
