@@ -54,12 +54,12 @@
 
 ### サーバーに必要な環境
 
-技術仕様書1章の技術スタック（PHP 8.3 / Laravel 13、Inertia.js v3 + Vue.js 3.5 + Tailwind CSS 4、MySQL 8.4 LTS）を動かすため、サーバー側に以下を導入する。
+技術仕様書1章の技術スタック（PHP 8.5.9 / Laravel 13、Inertia.js v3 + Vue.js 3.5 + Tailwind CSS 4、MySQL 8.4 LTS）を動かすため、サーバー側に以下を導入する。
 
 | 分類 | 必要なもの | 備考 |
 |---|---|---|
 | OS | Linux（Ubuntu 26.04 LTS等） | 開発者間でバージョンを揃える |
-| PHP | 8.3系 | Xserver推奨バージョンのため採用（技術仕様書1章参照）。拡張：mbstring, xml, curl, zip, pdo_mysql, bcmath, gd, intl, fileinfo |
+| PHP | 8.5.9 | Xserver推奨バージョンのため採用（技術仕様書1章参照）。拡張：mbstring, xml, curl, zip, pdo_mysql, bcmath, gd, intl, fileinfo |
 | Composer | 2.5.8 | PHP依存パッケージ管理 |
 | Node.js | 24系（LTS） | npm経由でVue.js・Tailwind CSSをビルド（`npm run build`／`npm run dev`） |
 | MySQL | 8.4系（LTS） | 開発用DBサーバー（本番と同バージョンに揃える） |
