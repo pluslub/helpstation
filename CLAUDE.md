@@ -54,7 +54,7 @@
 
 ### サーバーに必要な環境
 
-技術仕様書1章の技術スタック（PHP 8.3 / Laravel 11、Inertia.js v2 + Vue.js 3 + Tailwind CSS 3、MySQL 8.0）を動かすため、サーバー側に以下を導入する。
+技術仕様書1章の技術スタック（PHP 8.3 / Laravel 13、Inertia.js v2 + Vue.js 3 + Tailwind CSS 3、MySQL 8.0）を動かすため、サーバー側に以下を導入する。
 
 | 分類 | 必要なもの | 備考 |
 |---|---|---|
