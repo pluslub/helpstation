@@ -59,7 +59,7 @@
 | 分類 | 必要なもの | 備考 |
 |---|---|---|
 | OS | Linux（Ubuntu 24.04 LTS等） | 開発者間でバージョンを揃える。Xserver（本番、Rocky Linux）とはOSが異なる（下記「Xserver（本番）の環境」参照） |
-| PHP | 8.5系 | Ubuntu 24.04標準リポジトリにはPHP 8.5系が無いため、`ppa:ondrej/php`を追加して導入する。導入するパッケージバージョンは`apt-cache madison php8.5`で確認する（環境構築手順書1.2.2参照）。拡張：mbstring, xml, curl, zip, pdo_mysql, bcmath, gd, intl, fileinfo |
+| PHP | 8.5系 | Ubuntu 24.04標準リポジトリにはPHP 8.5系が無いため、`packages.sury.org`を追加して導入する。導入するパッケージバージョンは`apt-cache madison php8.5`で確認する（環境構築手順書1.2.2参照）。拡張：mbstring, xml, curl, zip, pdo_mysql, bcmath, gd, intl, fileinfo |
 | Composer | 2.10.3 | PHP依存パッケージ管理 |
 | Node.js | 24系（LTS） | npm経由でVue.js・Tailwind CSSをビルド（`npm run build`／`npm run dev`） |
 | MariaDB | 10.11.19 | Xserver（本番）のDBサービスが10.11系固定のため、バージョンを合わせている（MariaDB公式リポジトリ経由で導入、環境構築手順書1.2.2参照） |
@@ -77,6 +77,6 @@
 | PHP | 8.5.4 | サーバーパネルで選択・確認済み |
 | DB | MariaDB 10.11.18 | SSHで確認済み（`mysql --version`出力：`mysql Ver 15.1 Distrib 10.11.18-MariaDB, for Linux (x86_64) using readline 5.1`）。サーバーパネル提供、バージョン変更不可 |
 
-**注意**：テストサーバー・開発環境とXserver（本番）とで、PHP・MariaDBともパッチバージョンが完全には一致していない（PHP：`ppa:ondrej/php`が提供する8.5系最新版（2026-09-18時点で8.5.10） 対 8.5.4、MariaDB：10.11.19 対 10.11.18）。OS・導入経路が異なる（Ubuntu＋PPA／Rocky Linux＋サーバーパネル）ため、そもそも同一パッチバージョンを揃えることは難しく、いずれも同じメジャー系列内の差異にとどまるため実用上の影響は小さいと考えられるが、既知の差異として明記しておく。
+**注意**：テストサーバー・開発環境とXserver（本番）とで、PHP・MariaDBともパッチバージョンが完全には一致していない（PHP：`packages.sury.org`が提供する8.5系最新版（2026-09-18時点で8.5.10） 対 8.5.4、MariaDB：10.11.19 対 10.11.18）。OS・導入経路が異なる（Ubuntu＋sury.org／Rocky Linux＋サーバーパネル）ため、そもそも同一パッチバージョンを揃えることは難しく、いずれも同じメジャー系列内の差異にとどまるため実用上の影響は小さいと考えられるが、既知の差異として明記しておく。
 
 具体的な導入コマンド・セットアップ手順は `docs/環境構築手順書.md` を参照。
