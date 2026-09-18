@@ -54,17 +54,29 @@
 
 ### サーバーに必要な環境
 
-技術仕様書1章の技術スタック（PHP 8.5.4 / Laravel 13、Inertia.js v3 + Vue.js 3.5 + Tailwind CSS 4、MariaDB 10.11）を動かすため、サーバー側に以下を導入する。
+技術仕様書1章の技術スタック（PHP 8.5.4 / Laravel 13、Inertia.js v3 + Vue.js 3.5 + Tailwind CSS 4、MariaDB 10.11.19）を動かすため、サーバー側に以下を導入する。
 
 | 分類 | 必要なもの | 備考 |
 |---|---|---|
-| OS | Linux（Ubuntu 26.04 LTS等） | 開発者間でバージョンを揃える |
-| PHP | 8.5.4 | Xserver推奨バージョンのため採用（技術仕様書1章参照）。導入するパッケージバージョンは`apt-cache madison php8.5`で確認する（環境構築手順書1.2.2参照）。拡張：mbstring, xml, curl, zip, pdo_mysql, bcmath, gd, intl, fileinfo |
+| OS | Linux（Ubuntu 24.04 LTS等） | 開発者間でバージョンを揃える。Xserver（本番、Rocky Linux）とはOSが異なる（下記「Xserver（本番）の環境」参照） |
+| PHP | 8.5.4 | Ubuntu標準リポジトリで導入可能なバージョンとして採用。導入するパッケージバージョンは`apt-cache madison php8.5`で確認する（環境構築手順書1.2.2参照）。拡張：mbstring, xml, curl, zip, pdo_mysql, bcmath, gd, intl, fileinfo |
 | Composer | 2.10.3 | PHP依存パッケージ管理 |
 | Node.js | 24系（LTS） | npm経由でVue.js・Tailwind CSSをビルド（`npm run build`／`npm run dev`） |
-| MariaDB | 10.11系 | 開発用DBサーバー（本番と同バージョンに揃える） |
+| MariaDB | 10.11.19 | Xserver（本番）のDBサービスが10.11系固定のため、バージョンを合わせている（MariaDB公式リポジトリ経由で導入、環境構築手順書1.2.2参照） |
 | Webサーバー | Nginx + PHP-FPM、または `php artisan serve` | 開発中は`serve`で簡易起動も可 |
 | Git | 最新版 | バージョン管理 |
 | SSH | 開発者2名分の個別ユーザーアカウント・公開鍵登録 | rootアカウントの共用は避ける |
+
+### Xserver（本番）の環境
+
+サーバーパネル・SSH（`/etc/os-release`）で確認済みの、本番環境の実際のバージョン。テストサーバー・開発環境（上記、Ubuntu）とはOS・導入経路が異なるため、別に管理する。
+
+| 分類 | バージョン | 備考 |
+|---|---|---|
+| OS | Rocky Linux 8.10（RHEL系） | `/etc/os-release`で確認済み（技術仕様書1章参照） |
+| PHP | 8.5.4 | サーバーパネルで選択・確認済み（テストサーバー・開発環境と同じバージョンに変更済み） |
+| DB | MariaDB 10.11.18 | SSHで確認済み（`mysql --version`出力：`mysql Ver 15.1 Distrib 10.11.18-MariaDB, for Linux (x86_64) using readline 5.1`）。サーバーパネル提供、バージョン変更不可 |
+
+**注意**：MariaDBのみ、テストサーバー・開発環境（10.11.19）とXserver（本番、10.11.18）とでパッチバージョンが完全には一致していない。Xserver側は変更不可のため、同じメジャー系列内の差異として許容する。PHPはXserverのサーバーパネル設定を8.5.4に変更したため、テストサーバー・開発環境と一致している。
 
 具体的な導入コマンド・セットアップ手順は `docs/環境構築手順書.md` を参照。
