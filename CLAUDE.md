@@ -54,12 +54,12 @@
 
 ### サーバーに必要な環境
 
-技術仕様書1章の技術スタック（PHP 8.5系 / Laravel 13、Inertia.js v3 + Vue.js 3.5 + Tailwind CSS 4、MariaDB 10.11）を動かすため、サーバー側に以下を導入する。
+技術仕様書1章の技術スタック（PHP 8.5.4 / Laravel 13、Inertia.js v3 + Vue.js 3.5 + Tailwind CSS 4、MariaDB 10.11）を動かすため、サーバー側に以下を導入する。
 
 | 分類 | 必要なもの | 備考 |
 |---|---|---|
 | OS | Linux（Ubuntu 26.04 LTS等） | 開発者間でバージョンを揃える |
-| PHP | 8.5系 | Xserver推奨バージョンのため採用（技術仕様書1章参照）。導入するパッケージバージョンは`apt-cache madison php8.5`で確認する（環境構築手順書1.2.2参照）。拡張：mbstring, xml, curl, zip, pdo_mysql, bcmath, gd, intl, fileinfo |
+| PHP | 8.5.4 | Xserver推奨バージョンのため採用（技術仕様書1章参照）。導入するパッケージバージョンは`apt-cache madison php8.5`で確認する（環境構築手順書1.2.2参照）。拡張：mbstring, xml, curl, zip, pdo_mysql, bcmath, gd, intl, fileinfo |
 | Composer | 2.10.3 | PHP依存パッケージ管理 |
 | Node.js | 24系（LTS） | npm経由でVue.js・Tailwind CSSをビルド（`npm run build`／`npm run dev`） |
 | MariaDB | 10.11系 | 開発用DBサーバー（本番と同バージョンに揃える） |
