@@ -58,13 +58,25 @@
 
 | 分類 | 必要なもの | 備考 |
 |---|---|---|
-| OS | Linux（Ubuntu 24.04 LTS等） | 開発者間でバージョンを揃える |
-| PHP | 8.5.4 | Xserver推奨バージョンのため採用（技術仕様書1章参照）。導入するパッケージバージョンは`apt-cache madison php8.5`で確認する（環境構築手順書1.2.2参照）。拡張：mbstring, xml, curl, zip, pdo_mysql, bcmath, gd, intl, fileinfo |
+| OS | Linux（Ubuntu 24.04 LTS等） | 開発者間でバージョンを揃える。Xserver（本番、Rocky Linux）とはOSが異なる（下記「Xserver（本番）の環境」参照） |
+| PHP | 8.5.4 | Ubuntu標準リポジトリで導入可能なバージョンとして採用。導入するパッケージバージョンは`apt-cache madison php8.5`で確認する（環境構築手順書1.2.2参照）。拡張：mbstring, xml, curl, zip, pdo_mysql, bcmath, gd, intl, fileinfo |
 | Composer | 2.10.3 | PHP依存パッケージ管理 |
 | Node.js | 24系（LTS） | npm経由でVue.js・Tailwind CSSをビルド（`npm run build`／`npm run dev`） |
-| MariaDB | 10.11.19 | 開発用DBサーバー（本番と同バージョンに揃える） |
+| MariaDB | 10.11.19 | Xserver（本番）のDBサービスが10.11系固定のため、バージョンを合わせている（MariaDB公式リポジトリ経由で導入、環境構築手順書1.2.2参照） |
 | Webサーバー | Nginx + PHP-FPM、または `php artisan serve` | 開発中は`serve`で簡易起動も可 |
 | Git | 最新版 | バージョン管理 |
 | SSH | 開発者2名分の個別ユーザーアカウント・公開鍵登録 | rootアカウントの共用は避ける |
+
+### Xserver（本番）の環境
+
+サーバーパネル・SSH（`/etc/os-release`）で確認済みの、本番環境の実際のバージョン。テストサーバー・開発環境（上記、Ubuntu）とはOS・導入経路が異なるため、別に管理する。
+
+| 分類 | バージョン | 備考 |
+|---|---|---|
+| OS | Rocky Linux 8.10（RHEL系） | `/etc/os-release`で確認済み（技術仕様書1章参照） |
+| PHP | 8.5.9 | サーバーパネルで選択・確認済み |
+| DB | MariaDB 10.11系 | サーバーパネル提供、バージョン変更不可（正確なパッチ版はサーバーパネルで別途確認） |
+
+**注意**：テストサーバー・開発環境のPHPは8.5.4、Xserver（本番）は8.5.9であり、パッチバージョンが一致していない。OSが異なる（Ubuntu／Rocky Linux）ため、そもそも同一のパッケージバージョンを揃えることは難しく、PHPの実行自体はOSに依存しないため実用上の影響は小さいと考えられるが、既知の差異として明記しておく。
 
 具体的な導入コマンド・セットアップ手順は `docs/環境構築手順書.md` を参照。
