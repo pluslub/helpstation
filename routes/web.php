@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TimerController;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 
@@ -25,6 +26,4 @@ Route::get('/health', function () {
     ]);
 });
 
-Route::get('/timer', function () {
-    return view('timer');
-});
+Route::get('/timer', [TimerController::class, 'show']);
