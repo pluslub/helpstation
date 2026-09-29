@@ -24,3 +24,7 @@ Route::get('/health', function () {
         'time' => now()->toDateTimeString(),
     ]);
 });
+
+Route::get('/timer', function () {
+    return view('timer');
+});
