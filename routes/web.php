@@ -25,6 +25,4 @@ Route::get('/health', function () {
     ]);
 });
 
-Route::get('/timer', function () {
-    return view('timer');
-});
+Route::get('/timer', [TimerController::class, 'show']);
