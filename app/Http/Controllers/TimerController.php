@@ -8,7 +8,10 @@ class TimerController extends Controller
 {
     public function show()
     {
-        return view('timer', ['time' => now()->format('H:i:s')]);
+        return view('timer', [
+            'time' => now()->format('H:i:s'),
+            'records' => TimerRecord::latest()->get(),
+        ]);
     }
     
     public function store(Request $request)
@@ -29,5 +32,10 @@ class TimerController extends Controller
         TimerRecord::truncate();
 
         return response()->json(['status' => 'ok']);
+    }
+
+    public function records()
+    {
+        return response()->json(TimerRecord::latest()->get());
     }
 }

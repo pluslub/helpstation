@@ -29,3 +29,4 @@ Route::get('/health', function () {
 Route::get('/timer', [TimerController::class, 'show']);
 Route::post('/timer/record', [TimerController::class, 'store']);
 Route::delete('/timer/record', [TimerController::class, 'destroy']);
+Route::get('/timer/records', [TimerController::class, 'records']);
