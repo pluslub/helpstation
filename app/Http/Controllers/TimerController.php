@@ -10,10 +10,10 @@ class TimerController extends Controller
     {
         return view('timer', [
             'time' => now()->format('H:i:s'),
-            'records' => TimerRecord::latest()->get(),
+            'records' => TimerRecord::latest()->orderBy('id', 'desc')->get(),
         ]);
     }
-    
+
     public function store(Request $request)
     {
         $request->validate([
@@ -26,7 +26,7 @@ class TimerController extends Controller
 
         return response()->json(['status' => 'ok']);
     }
-    
+
     public function destroy()
     {
         TimerRecord::truncate();
@@ -36,6 +36,6 @@ class TimerController extends Controller
 
     public function records()
     {
-        return response()->json(TimerRecord::latest()->get());
+        return response()->json(TimerRecord::latest()->orderBy('id', 'desc')->get());
     }
 }
