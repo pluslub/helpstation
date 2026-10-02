@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 // 2.  テーブルの構造を入力
 //     database/migrations/配下に日付付きのファイルが生成されるので、up()メソッドの中のSchema::create部分に、必要なカラムを追加
 // 3.  テーブルを作成
-//     php artisan make:model TimerRecord
+//     php artisan migrate
 // 4.  モデルを作る
 //     php artisan make:model TimerRecord
 class TimerRecord extends Model
