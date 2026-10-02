@@ -2,8 +2,10 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    // POSTメソッドで必須の入力
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
+    // フォントの追加
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -111,8 +113,8 @@
         }
 
         function refreshRecords() {
-        fetch('/timer/records')
-            .then(response => response.json())
+        fetch('/timer/records')                   //サーバーへのアクセス
+            .then(response => response.json())    //前の処理が終わったら実行される。
             .then(records => {
                 const list = document.getElementById('records');
                 list.innerHTML = '';
@@ -144,6 +146,9 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+
+                    // Postするときに必須。
+                    // meta name="csrf-token"の記入も必須。
                     'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
                 },
                 body: JSON.stringify({ elapsed_ms: current}),
@@ -166,7 +171,7 @@
             .then(() => refreshRecords());
         });
 
-        refreshRecords();
+        refreshRecords();   //画面を表示しただけの時に実行される。
     </script>
 </body>
 </html>
