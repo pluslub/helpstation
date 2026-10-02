@@ -30,17 +30,16 @@
 - **山本**：車両マスタ（`VehicleController`／`Masters/Vehicles.vue`）
 - **奥野**：車両マスタ以外の全工程
 
-以下の順序で作成する（データベース→職員マスタ→ログイン画面→残り3マスタ→予約・シフト申請→予約一覧→承認）。
+以下の順序で作成する（データベース→予約一覧画面→ログイン画面→予約・シフト申請→承認画面→各種マスタ管理画面）。顧客への早期デモを優先し、各種マスタの管理画面（CRUD画面）は後回しにする。ただしマスタのテーブル自体・シードデータは1.で先行して用意し、後からマスタ管理画面を追加しても予約一覧・各フォーム等の実装に影響が出ないようにする（常にDBを参照する実装とし、マスタ名などを一覧画面側に直接埋め込まない）。
 
-1. **データベース**（奥野）：全テーブルのマイグレーション一式（技術仕様書4章）
-2. **職員マスタ**（奥野）：`StaffController`／`Masters/Staff.vue`。ログイン認証が職員データを参照するため、ログイン画面より先に用意する
-3. **ログイン画面**（奥野）：`AuthController`／`Auth/Login.vue`、アカウントロック判定・ログインログ（技術仕様書6章）
-4. **残り3マスタ**：
-   - 奥野：`ClientController`／`Masters/Clients.vue`（利用者マスタ）、`SupportTypeController`／`Masters/SupportTypes.vue`（支援内容マスタ）
+1. **データベース（必要なテーブル）**（奥野）：職員・利用者・支援内容・車両の4マスタ本体を含む、予約一覧画面の表示に必要な範囲のテーブル一式のマイグレーションとシードデータ投入（技術仕様書4章）。各マスタの管理画面は4.のタイミングまで実装しない
+2. **予約一覧（トップ画面）**（奥野）：`Reservations/Index.vue`（6.3・基本設計書8章参照）。この時点ではログイン画面が未実装のため、開発中は仮の認証（固定ユーザーでのアクセス等）で画面確認を行う
+3. **ログイン画面**（奥野）：`AuthController`／`Auth/Login.vue`、アカウントロック判定・ログインログ（技術仕様書6章）。実装後、予約一覧画面を本来のログインフローに接続する
+4. **予約・シフト申請**（奥野）：シフト申請フォーム（`ShiftController`／`Shifts/Form.vue`、6.5参照）、予約申請フォーム＋空き日時検索（`ReservationController`／`Reservations/Create.vue`、`VehicleAssignmentService`、6.4参照）
+5. **承認画面**（奥野）：`ApprovalController`／`Approvals/Index.vue`（6.6参照）
+6. **各種マスタの管理画面（4種）**：テーブル自体は1.で作成済みのため、CRUD画面を追加実装する
+   - 奥野：`ClientController`／`Masters/Clients.vue`（利用者マスタ）、`SupportTypeController`／`Masters/SupportTypes.vue`（支援内容マスタ）、`StaffController`／`Masters/Staff.vue`（職員マスタ）
    - 山本：`VehicleController`／`Masters/Vehicles.vue`（車両マスタ）
-5. **予約・シフト申請**（奥野）：シフト申請フォーム（`ShiftController`／`Shifts/Form.vue`、6.5参照）、予約申請フォーム＋空き日時検索（`ReservationController`／`Reservations/Create.vue`、`VehicleAssignmentService`、6.4参照）
-6. **予約一覧（トップ画面）**（奥野）：`Reservations/Index.vue`（6.3参照）
-7. **承認画面**（奥野）：`ApprovalController`／`Approvals/Index.vue`（6.6参照）
 
 この順序には含まれていないが、実装時に必要になる項目（いずれも奥野）：
 - 監査ログ（`AuditLogger`、技術仕様書5.3）
