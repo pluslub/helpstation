@@ -12,6 +12,9 @@ class VehicleSeeder extends Seeder
      */
     public function run(): void
     {
-        //
+        $type = [
+            ['name' => '車いす', 'type' => 'care_ev'],
+            ['name' => '普通車', 'type' => 'company_car'],
+        ];
     }
 }
