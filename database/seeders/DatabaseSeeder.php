@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             SupportTypeSeeder::class,
             VehicleSeeder::class,
+            DemoDataSeeder::class,  //他マスタを参照するのでそのあと
         ]);
     }
 }
