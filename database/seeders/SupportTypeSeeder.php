@@ -21,5 +21,9 @@ class SupportTypeSeeder extends Seeder
             ['name' => '重要C', 'dispatch_priority' => 6],
             ['name' => '居宅支援', 'dispatch_priority' => 7],
         ];
+
+        foreach ($types as $type) {
+            SupportType::create($type);
+        }
     }
 }

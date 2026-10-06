@@ -34,7 +34,7 @@ class Client extends Model
 
     public function fixedDaysOfWeek()
     {
-        return $this->hasMany(ClientFixedDayOfWeek::class);
+        return $this->hasMany(ClientFixedDaysOfWeek::class);
     }
 
     public function reservations()

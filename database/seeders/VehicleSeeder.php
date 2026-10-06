@@ -16,5 +16,9 @@ class VehicleSeeder extends Seeder
             ['name' => '車いす', 'type' => 'care_ev'],
             ['name' => '普通車', 'type' => 'company_car'],
         ];
+
+        foreach ($types as $type) {
+            Vehicle::create($type);
+        }
     }
 }

@@ -19,11 +19,11 @@ class Vehicle extends Model
 
     protected function casts(): array{
         return[
-            is_unavailable => 'boolean',
+            'is_unavailable' => 'boolean',
         ];
     }
 
-    public function reservation(){
-        return $this->hasMany(Reservaton::class);
+    public function reservations(){
+        return $this->hasMany(Reservation::class);
     }
 }

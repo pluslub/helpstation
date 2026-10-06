@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Shifts extends Model
+class Shift extends Model
 {
     public $timestamps = false;
 
