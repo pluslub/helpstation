@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('reservation_staff', function (Blueprint $table) {
-            $table->foreignId('reservation_id')->constrained('reservations');
+            $table->foreignId('reservation_id')->constrained('reservation');
             $table->foreignId('staff_id')->nullable()->constrained('staff');
 
             $table->unique(['reservation_id', 'staff_id']);

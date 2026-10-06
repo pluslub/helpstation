@@ -11,14 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('reservations', function (Blueprint $table) {
+        Schema::create('reservation', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('client_id')->constrained('clients');
+            $table->foreignId('client_id')->constrained('client');
             $table->date('date');
             $table->time('start_time');
             $table->time('end_time');
-            $table->foreignId('support_type_id')->constrained('support_types');
-            $table->foreignId('vehicle_id')->nullable()->constrained('vehicles');
+            $table->foreignId('support_type_id')->constrained('support_type');
+            $table->foreignId('vehicle_id')->nullable()->constrained('vehicle');
             $table->enum('vehicle_type_choice', ['care_vehicle', 'company_car', 'private_car', 'none']);
             $table->text('remarks')->nullable();
             $table->enum('status', ['provisional', 'approved'])->default('provisional');
@@ -35,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('reservations');
+        Schema::dropIfExists('reservation');
     }
 };

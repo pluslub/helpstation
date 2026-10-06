@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('client_fixed_days_of_week', function (Blueprint $table) {
-            $table->foreignId('client_id')->constrained('clients');
+            $table->foreignId('client_id')->constrained('client');
             $table->unsignedTinyInteger('day_of_week');
             $table->time('fixed_start_time');
             $table->time('fixed_end_time');

@@ -8,7 +8,7 @@ class Shifts extends Model
 {
     public $timestamps = false;
 
-    protected $table = 'shifts';
+    protected $table = 'shift';
 
     protected $fillable = [
         'staff_id',

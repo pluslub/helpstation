@@ -4,11 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ShiftDetails extends Model
+class ShiftDetail extends Model
 {
     public $timestamps = false;
 
-    protected $table = 'shift_details';
+    protected $table = 'shift_detail';
 
     protected $fillable = [
         'shift_id',

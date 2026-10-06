@@ -4,9 +4,9 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Reservations extends Model
+class Reservation extends Model
 {
-    protected $table = 'reservations';
+    protected $table = 'reservation';
 
     protected $fillable = [
         'client_id',

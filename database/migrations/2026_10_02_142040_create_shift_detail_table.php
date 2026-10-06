@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('shift_details', function (Blueprint $table) {
+        Schema::create('shift_detail', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('shift_id')->constrained('shifts');
+            $table->foreignId('shift_id')->constrained('shift');
             $table->date('date');
             $table->time('applied_start_time')->nullable();
             $table->time('applied_end_time')->nullable();
@@ -37,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('shift_details');
+        Schema::dropIfExists('shift_detail');
     }
 };

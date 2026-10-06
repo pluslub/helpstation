@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('staff_default_schedules', function (Blueprint $table) {
+        Schema::create('staff_default_schedule', function (Blueprint $table) {
             $table->id();
             $table->foreignId('staff_id')->constrained('staff');
             $table->unsignedTinyInteger('day_of_week');
@@ -30,6 +30,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('staff_default_schedules');
+        Schema::dropIfExists('staff_default_schedule');
     }
 };

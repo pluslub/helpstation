@@ -11,10 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('support_types', function (Blueprint $table) {
+        Schema::create('client', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 50);
-            $table->unsignedSmallInteger('dispatch_priority');
+            $table->string('last_name',50);
+            $table->boolean('wheelchair_required')->default(false);
+            $table->enum('interval_unit', ['day', 'week', 'month'])->nullable();
+            $table->unsignedSmallInteger('interval_value')->nullable();
+            $table->date('fixed_start_date')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });
@@ -25,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('support_types');
+        Schema::dropIfExists('client');
     }
 };
