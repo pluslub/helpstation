@@ -22,8 +22,6 @@ class StaffDefaultSchedule extends Model
         return [
             'is_am_off' => 'boolean',
             'is_pm_off' => 'boolean',
-            'start_time' => 'datetime',
-            'end_time' => 'datetime',
         ];
     }
 

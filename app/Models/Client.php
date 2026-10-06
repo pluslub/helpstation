@@ -19,11 +19,22 @@ class Client extends Model
         'fixed_start_date',
     ];
 
+    /**
+     * MariaDBから取り出したデータを型変換する。
+     * DBの型⇒PHPの型
+     * INT⇒整数
+     * VARCHAR・ENUM⇒文字列
+     * BOOLEAN⇒整数（0/1）
+     * DATE・DATETIME⇒文字列
+     * TIME⇒文字列
+     *
+     * BOOLEANとDATE・DATETIME型だけ変換が必要。
+     */
     protected function casts(): array
     {
         return [
             'wheelchair_required' => 'boolean',
-            'fixed_start_date' => 'date',
+            'fixed_start_date' => 'date:Y-m-d',
         ];
     }
 
