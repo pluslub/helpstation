@@ -10,6 +10,7 @@ class Staff extends Model
     use SoftDeletes;
 
     protected $table = 'staff';
+    protected $hidden = ['password', 'failed_login_count', 'last_failed_login_at', 'locked_until'];
 
     protected $fillable = [
         'login_id',

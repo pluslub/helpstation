@@ -24,7 +24,7 @@ class Reservation extends Model
     protected function casts(): array
     {
         return [
-            'date' => 'date',
+            'date' => 'date:Y-m-d',
             'vehicle_reassigned_flag' => 'boolean',
         ];
     }
