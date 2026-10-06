@@ -29,6 +29,6 @@ class StaffDefaultSchedule extends Model
 
     public function staff()
     {
-        return $this->belongsTo(Sfaff::class);
+        return $this->belongsTo(Staff::class);
     }
 }
