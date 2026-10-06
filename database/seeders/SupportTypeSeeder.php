@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\SupportType;
 
 class SupportTypeSeeder extends Seeder
 {
@@ -12,7 +13,7 @@ class SupportTypeSeeder extends Seeder
      */
     public function run(): void
     {
-        $type = [
+        $types = [
             ['name' => '通院（病院）', 'dispatch_priority' => 1],
             ['name' => '通院（クリニック）', 'dispatch_priority' => 2],
             ['name' => '固定', 'dispatch_priority' => 3],

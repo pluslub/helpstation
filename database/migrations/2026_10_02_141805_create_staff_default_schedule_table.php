@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('staff_default_schedule', function (Blueprint $table) {
             $table->id();
             $table->foreignId('staff_id')->constrained('staff');
-            $table->unsignedTinyInteger('day_of_week');
+            $table->unsignedTinyInteger('days_of_week');
             $table->boolean('is_am_off')->default(false);
             $table->boolean('is_pm_off')->default(false);
             $table->time('start_time')->nullable();
             $table->time('end_time')->nullable();
 
-            $table->unique(['staff_id', 'day_of_week']);
+            $table->unique(['staff_id', 'days_of_week']);
             $table->timestamps();
         });
     }

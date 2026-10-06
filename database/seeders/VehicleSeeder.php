@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use App\Models\Vehicle;
 
 class VehicleSeeder extends Seeder
 {
@@ -12,7 +13,7 @@ class VehicleSeeder extends Seeder
      */
     public function run(): void
     {
-        $type = [
+        $types = [
             ['name' => '車いす', 'type' => 'care_ev'],
             ['name' => '普通車', 'type' => 'company_car'],
         ];
