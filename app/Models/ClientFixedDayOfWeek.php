@@ -4,11 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ClientFixedDaysOfWeek extends Model
+class ClientFixedDayOfWeek extends Model
 {
     public $timestamps = false;
 
-    protected $table = 'client_fixed_days_of_week';
+    protected $table = 'client_fixed_day_of_week';
 
     protected $fillable = [
         'client_id',

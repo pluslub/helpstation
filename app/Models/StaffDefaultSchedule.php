@@ -10,7 +10,7 @@ class StaffDefaultSchedule extends Model
 
     protected $fillable = [
         'staff_id',
-        'days_of_week',
+        'day_of_week',
         'is_am_off',
         'is_pm_off',
         'start_time',
