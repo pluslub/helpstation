@@ -15,6 +15,7 @@ use App\Models\Vehicle;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Carbon;
 
 class DemoDataSeeder extends Seeder
 {
@@ -94,7 +95,10 @@ class DemoDataSeeder extends Seeder
         $companyCar = Vehicle::where('type', 'company_car')->first();
 
         // シフト（今月分）＋シフト詳細（今週分のみ、サンプルのため）
+        // $details[職員ID][曜日オフセット(0=日〜6=土)] に作成したシフト詳細を保持し、下のバリエーションで上書きする
         $targetYearMonth = now()->format('Y-m');
+        $weekStart = now()->startOfWeek(Carbon::SUNDAY);
+        $details = [];
         foreach ([$yamada, $sato, $tanaka] as $staff) {
             $shift = Shift::create([
                 'staff_id' => $staff->id,
@@ -103,9 +107,9 @@ class DemoDataSeeder extends Seeder
             ]);
 
             foreach (range(0, 6) as $offset) {
-                $date = now()->startOfWeek()->addDays($offset);
+                $date = $weekStart->copy()->addDays($offset);
                 $isWeekend = $date->isWeekend();
-                ShiftDetail::create([
+                $details[$staff->id][$offset] = ShiftDetail::create([
                     'shift_id' => $shift->id,
                     'date' => $date->toDateString(),
                     'applied_start_time' => $isWeekend ? null : '09:00',
@@ -117,6 +121,51 @@ class DemoDataSeeder extends Seeder
                 ]);
             }
         }
+
+        // シフト詳細の表示確認用バリエーション（予約一覧画面のシフト・休み情報欄）
+        // 月曜：佐藤 管理者が時間を変更（申請 9:00〜18:00 → 確定 10:00〜15:00）
+        $details[$sato->id][1]->update([
+            'admin_modified_flag' => true,
+            'modified_start_time' => '10:00',
+            'modified_end_time' => '15:00',
+            'modified_approval_flag' => true,
+        ]);
+
+        // 月曜：田中 管理者が勤務を終日休みに変更（申請は勤務）
+        $details[$tanaka->id][1]->update([
+            'admin_modified_flag' => true,
+            'modified_start_time' => null,
+            'modified_end_time' => null,
+            'modified_am_off' => true,
+            'modified_pm_off' => true,
+            'modified_approval_flag' => true,
+        ]);
+
+        // 火曜：田中 午前休（13:00〜18:00勤務）
+        $details[$tanaka->id][2]->update([
+            'applied_start_time' => '13:00',
+            'applied_am_off' => true,
+        ]);
+
+        // 水曜：山田 午後休（9:00〜12:00勤務）
+        $details[$yamada->id][3]->update([
+            'applied_end_time' => '12:00',
+            'applied_pm_off' => true,
+        ]);
+
+        // 木曜：佐藤 希望休（終日）
+        $details[$sato->id][4]->update([
+            'applied_start_time' => null,
+            'applied_end_time' => null,
+            'applied_am_off' => true,
+            'applied_pm_off' => true,
+            'applied_desired_off' => true,
+        ]);
+
+        // 金曜：田中 未承認（申請中）
+        $details[$tanaka->id][5]->update([
+            'approval_flag' => false,
+        ]);
 
         // 予約（今日の日付で3件）
         $today = now()->toDateString();
