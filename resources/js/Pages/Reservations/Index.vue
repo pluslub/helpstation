@@ -73,6 +73,8 @@
         }
         return {shiftMap, dayOffNameMap};
     })
+
+    const isProvisional = (res) => res.status === 'provisional';
 </script>
 
 <template>
@@ -81,12 +83,24 @@
             <h2>{{ day }}</h2>
             <!-- 予約カード -->
             <template v-for="res in reservationsByDay[day] ?? []" :key="res.id">
-                <div class="rounded border p-2">
-                    <span>{{ res.client.last_name }} {{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span><br>
+                <div class="rounded border p-2"
+                    :class="{
+                            'border-dashed border-amber-500 bg-amber-50' : isProvisional(res),
+                            'border-red-500': res.vehicle_reassigned_flag,
+                    }">
+                    <span>{{ res.client.last_name }} {{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
+
+                    <span v-if="isProvisional(res)"
+                        class="rounded bg-amber-500 px-1 text-xs text-white">仮登録</span>
+
+                    <span v-if="res.vehicle_reassigned_flag"
+                        class="rounded bg-red-500 px-1 text-xs text-white">配車変更</span>
+                    <br>
+
                     <span v-for="assignedStaff in res.staff_assignments" :key="assignedStaff.staff_id ?? 'none'">
                         {{ assignedStaff.staff?.name ?? '未定' }}
                     </span>
-                    <span>{{ res.support_type.name ?? '削除済'}} {{ res.vehicle?.name ?? 'なし' }}</span>
+                    <span>{{ res.support_type?.name ?? '削除済'}} {{ res.vehicle?.name ?? 'なし' }}</span>
                 </div>
             </template>
             <!-- シフト・休み情報 -->
