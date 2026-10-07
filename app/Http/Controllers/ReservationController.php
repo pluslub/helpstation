@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use App\Models\Reservation;
-use Illuminate\Support\Carbon;
+use App\Models\ShiftDetail;
 
 /**
  * 予約一覧画面のコントローラ
@@ -24,9 +25,14 @@ class ReservationController extends Controller
             ->orderBy('date')->orderBy('start_time')    //date列→start_time列で並べ替え
             ->get();                                    //データベースに問い合わせる
 
+        $shiftDetails = ShiftDetail::with('shift.staff')
+            ->whereBetween('date', [$start, $end])
+            ->get();
+
         return Inertia::render('Reservations/Index', [  //index.vueにデータを送る。
             'reservations' => $reservations,
             'weekStart' => $start->toDateString(),
+            'shiftDetails' => $shiftDetails,
         ]);
     }
 }
