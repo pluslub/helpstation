@@ -14,7 +14,7 @@ class VehicleSeeder extends Seeder
     public function run(): void
     {
         $types = [
-            ['name' => '車いす', 'type' => 'care_ev'],
+            ['name' => '福祉車両', 'type' => 'care_ev'],
             ['name' => '普通車', 'type' => 'company_car'],
         ];
 

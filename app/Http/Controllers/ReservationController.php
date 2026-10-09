@@ -7,6 +7,7 @@ use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use App\Models\Reservation;
 use App\Models\ShiftDetail;
+use App\Models\Vehicle;
 use App\Http\Requests\ReservationIndexRequest;
 
 /**
@@ -43,6 +44,9 @@ class ReservationController extends Controller
             'weekStart' => $start->toDateString(),
             'prevWeek' => $start->copy()->subWeek()->toDateString(),
             'nextWeek' => $start->copy()->addWeek()->toDateString(),
+
+            // 絞り込みの選択肢（論理削除されたものは SoftDeletes により自動で除外される）
+            'vehicleOptions' => Vehicle::orderBy('id')->get(['id', 'name']),
         ]);
     }
 }

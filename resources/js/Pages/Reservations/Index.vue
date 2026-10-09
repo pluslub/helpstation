@@ -1,7 +1,7 @@
 <script setup>
     //データ処理 JavaScript
-    import {computed} from 'vue';
-    import { Link } from '@inertiajs/vue3';
+    import { computed, ref, watch } from 'vue';
+    import { Link, usePage } from '@inertiajs/vue3';
 
     //ReservationControllerからデータを受け取る
     //reservations:Array：'client','supportType','vehicle','staffAssignments.staff'
@@ -11,7 +11,129 @@
         weekStart: String,
         prevWeek: String,
         nextWeek: String,
+        vehicleOptions: Array,
     });
+
+    const page = usePage();
+
+    // ref：画面の操作で書き換わる値を入れる箱。変わったらこれを使っているcomputedが再計算される。
+    const filterType = ref('all');   // 'all' | 'self' | 'staff' | 'vehicle' | 'client'
+    const filterId   = ref(null);    // 職員・車両・利用者を選んだときの対象の id
+
+    // 予約が未承認かどうか
+    // 未承認の場合trueになる
+    const isProvisional = (res) => res.status === 'provisional';
+
+
+    /**
+     * 利用者フィルターの処理
+     * 利用者のフィルターは全利用者を表示するとプルダウンが長くなるので、
+     * 表示している週に予約が入っている利用者のみを取り出して表示する。
+     */
+    // 選択中の利用者名（週を切り替えて予約がなくなっても、選択肢に名前を残すため）
+    const selectedClientName = ref('');
+
+    // 利用者を選んだら、その名前を覚えておく
+    // watch: 値が変わったときに実行する。
+    watch(filterId, (id) => {
+        if(filterType.value !== 'client') return;
+
+        const client = props.reservations.find(r => r.client_id === id)?.client;
+        if (client) selectedClientName.value = client.last_name;
+    });
+
+    // 利用者の選択肢：表示中の週に予約がある利用者のみ（重複なし、id順）
+    const clientOptions = computed(() => {
+        const map = new Map();
+        for (const r of props.reservations) {
+            map.set(r.client_id, r.client.last_name);
+        }
+        // 選択中の利用者がこの週にいなければ、選択肢に残す
+        if (filterType.value === 'client' && filterId.value !== null && !map.has(filterId.value)) {
+            map.set(filterId.value, selectedClientName.value);
+        }
+
+            // mapを[id, lastname]の配列に変換
+        const options =  [...map]
+            .map(([id, lastName]) => ({ id, last_name: lastName }))
+            .sort((a, b) => a.id - b.id);
+
+        // 苗字ごとの人数を数える
+        const count = {};
+        for (const o of options) {
+            count[o.last_name] = (count[o.last_name] ?? 0) + 1;
+        }
+
+        // 同じ苗字が複数いる場合だけ、苗字の後ろにIDを付ける
+        // スプレッド構文：  { ...o, label: '鈴木（3）' } → { id: 3, last_name: '鈴木', label: '鈴木（3）' }
+        return options.map(o => ({
+            ...o,
+            label: count[o.last_name] > 1 ? `${o.last_name}（${o.id}）` : o.last_name,
+        }));
+    });
+
+    //管理者による変更をチェックし、１件分のシフトデータを出力する。
+    const effective = (s) => {
+        const changed = s.admin_modified_flag;
+        return {
+            id : s.id,
+            name: s.shift.staff.name,
+            start: changed ? s.modified_start_time : s.applied_start_time,
+            end: changed ? s.modified_end_time : s.applied_end_time,
+            amOff: changed ? s.modified_am_off : s.applied_am_off,
+            pmOff: changed ? s.modified_pm_off : s.applied_pm_off,
+            changed,
+        }
+    }
+
+    /**
+     * 職員フィルターの処理
+     * 職員のフィルターはシフトが入っていない職員まで含めるとプルダウンが長くなるので、
+     * 表示している週に1日以上シフトが入っているか予約が入っている職員のみを取り出して表示する。
+     */
+    const selectedStaffName = ref('');
+
+    // 職員を選んだら、その名前を覚えておく
+    // watch: 値が変わったときに実行する。
+    watch(filterId, (id) => {
+        if(filterType.value !== 'staff') return;
+
+        const staff = staffOptions.value.find(option => option.id === id);
+        if (staff) selectedStaffName.value = staff.name;
+    });
+
+    // 職員の選択肢：表示中の週に1日以上シフトが入っているか、予約がある職員のみ（重複なし、id順）
+    const staffOptions = computed(() => {
+        const map = new Map();
+
+        //シフト一覧のスタッフ名を記録する。
+        for (const s of props.shiftDetails) {
+            const eff = effective(s);
+            if(!(eff.amOff && eff.pmOff)){
+                map.set(s.shift.staff_id, eff.name);
+            }
+        }
+
+        //予約一覧のスタッフ名を記録する。
+        for (const r of props.reservations) {
+            for(const assignment of r.staff_assignments){
+                if(assignment.staff != null){
+                    map.set(assignment.staff_id, assignment.staff.name);
+                }
+            }
+        }
+
+        // 選択中の職員がこの週にいなければ、選択肢に残す
+        if (filterType.value === 'staff' && filterId.value !== null && !map.has(filterId.value)) {
+            map.set(filterId.value, selectedStaffName.value);
+        }
+
+        // mapを[id, name]の配列に変換
+        return [...map]
+            .map(([id, name]) => ({ id, name }))
+            .sort((a, b) => a.id - b.id);
+    });
+
 
     /**
      * 時間 hh:mm:ssからh:mmに変換する
@@ -60,32 +182,37 @@
         return result;
     });
 
-    //予約を日付毎に取得
+    // 予約情報を取得して、絞り込み条件に合う予約だけを返す（シフト・休みは絞り込まない）
+    const filteredReservations = computed(() => {
+        const id = filterId.value;
+        const hasStaff = (r, staffId) => r.staff_assignments.some(a => a.staff_id === staffId); //some:配列の中に条件に合う要素が1つでもあればtrueを返す
+
+        switch (filterType.value) {
+            case 'self':
+                return props.reservations.filter(r => hasStaff(r, page.props.auth.staffId));
+            case 'staff':
+                return id === null ? props.reservations : props.reservations.filter(r => hasStaff(r, id));
+            case 'vehicle':
+                return id === null ? props.reservations : props.reservations.filter(r => r.vehicle_id === id);
+            case 'client':
+                return id === null ? props.reservations : props.reservations.filter(r => r.client_id === id);
+            default:
+                return props.reservations;    // 'all'
+        }
+    });
+
+    //予約情報を日付毎に格納
     const reservationsByDay = computed(() => {
         const map = {};
         //予約内容を日付毎のMapオブジェクトに格納する。
-        for (const r of props.reservations) {
+        for (const r of filteredReservations.value) {
             const day = r.date.slice(0, 10);    //yyyy-MM-ddに変換
-            (map[day] ??= []).push(r);
+            (map[day] ??= []).push(r);          //??=について：map[day]がnullか空なら配列を作成する。
         }
         return map;
     });
 
-    //管理者による変更をチェックし、１件分のシフトデータを出力する。
-    const effective = (s) => {
-        const changed = s.admin_modified_flag;
-        return {
-            id : s.id,
-            name: s.shift.staff.name,
-            start: changed ? s.modified_start_time : s.applied_start_time,
-            end: changed ? s.modified_end_time : s.applied_end_time,
-            amOff: changed ? s.modified_am_off : s.applied_am_off,
-            pmOff: changed ? s.modified_pm_off : s.applied_pm_off,
-            changed,
-        }
-    }
-
-    //シフトを日付毎に取得
+    //シフト情報を取得して日付毎に格納
     const shiftByDay = computed(() => {
         const shiftMap = {};
         const dayOffNameMap = {};
@@ -103,18 +230,62 @@
         }
         return {shiftMap, dayOffNameMap};
     })
-
-    //予約が未承認かどうか
-    //未承認の場合trueになる
-    const isProvisional = (res) => res.status === 'provisional';
 </script>
 
+<!--
+    タグ内の記号の意味
+
+    コロン（:）:   v-bind:の省略形。文字列ではなくJavascriptの式として扱う。
+    @：           v-on:の省略形。イベントが起きたときに実行する処理を書く。
+ -->
 <template>
-    <!-- 週操作ボタン -->
+    <!-- フィルター -->
     <div class="mb-2 flex items-center gap-2">
-        <Link :href="`/?week=${prevWeek}`" preserve-scroll class="rounded border px-3 py-1">← 前週</Link>
-        <Link href="/" preserve-scroll class="rounded border px-3 py-1">今週</Link>
-        <Link :href="`/?week=${nextWeek}`" preserve-scroll class="rounded border px-3 py-1">次週 →</Link>
+        <!--
+            v-model
+                プルダウンと ref を双方向につなぐ指定。
+                プルダウンで選ぶと filterType が変わり、
+                filterType を書き換えると、プルダウンの表示も変わる。
+
+            @change="filterId = null"：
+                条件の種類を切り替えたときに、前の選択IDをリセットします
+        -->
+        <select v-model="filterType" @change="filterId = null" class="rounded border px-2 py-1">
+            <option value="all">全体</option>
+            <option value="self">個人</option>
+            <option value="staff">職員</option>
+            <option value="vehicle">車両</option>
+            <option value="client">利用者</option>
+        </select>
+
+        <select v-if="filterType === 'staff'" v-model="filterId" class="rounded border px-2 py-1">
+            <option :value="null">職員を選択</option>
+            <option v-for="s in staffOptions" :key="s.id" :value="s.id">{{ s.name }}</option>
+        </select>
+
+        <select v-if="filterType === 'vehicle'" v-model="filterId" class="rounded border px-2 py-1">
+            <option :value="null">車両を選択</option>
+            <option v-for="v in vehicleOptions" :key="v.id" :value="v.id">{{ v.name }}</option>
+        </select>
+
+        <select v-if="filterType === 'client'" v-model="filterId" class="rounded border px-2 py-1">
+            <option :value="null">利用者を選択</option>
+            <option v-for="c in clientOptions" :key="c.id" :value="c.id">{{ c.label }}</option>
+        </select>
+    </div>
+
+    <!-- 週操作ボタン -->
+    <!--
+        preserve-state
+            ページを移動したときにコンポーネントを作り直さずにpropsだけを入れ替えるので、
+            refが保存される。
+        preserve-scroll:
+            ページを移動しても、スクロール位置をそのまま保つ
+    -->
+    <div class="mb-2 flex items-center gap-2">
+        <Link :href="`/?week=${prevWeek}`" preserve-state preserve-scroll class="rounded border px-3 py-1">← 前週</Link>
+        <Link href="/" preserve-state preserve-scroll class="rounded border px-3 py-1">今週</Link>
+        <Link :href="`/?week=${nextWeek}`" preserve-state preserve-scroll class="rounded border px-3 py-1">次週 →</Link>
     </div>
 
     <div class="grid grid-cols-7 gap-2">

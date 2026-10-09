@@ -207,5 +207,101 @@ class DemoDataSeeder extends Seeder
             'vehicle_reassigned_flag' => true,
         ]);
         ReservationStaff::create(['reservation_id' => $r3->id, 'staff_id' => $yamada->id]);
+
+        // ---------------------------------------------------------------
+        // 予約一覧画面の表示確認用データ（週表示・カード表示・絞り込み・週切替）
+        // ---------------------------------------------------------------
+
+        // 絞り込みの選択肢に出てはいけないもの（論理削除済み）
+        $retired = Staff::create([
+            'login_id' => 'retired',
+            'password' => Hash::make('password'),
+            'name' => '退職者',
+            'role' => 'staff',
+        ]);
+        $retired->delete();
+        Vehicle::create(['name' => '廃車', 'type' => 'company_car'])->delete();
+
+        // 論理削除済みの支援内容（予約カードで「削除済」表示の確認用）
+        $oldSupport = SupportType::create(['name' => '旧支援', 'dispatch_priority' => 99]);
+        $oldSupport->delete();
+
+        // 車両の絞り込み確認用に、普通社用車をもう1台
+        $companyCar2 = Vehicle::create(['name' => '普通車2', 'type' => 'company_car']);
+
+        // 同じ苗字の利用者（絞り込みの選択肢で「鈴木（ID）」表示の確認用）
+        $suzuki2 = Client::create(['last_name' => '鈴木', 'wheelchair_required' => false]);
+
+        // 予約と担当者をまとめて作成する。担当者未定は staff_id に null を渡す
+        $reserve = function (array $attributes, array $staffIds) {
+            $reservation = Reservation::create($attributes + [
+                'status' => 'approved',
+                'vehicle_reassigned_flag' => false,
+            ]);
+            foreach ($staffIds as $staffId) {
+                ReservationStaff::create(['reservation_id' => $reservation->id, 'staff_id' => $staffId]);
+            }
+            return $reservation;
+        };
+        // 週の起点（日曜）からの日数で日付を作る（負数で前週、7以上で次週）
+        $dayOf = fn (int $offset) => $weekStart->copy()->addDays($offset)->toDateString();
+
+        // 今週：日曜は予約なし（空の列の確認用）
+
+        // 月曜：同じ苗字の利用者（鈴木2人目）、奥野担当（「自分自身」の確認用）、普通車2
+        $reserve([
+            'client_id' => $suzuki2->id, 'date' => $dayOf(1), 'start_time' => '10:00', 'end_time' => '11:00',
+            'support_type_id' => $homeSupport->id, 'vehicle_id' => $companyCar2->id, 'vehicle_type_choice' => 'company_car',
+        ], [$okuno->id]);
+
+        // 火曜：仮登録かつ配車変更（バッジ2つ・枠の色の重なりの確認用）
+        $reserve([
+            'client_id' => $nakamura->id, 'date' => $dayOf(2), 'start_time' => '09:30', 'end_time' => '10:30',
+            'support_type_id' => $outpatientHospital->id, 'vehicle_id' => $wheelchairVehicle->id, 'vehicle_type_choice' => 'care_vehicle',
+            'status' => 'provisional', 'vehicle_reassigned_flag' => true,
+        ], [$sato->id]);
+
+        // 水曜：担当者未定の仮登録（「未定」表示の確認用）
+        $reserve([
+            'client_id' => $takahashi->id, 'date' => $dayOf(3), 'start_time' => '14:00', 'end_time' => '15:00',
+            'support_type_id' => $homeSupport->id, 'vehicle_id' => null, 'vehicle_type_choice' => 'none',
+            'status' => 'provisional',
+        ], [null]);
+
+        // 木曜：私用車（車両なし）、担当者2名（奥野・田中）
+        $reserve([
+            'client_id' => $ito->id, 'date' => $dayOf(4), 'start_time' => '11:00', 'end_time' => '12:00',
+            'support_type_id' => $homeSupport->id, 'vehicle_id' => null, 'vehicle_type_choice' => 'private_car',
+        ], [$okuno->id, $tanaka->id]);
+
+        // 土曜：論理削除済みの支援内容（「削除済」表示の確認用）
+        $reserve([
+            'client_id' => $suzuki->id, 'date' => $dayOf(6), 'start_time' => '10:00', 'end_time' => '11:00',
+            'support_type_id' => $oldSupport->id, 'vehicle_id' => $companyCar->id, 'vehicle_type_choice' => 'company_car',
+        ], [$yamada->id]);
+
+        // 今日：既存の3件より後に作成した早い時刻の予約（開始時刻順に並ぶかの確認用）
+        $reserve([
+            'client_id' => $ito->id, 'date' => $today, 'start_time' => '08:00', 'end_time' => '08:30',
+            'support_type_id' => $homeSupport->id, 'vehicle_id' => $companyCar2->id, 'vehicle_type_choice' => 'company_car',
+        ], [$tanaka->id]);
+
+        // 次週：高橋の予約はなし（高橋で絞り込んだまま次週へ移ると0件になることの確認用）
+        $reserve([
+            'client_id' => $nakamura->id, 'date' => $dayOf(8), 'start_time' => '10:00', 'end_time' => '11:00',
+            'support_type_id' => $outpatientHospital->id, 'vehicle_id' => $wheelchairVehicle->id, 'vehicle_type_choice' => 'care_vehicle',
+        ], [$yamada->id]);
+        $reserve([
+            'client_id' => $suzuki->id, 'date' => $dayOf(10), 'start_time' => '09:00', 'end_time' => '10:00',
+            'support_type_id' => $outpatientHospital->id, 'vehicle_id' => $wheelchairVehicle->id, 'vehicle_type_choice' => 'care_vehicle',
+        ], [$sato->id]);
+
+        // 前週
+        $reserve([
+            'client_id' => $ito->id, 'date' => $dayOf(-3), 'start_time' => '13:00', 'end_time' => '14:00',
+            'support_type_id' => $outpatientHospital->id, 'vehicle_id' => $companyCar->id, 'vehicle_type_choice' => 'company_car',
+        ], [$yamada->id]);
+
+        // 渡辺はどの週にも予約なし（利用者の選択肢に出ないことの確認用）
     }
 }
