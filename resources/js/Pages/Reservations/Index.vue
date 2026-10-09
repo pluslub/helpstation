@@ -24,7 +24,6 @@
     // 未承認の場合trueになる
     const isProvisional = (res) => res.status === 'provisional';
 
-
     /**
      * 利用者フィルターの処理
      * 利用者のフィルターは全利用者を表示するとプルダウンが長くなるので、
@@ -203,13 +202,28 @@
 
     //予約情報を日付毎に格納
     const reservationsByDay = computed(() => {
-        const map = {};
+        const cardMap = {};
+
         //予約内容を日付毎のMapオブジェクトに格納する。
         for (const r of filteredReservations.value) {
             const day = r.date.slice(0, 10);    //yyyy-MM-ddに変換
-            (map[day] ??= []).push(r);          //??=について：map[day]がnullか空なら配列を作成する。
+
+             //??=について：map[day]がnullか空なら配列を作成する。
+            cardMap[day] ??= [];
+            let card = {};
+
+            let cardFilteredByClient = cardMap[day].find(c => r.client_id === c.client_id);
+            if (cardFilteredByClient == null){
+                card.client_id = r.client_id;
+                card.client_last_name = r.client.last_name;
+                card.reservations = [];
+                cardMap[day].push(card);
+            }else{
+                card = cardFilteredByClient;
+            }
+            card.reservations.push(r);
         }
-        return map;
+        return cardMap;
     });
 
     //シフト情報を取得して日付毎に格納
@@ -293,25 +307,33 @@
             <span v-if="day.showYear" class="text-xs text-gray-500">{{ day.year }}/</span>{{ day.monthDay }}
 
             <!-- 予約カード -->
-            <template v-for="res in reservationsByDay[day.date] ?? []" :key="res.id">
-                <div class="rounded border p-2"
-                    :class="{
-                            'border-dashed border-amber-500 bg-amber-50' : isProvisional(res),
-                            'border-red-500': res.vehicle_reassigned_flag,
-                    }">
-                    <span>{{ res.client.last_name }} {{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
+            <template v-for="card in reservationsByDay[day.date] ?? []" :key="card.client_id">
+                <!-- 利用者ごとにカードを表示する
+                     :class="条件 ? 'クラス' : ''"
+                -->
+                <div class="rounded border p-2 space-y-1"
+                    :class="card.reservations.some(r => isProvisional(r)) ? 'border-dashed border-amber-500 bg-amber-50':''">
 
-                    <span v-if="isProvisional(res)"
-                        class="rounded bg-amber-500 px-1 text-xs text-white">仮登録</span>
+                    <div>
+                        <span>{{ card.client_last_name }}</span>
+                    </div>
 
-                    <span v-if="res.vehicle_reassigned_flag"
-                        class="rounded bg-red-500 px-1 text-xs text-white">配車変更</span>
-                    <br>
-
-                    <span v-for="assignedStaff in res.staff_assignments" :key="assignedStaff.staff_id ?? 'none'">
-                        {{ assignedStaff.staff?.name ?? '未定' }}
-                    </span>
-                    <span>{{ res.support_type?.name ?? '削除済'}} {{ res.vehicle?.name ?? 'なし' }}</span>
+                    <!-- カードごとに予約情報を表示する -->
+                     <div class="space-y-2">
+                        <div v-for="res in card.reservations" :key="res.id">
+                            <span v-for="assignedStaff in res.staff_assignments" :key="assignedStaff.staff_id ?? 'none'">
+                                {{ assignedStaff.staff?.name ?? '未定' }}
+                            </span>
+                            <span>{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
+                            <span v-if="card.reservations.some(r => isProvisional(r))"
+                                class="rounded bg-amber-500 px-1 text-xs text-white">仮登録</span>
+                            <br>
+                            <span>{{ res.support_type?.name ?? '削除済'}} {{ res.vehicle?.name ?? 'なし' }}</span>
+                            <span v-if="res.vehicle_reassigned_flag"
+                                class="rounded bg-red-500 px-1 text-xs text-white">配車変更</span>
+                            <br>
+                        </div>
+                    </div>
                 </div>
             </template>
             <!-- シフト・休み情報 -->
