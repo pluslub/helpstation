@@ -1,7 +1,7 @@
 <script setup>
     //データ処理 JavaScript
     import { computed, ref, watch } from 'vue';
-    import { Link, usePage } from '@inertiajs/vue3';
+    import { Link, usePage, router } from '@inertiajs/vue3';
 
     //ReservationControllerからデータを受け取る
     //reservations:Array：'client','supportType','vehicle','staffAssignments.staff'
@@ -133,7 +133,6 @@
             .sort((a, b) => a.id - b.id);
     });
 
-
     /**
      * 時間 hh:mm:ssからh:mmに変換する
      *
@@ -244,6 +243,12 @@
         }
         return {shiftMap, dayOffNameMap};
     })
+
+    const onDateChange = (e) =>{
+        const date = e.target.value;
+        if(!date) return;
+        router.get('/', { week: date }, { preserveState: true, preserveScroll: true });
+    }
 </script>
 
 <!--
@@ -299,6 +304,7 @@
     <div class="mb-2 flex items-center gap-2">
         <Link :href="`/?week=${prevWeek}`" preserve-state preserve-scroll class="rounded border px-3 py-1">← 前週</Link>
         <Link href="/" preserve-state preserve-scroll class="rounded border px-3 py-1">今週</Link>
+        <input type="date" @change="onDateChange($event)" :value="weekStart" class="rounded border px-3 py-1"/>
         <Link :href="`/?week=${nextWeek}`" preserve-state preserve-scroll class="rounded border px-3 py-1">次週 →</Link>
     </div>
 
