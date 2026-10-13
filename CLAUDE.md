@@ -35,7 +35,7 @@
 1. **データベース（必要なテーブル）**（奥野）：職員・利用者・支援内容・車両の4マスタ本体を含む、予約一覧画面の表示に必要な範囲のテーブル一式のマイグレーションとシードデータ投入（技術仕様書4章）。各マスタの管理画面は4.のタイミングまで実装しない
 2. **予約一覧（トップ画面）**（奥野）：`Reservations/Index.vue`（6.3・基本設計書8章参照）。この時点ではログイン画面が未実装のため、開発中は仮の認証（固定ユーザーでのアクセス等）で画面確認を行う
 3. **ログイン画面**（奥野）：`AuthController`／`Auth/Login.vue`、アカウントロック判定・ログインログ（技術仕様書6章）。実装後、予約一覧画面を本来のログインフローに接続する
-4. **予約・シフト申請**（奥野）：シフト申請フォーム（`ShiftController`／`Shifts/Form.vue`、6.5参照）、予約申請フォーム＋空き日時検索（`ReservationController`／`Reservations/Create.vue`、`VehicleAssignmentService`、6.4参照）
+4. **予約・シフト申請**（奥野）：シフト申請フォーム（`ShiftController`／`Shifts/Form.vue`、6.5参照）、予約申請フォーム＋空き日時検索（`ReservationController`／`Components/ReservationFormPopup.vue`（予約一覧画面上のポップアップ）、`VehicleAssignmentService`、6.4参照）
 5. **承認画面**（奥野）：`ApprovalController`／`Approvals/Index.vue`（6.6参照）
 6. **各種マスタの管理画面（4種）**：テーブル自体は1.で作成済みのため、CRUD画面を追加実装する
    - 奥野：`ClientController`／`Masters/Clients.vue`（利用者マスタ）、`SupportTypeController`／`Masters/SupportTypes.vue`（支援内容マスタ）、`StaffController`／`Masters/Staff.vue`（職員マスタ）
