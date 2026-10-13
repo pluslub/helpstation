@@ -258,12 +258,15 @@
     })
 
     //--------------------------------------------event-------------------------------------------
+    //日付が直接入力されたときのイベント
     const onDateChange = (e) =>{
         const date = e.target.value;
         if(!date) return;
         router.get('/', { week: date }, { preserveState: true, preserveScroll: true });
     }
 
+    //矢印キーが入力されたときのイベント
+    //日付入力欄、プルダウン選択中は動かさない
     const handleKeydown = (e) =>{
         let displayWeekOnKeyDown = null;
         if(e.target === 'INPUT' || e.target === 'SELECT') return;
@@ -279,10 +282,12 @@
         router.get('/', { week: displayWeekOnKeyDown }, { preserveState: true, preserveScroll: true });
     }
 
+    //ページ表示時にキーダウンイベントを追加
     onMounted(() =>{
         window.addEventListener("keydown", handleKeydown);
     })
 
+    //ページ破棄後にキーダウンイベントを削除（ほかのページでも動いてしまうため）
     onUnmounted(() =>{
         window.removeEventListener("keydown", handleKeydown);
     })
