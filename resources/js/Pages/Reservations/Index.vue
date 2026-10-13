@@ -1,12 +1,11 @@
 <script setup>
     //データ処理 JavaScript
-    import { computed, ref, watch } from 'vue';
+    import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
     import { Link, usePage, router } from '@inertiajs/vue3';
 
     //ReservationControllerからデータを受け取る
-    //reservations:Array：'client','supportType','vehicle','staffAssignments.staff'
     const props = defineProps({
-        reservations: Array,
+        reservations: Array,    //reservations:Array：'client','supportType','vehicle','staffAssignments.staff'
         shiftDetails: Array,
         weekStart: String,
         prevWeek: String,
@@ -14,15 +13,27 @@
         vehicleOptions: Array,
     });
 
+    /**
+     * 表示しているページの情報を取り出す
+     * difinePropsとの違いは宣言しなくてもすべてのデータを扱える点
+     *
+     * props：このページに届いたデータすべて
+     * url：今のページのURL	'/?week=2026-10-14'
+     * component：表示しているVueページの名前
+     */
     const page = usePage();
 
+    //--------------------------------------------ref-------------------------------------------
     // ref：画面の操作で書き換わる値を入れる箱。変わったらこれを使っているcomputedが再計算される。
     const filterType = ref('all');   // 'all' | 'self' | 'staff' | 'vehicle' | 'client'
     const filterId   = ref(null);    // 職員・車両・利用者を選んだときの対象の id
 
-    // 予約が未承認かどうか
-    // 未承認の場合trueになる
-    const isProvisional = (res) => res.status === 'provisional';
+    /**
+     * 職員フィルターの処理
+     * 職員のフィルターはシフトが入っていない職員まで含めるとプルダウンが長くなるので、
+     * 表示している週に1日以上シフトが入っているか予約が入っている職員のみを取り出して表示する。
+     */
+    const selectedStaffName = ref('');
 
     /**
      * 利用者フィルターの処理
@@ -32,8 +43,15 @@
     // 選択中の利用者名（週を切り替えて予約がなくなっても、選択肢に名前を残すため）
     const selectedClientName = ref('');
 
+    //--------------------------------------------変数-------------------------------------------
+    // 予約が未承認かどうか
+    // 未承認の場合trueになる
+    const isProvisional = (res) => res.status === 'provisional';
+
+    //--------------------------------------------watch関数-------------------------------------------
+    // watch: 指定した変数の値が変わったときに実行する。
+
     // 利用者を選んだら、その名前を覚えておく
-    // watch: 値が変わったときに実行する。
     watch(filterId, (id) => {
         if(filterType.value !== 'client') return;
 
@@ -41,6 +59,43 @@
         if (client) selectedClientName.value = client.last_name;
     });
 
+    // 職員を選んだら、その名前を覚えておく
+    // watch: 値が変わったときに実行する。
+    watch(filterId, (id) => {
+        if(filterType.value !== 'staff') return;
+
+        const staff = staffOptions.value.find(option => option.id === id);
+        if (staff) selectedStaffName.value = staff.name;
+    });
+
+    //--------------------------------------------関数-------------------------------------------
+    //管理者による変更をチェックし、１件分のシフトデータを出力する。
+    const effective = (s) => {
+        const changed = s.admin_modified_flag;
+        return {
+            id : s.id,
+            name: s.shift.staff.name,
+            start: changed ? s.modified_start_time : s.applied_start_time,
+            end: changed ? s.modified_end_time : s.applied_end_time,
+            amOff: changed ? s.modified_am_off : s.applied_am_off,
+            pmOff: changed ? s.modified_pm_off : s.applied_pm_off,
+            changed,
+        }
+    }
+
+    /**
+     * 時間 hh:mm:ssからh:mmに変換する
+     *
+     * `（@の上の文字）バッククォートについて
+     * 中に${（変数や計算）}を書くと、結果が埋め込まれる。
+     */
+    const formatTime = (time) => {
+        if(!time) return '';
+        const [h, m] = time.split(':');     // '09:00:00' → ['09', '00', '00']
+        return `${Number(h)}:${m}`;         // Number('09') は 9 になる
+    }
+
+    //--------------------------------------------computed関数-------------------------------------------
     // 利用者の選択肢：表示中の週に予約がある利用者のみ（重複なし、id順）
     const clientOptions = computed(() => {
         const map = new Map();
@@ -52,7 +107,7 @@
             map.set(filterId.value, selectedClientName.value);
         }
 
-            // mapを[id, lastname]の配列に変換
+        // mapを[id, lastname]の配列に変換
         const options =  [...map]
             .map(([id, lastName]) => ({ id, last_name: lastName }))
             .sort((a, b) => a.id - b.id);
@@ -69,36 +124,6 @@
             ...o,
             label: count[o.last_name] > 1 ? `${o.last_name}（${o.id}）` : o.last_name,
         }));
-    });
-
-    //管理者による変更をチェックし、１件分のシフトデータを出力する。
-    const effective = (s) => {
-        const changed = s.admin_modified_flag;
-        return {
-            id : s.id,
-            name: s.shift.staff.name,
-            start: changed ? s.modified_start_time : s.applied_start_time,
-            end: changed ? s.modified_end_time : s.applied_end_time,
-            amOff: changed ? s.modified_am_off : s.applied_am_off,
-            pmOff: changed ? s.modified_pm_off : s.applied_pm_off,
-            changed,
-        }
-    }
-
-    /**
-     * 職員フィルターの処理
-     * 職員のフィルターはシフトが入っていない職員まで含めるとプルダウンが長くなるので、
-     * 表示している週に1日以上シフトが入っているか予約が入っている職員のみを取り出して表示する。
-     */
-    const selectedStaffName = ref('');
-
-    // 職員を選んだら、その名前を覚えておく
-    // watch: 値が変わったときに実行する。
-    watch(filterId, (id) => {
-        if(filterType.value !== 'staff') return;
-
-        const staff = staffOptions.value.find(option => option.id === id);
-        if (staff) selectedStaffName.value = staff.name;
     });
 
     // 職員の選択肢：表示中の週に1日以上シフトが入っているか、予約がある職員のみ（重複なし、id順）
@@ -132,18 +157,6 @@
             .map(([id, name]) => ({ id, name }))
             .sort((a, b) => a.id - b.id);
     });
-
-    /**
-     * 時間 hh:mm:ssからh:mmに変換する
-     *
-     * `（@の上の文字）バッククォートについて
-     * 中に${（変数や計算）}を書くと、結果が埋め込まれる。
-     */
-    const formatTime = (time) => {
-        if(!time) return '';
-        const [h, m] = time.split(':');     // '09:00:00' → ['09', '00', '00']
-        return `${Number(h)}:${m}`;         // Number('09') は 9 になる
-    }
 
     /**
      * 今週の７日間の日付を入力する。
@@ -244,11 +257,35 @@
         return {shiftMap, dayOffNameMap};
     })
 
+    //--------------------------------------------event-------------------------------------------
     const onDateChange = (e) =>{
         const date = e.target.value;
         if(!date) return;
         router.get('/', { week: date }, { preserveState: true, preserveScroll: true });
     }
+
+    const handleKeydown = (e) =>{
+        let displayWeekOnKeyDown = null;
+        if(e.target === 'INPUT' || e.target === 'SELECT') return;
+
+        if(e.key === 'ArrowLeft'){
+            displayWeekOnKeyDown = props.prevWeek;
+        }else if(e.key === 'ArrowRight'){
+            displayWeekOnKeyDown = props.nextWeek;
+        }else{
+            return;
+        }
+
+        router.get('/', { week: displayWeekOnKeyDown }, { preserveState: true, preserveScroll: true });
+    }
+
+    onMounted(() =>{
+        window.addEventListener("keydown", handleKeydown);
+    })
+
+    onUnmounted(() =>{
+        window.removeEventListener("keydown", handleKeydown);
+    })
 </script>
 
 <!--
