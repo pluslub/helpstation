@@ -1,7 +1,8 @@
 <script setup>
     //データ処理 JavaScript
     import { computed, ref, watch, onMounted, onUnmounted } from 'vue';
-    import { Link, usePage, router } from '@inertiajs/vue3';
+    import { Link, router, usePage, useForm } from '@inertiajs/vue3';
+    import ReservationFormPopup from "@/Components/ReservationFormPopup.vue";    //@はresources/jsを指す
 
     //ReservationControllerからデータを受け取る
     const props = defineProps({
@@ -11,6 +12,9 @@
         prevWeek: String,
         nextWeek: String,
         vehicleOptions: Array,
+        formClients: Array,
+        formStaff: Array,
+        formSupportTypes: Array,
     });
 
     /**
@@ -22,6 +26,18 @@
      * component：表示しているVueページの名前
      */
     const page = usePage();
+
+    //予約追加画面
+    const reservationForm = useForm({
+        client_id: null,
+        date: '',
+        start_time: '',
+        end_time: '',
+        staff_ids: [],
+        support_type_id: null,
+        vehicle_type_choice: null,
+        remarks: '',
+    });
 
     //--------------------------------------------ref-------------------------------------------
     // ref：画面の操作で書き換わる値を入れる箱。変わったらこれを使っているcomputedが再計算される。
@@ -42,6 +58,9 @@
      */
     // 選択中の利用者名（週を切り替えて予約がなくなっても、選択肢に名前を残すため）
     const selectedClientName = ref('');
+
+    //
+    const showPopup = ref(false);
 
     //--------------------------------------------変数-------------------------------------------
     // 予約が未承認かどうか
@@ -81,7 +100,7 @@
             pmOff: changed ? s.modified_pm_off : s.applied_pm_off,
             changed,
         }
-    }
+    };
 
     /**
      * 時間 hh:mm:ssからh:mmに変換する
@@ -93,7 +112,7 @@
         if(!time) return '';
         const [h, m] = time.split(':');     // '09:00:00' → ['09', '00', '00']
         return `${Number(h)}:${m}`;         // Number('09') は 9 になる
-    }
+    };
 
     //--------------------------------------------computed関数-------------------------------------------
     // 利用者の選択肢：表示中の週に予約がある利用者のみ（重複なし、id順）
@@ -255,7 +274,7 @@
             }
         }
         return {shiftMap, dayOffNameMap};
-    })
+    });
 
     //--------------------------------------------event-------------------------------------------
     //日付が直接入力されたときのイベント
@@ -263,13 +282,34 @@
         const date = e.target.value;
         if(!date) return;
         router.get('/', { week: date }, { preserveState: true, preserveScroll: true });
+    };
+
+    const onClickEntryButton = () =>{
+        showPopup.value = true;
+    };
+
+    const onClosePopup = () =>{
+        showPopup.value = false;
+    };
+
+    const onSubmitPopup = () =>{
+        reservationForm.post('/reservations', {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () =>{
+                reservationForm.reset();
+                showPopup.value = false;
+            },
+        });
     }
 
     //矢印キーが入力されたときのイベント
     //日付入力欄、プルダウン選択中は動かさない
     const handleKeydown = (e) =>{
         let displayWeekOnKeyDown = null;
-        if(e.target === 'INPUT' || e.target === 'SELECT') return;
+        if( e.target.tagName === 'INPUT'
+            || e.target.tagName === 'SELECT'
+            || e.target.tagName === 'TEXTAREA') return;
 
         if(e.key === 'ArrowLeft'){
             displayWeekOnKeyDown = props.prevWeek;
@@ -280,17 +320,17 @@
         }
 
         router.get('/', { week: displayWeekOnKeyDown }, { preserveState: true, preserveScroll: true });
-    }
+    };
 
     //ページ表示時にキーダウンイベントを追加
     onMounted(() =>{
         window.addEventListener("keydown", handleKeydown);
-    })
+    });
 
     //ページ破棄後にキーダウンイベントを削除（ほかのページでも動いてしまうため）
     onUnmounted(() =>{
         window.removeEventListener("keydown", handleKeydown);
-    })
+    });
 </script>
 
 <!--
@@ -350,6 +390,9 @@
         <Link :href="`/?week=${nextWeek}`" preserve-state preserve-scroll class="rounded border px-3 py-1">次週 →</Link>
     </div>
 
+    <button @click="onClickEntryButton">新規追加</button>
+
+    <!-- 予約一覧画面 -->
     <div class="grid grid-cols-7 gap-2">
         <div v-for="day in days" :key="day.date">
             <span v-if="day.showYear" class="text-xs text-gray-500">{{ day.year }}/</span>{{ day.monthDay }}
@@ -404,6 +447,17 @@
             </div>
         </div>
     </div>
+
+    <!-- 予約追加・編集ポップアップ画面 -->
+    <ReservationFormPopup
+        v-if="showPopup"
+        :form="reservationForm"
+        :formClients="formClients"
+        :formStaff="formStaff"
+        :formSupportTypes="formSupportTypes"
+        @close="onClosePopup"
+        @submit="onSubmitPopup">
+    </ReservationFormPopup>
 </template>
 
 <style>

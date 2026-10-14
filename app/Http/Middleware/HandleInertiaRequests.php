@@ -4,7 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
-use App\Models\Staff;
+use App\Services\CurrentStaffService;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -39,8 +39,7 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'auth' => [
-                // TODO: ログイン画面の実装後に $request->user()?->id へ置き換える（仮の認証）
-                'staffId' => Staff::where('login_id', 'okuno')->value('id'),
+                'staffId' => app(CurrentStaffService::class)->getLoginStaff()?->id,
             ],
         ];
     }

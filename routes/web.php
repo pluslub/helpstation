@@ -13,3 +13,4 @@ use Inertia\Inertia;
 // ⇒   このページ以外は変更後のルートを指定していくことで、
 //      このページのルートを変更すると全体が修正されコストを減らせる。
 Route::get('/',[ReservationController::class, 'index'])->name('reservations.index');
+Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');

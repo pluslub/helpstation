@@ -6,9 +6,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Inertia\Inertia;
 use App\Models\Reservation;
+use App\Models\ReservationStaff;
 use App\Models\ShiftDetail;
 use App\Models\Vehicle;
+use App\Models\Client;
+use App\Models\Staff;
+use App\Models\SupportType;
 use App\Http\Requests\ReservationIndexRequest;
+use App\Http\Requests\ReservationStoreRequest;
+use App\Services\CurrentStaffService;
+use Illuminate\Support\Facades\DB;
 
 /**
  * 予約一覧画面のコントローラ
@@ -47,6 +54,56 @@ class ReservationController extends Controller
 
             // 絞り込みの選択肢（論理削除されたものは SoftDeletes により自動で除外される）
             'vehicleOptions' => Vehicle::orderBy('id')->get(['id', 'name']),
+
+            'formClients' => Client::orderBy('id')->get(['id', 'last_name']),
+            'formStaff' => Staff::orderBy('id')->get(['id', 'name']),
+            'formSupportTypes' => SupportType::orderBy('dispatch_priority')->get(['id', 'name']),
         ]);
+    }
+
+    // PHP配列について
+    // https://www.php.net/manual/ja/function.array-map.php
+    public function store(ReservationStoreRequest $request, CurrentStaffService $service){
+        //予約担当者データを整形する。予約担当者はreservation_staffテーブルに保存する。
+        //[1, 2]を[['staff_id' => 1], ['staff_id' => 2]]に変換する（未選択なら [['staff_id' => null]]）
+        $validatedStaffIds = $request->validated()['staff_ids'] ?? [];
+        $staffIds = $validatedStaffIds ? $validatedStaffIds : [null];
+
+        //array_map(変換のしかた, 配列)
+        //fn(引数) => (戻り値)
+        $staffRows = array_map(fn($staffId) => ['staff_id' => $staffId], $staffIds);
+
+        //予約担当者以外のデータはreservationテーブルに保存する。
+        $reservation = $request->safe()->except(['staff_ids']);
+
+        //仮申請か承認済みか
+        //管理者が登録した場合は直接承認済みにする。
+        $loginStaff = $service->getLoginStaff();
+        $status = $loginStaff?->role === 'admin' ? 'approved' : 'provisional';
+
+
+        //予約データにフォームから送られないデータを追加する。
+        //status, vehicle_id, vehicle_reassigned_flag
+        $merge_array = [
+            'status' => $status,
+            'vehicle_id' => null,
+            'vehicle_reassigned_flag' => false
+        ];
+        $reservation = array_merge($reservation, $merge_array);
+
+        /**
+         * 予約データと予約担当者データを一緒に登録する。
+         * どちらかが失敗すると両方失敗にする。
+         * https://readouble.com/laravel/13.x/ja/database.html
+         *
+         * function内から外部のデータを参照できないので、useで取り込む必要がある。
+         */
+
+        DB::transaction(function() use ($reservation, $staffRows){
+            $reservationModel = Reservation::create($reservation);
+            $reservationModel->staffAssignments()->createMany ($staffRows);
+        });
+
+        return back();
     }
 }
