@@ -397,6 +397,25 @@
         <div v-for="day in days" :key="day.date">
             <span v-if="day.showYear" class="text-xs text-gray-500">{{ day.year }}/</span>{{ day.monthDay }}
 
+            <!-- シフト・休み情報 -->
+            <div class="text-sm text-gray-600">
+                <template v-for="shift in shiftByDay.shiftMap[day.date] ?? []" :key="shift.id">
+                    <div>
+                        {{ shift.name }} {{ formatTime(shift.start) }}〜{{ formatTime(shift.end) }}
+                        <span v-if="shift.amOff">（午前休）</span>
+                        <span v-else-if="shift.pmOff">（午後休）</span>
+                        <span v-if="shift.changed"
+                            class="rounded bg-cyan-500 px-1 text-xs text-white">変更</span>
+                    </div>
+                </template>
+                <div v-if="shiftByDay.dayOffNameMap[day.date]">休：
+                    <span v-for="dayOffStaff in shiftByDay.dayOffNameMap[day.date] ?? []" :key="dayOffStaff.id">
+                        {{ dayOffStaff.name }}<span v-if="dayOffStaff.changed"
+                            class="rounded bg-cyan-500 px-1 text-xs text-white">変更</span>
+                    </span>
+                </div>
+            </div>
+
             <!-- 予約カード -->
             <template v-for="card in reservationsByDay[day.date] ?? []" :key="card.client_id">
                 <!-- 利用者ごとにカードを表示する
@@ -427,24 +446,6 @@
                     </div>
                 </div>
             </template>
-            <!-- シフト・休み情報 -->
-            <div class="text-sm text-gray-600">
-                <template v-for="shift in shiftByDay.shiftMap[day.date] ?? []" :key="shift.id">
-                    <div>
-                        {{ shift.name }} {{ formatTime(shift.start) }}〜{{ formatTime(shift.end) }}
-                        <span v-if="shift.amOff">（午前休）</span>
-                        <span v-else-if="shift.pmOff">（午後休）</span>
-                        <span v-if="shift.changed"
-                            class="rounded bg-cyan-500 px-1 text-xs text-white">変更</span>
-                    </div>
-                </template>
-                <div v-if="shiftByDay.dayOffNameMap[day.date]">休：
-                    <span v-for="dayOffStaff in shiftByDay.dayOffNameMap[day.date] ?? []" :key="dayOffStaff.id">
-                        {{ dayOffStaff.name }}<span v-if="dayOffStaff.changed"
-                            class="rounded bg-cyan-500 px-1 text-xs text-white">変更</span>
-                    </span>
-                </div>
-            </div>
         </div>
     </div>
 

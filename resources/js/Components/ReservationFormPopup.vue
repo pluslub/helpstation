@@ -38,20 +38,20 @@
         </div>
         <div class="flex flex-col gap-2">
             <label>予約日
-                <input type="date" v-model="form.date" class="rounded border px-3 py-1"/>
+                <input type="date" v-model="form.date" class="rounded border px-3 py-1 bg-white"/>
             </label>
             <div v-if="form.errors.date" class="text-red-600">{{ form.errors.date }}</div>
 
             <fieldset>
                 <legend>予約時間</legend>
-                <input type="time" v-model="form.start_time" class="rounded border px-3 py-1"/>
-                ～<input type="time" v-model="form.end_time" class="rounded border px-3 py-1"/>
+                <input type="time" v-model="form.start_time" class="rounded border px-3 py-1 bg-white"/>
+                ～<input type="time" v-model="form.end_time" class="rounded border px-3 py-1 bg-white"/>
             </fieldset>
             <div v-if="form.errors.start_time" class="text-red-600">{{ form.errors.start_time }}</div>
             <div v-if="form.errors.end_time" class="text-red-600">{{ form.errors.end_time }}</div>
 
             <label>利用者氏名
-                <select v-model="form.client_id">
+                <select v-model="form.client_id" class="bg-white rounded border px-3 py-1">
                     <option :value="null">利用者を選択</option>
                     <option v-for="s in formClients" :key="s.id" :value="s.id">{{ s.last_name }}</option>
                 </select>
@@ -60,20 +60,20 @@
 
             <fieldset>
                 <legend>担当者</legend>
-                <label v-for="s in formStaff" :key="s.id">
+                <label v-for="s in formStaff" :key="s.id" class="px-1 py-1">
                     <input type="checkbox" v-model="form.staff_ids" :value="s.id"/>{{ s.name }}
                 </label>
             </fieldset>
 
             <label>支援内容
-                <select v-model="form.support_type_id">
+                <select v-model="form.support_type_id" class="bg-white rounded border px-3 py-1">
                     <option :value="null">支援内容を選択</option>
                     <option v-for="s in formSupportTypes" :key="s.id" :value="s.id">{{ s.name }}</option>
                 </select>
             </label>
             <div v-if="form.errors.support_type_id" class="text-red-600">{{ form.errors.support_type_id }}</div>
 
-            <fieldset>
+            <fieldset class="px-1 py-1">
                 <legend>車両</legend>
                 <label>
                     <input type="radio" v-model="form.vehicle_type_choice" value="care_vehicle"/>
@@ -94,13 +94,13 @@
             <div v-if="form.errors.vehicle_type_choice" class="text-red-600">{{ form.errors.vehicle_type_choice }}</div>
 
             <label>備考
-                <textarea v-model="form.remarks"></textarea>
+                <textarea v-model="form.remarks" id="remarks" class="bg-white rounded border px-3 py-1"></textarea>
             </label>
             <div v-if="form.errors.remarks" class="text-red-600">{{ form.errors.remarks }}</div>
 
 
-            <button @click="onSubmit()" :disabled="form.processing">申請</button>
-            <button @click="onClose()">閉じる</button>
+            <button @click="onSubmit()" :disabled="form.processing" class="rounded border">申請</button>
+            <button @click="onClose()" class="rounded border">閉じる</button>
         </div>
     </div>
 </template>
