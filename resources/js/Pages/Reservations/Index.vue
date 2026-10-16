@@ -340,83 +340,90 @@
     @：           v-on:の省略形。イベントが起きたときに実行する処理を書く。
  -->
 <template>
-    <!-- フィルター -->
-    <div class="mb-2 flex items-center gap-2">
+    <div class="sticky top-0 z-5 bg-white">
+        <!-- フィルター -->
+        <div class="mb-2 flex items-center gap-2">
+            <!--
+                v-model
+                    プルダウンと ref を双方向につなぐ指定。
+                    プルダウンで選ぶと filterType が変わり、
+                    filterType を書き換えると、プルダウンの表示も変わる。
+
+                @change="filterId = null"：
+                    条件の種類を切り替えたときに、前の選択IDをリセットします
+            -->
+            <select v-model="filterType" @change="filterId = null" class="rounded border px-2 py-1">
+                <option value="all">全体</option>
+                <option value="self">個人</option>
+                <option value="staff">職員</option>
+                <option value="vehicle">車両</option>
+                <option value="client">利用者</option>
+            </select>
+
+            <select v-if="filterType === 'staff'" v-model="filterId" class="rounded border px-2 py-1">
+                <option :value="null">職員を選択</option>
+                <option v-for="s in staffOptions" :key="s.id" :value="s.id">{{ s.name }}</option>
+            </select>
+
+            <select v-if="filterType === 'vehicle'" v-model="filterId" class="rounded border px-2 py-1">
+                <option :value="null">車両を選択</option>
+                <option v-for="v in vehicleOptions" :key="v.id" :value="v.id">{{ v.name }}</option>
+            </select>
+
+            <select v-if="filterType === 'client'" v-model="filterId" class="rounded border px-2 py-1">
+                <option :value="null">利用者を選択</option>
+                <option v-for="c in clientOptions" :key="c.id" :value="c.id">{{ c.label }}</option>
+            </select>
+        </div>
+
+        <!-- 週操作ボタン -->
         <!--
-            v-model
-                プルダウンと ref を双方向につなぐ指定。
-                プルダウンで選ぶと filterType が変わり、
-                filterType を書き換えると、プルダウンの表示も変わる。
-
-            @change="filterId = null"：
-                条件の種類を切り替えたときに、前の選択IDをリセットします
+            preserve-state
+                ページを移動したときにコンポーネントを作り直さずにpropsだけを入れ替えるので、
+                refが保存される。
+            preserve-scroll:
+                ページを移動しても、スクロール位置をそのまま保つ
         -->
-        <select v-model="filterType" @change="filterId = null" class="rounded border px-2 py-1">
-            <option value="all">全体</option>
-            <option value="self">個人</option>
-            <option value="staff">職員</option>
-            <option value="vehicle">車両</option>
-            <option value="client">利用者</option>
-        </select>
+        <div class="mb-2 flex items-center gap-2">
+            <Link :href="`/?week=${prevWeek}`" preserve-state preserve-scroll class="rounded border px-3 py-1">← 前週</Link>
+            <Link href="/" preserve-state preserve-scroll class="rounded border px-3 py-1">今週</Link>
+            <input type="date" @change="onDateChange($event)" :value="weekStart" class="rounded border px-3 py-1"/>
+            <Link :href="`/?week=${nextWeek}`" preserve-state preserve-scroll class="rounded border px-3 py-1">次週 →</Link>
+        </div>
 
-        <select v-if="filterType === 'staff'" v-model="filterId" class="rounded border px-2 py-1">
-            <option :value="null">職員を選択</option>
-            <option v-for="s in staffOptions" :key="s.id" :value="s.id">{{ s.name }}</option>
-        </select>
+        <button @click="onClickEntryButton">新規追加</button>
 
-        <select v-if="filterType === 'vehicle'" v-model="filterId" class="rounded border px-2 py-1">
-            <option :value="null">車両を選択</option>
-            <option v-for="v in vehicleOptions" :key="v.id" :value="v.id">{{ v.name }}</option>
-        </select>
+        <!-- 日付・シフト・休み情報 -->
+        <div class="grid grid-cols-7 gap-2">
+            <div v-for="day in days" :key="day.date">
+            <!-- 日付 -->
+                <span v-if="day.showYear" class="text-xs text-gray-500">{{ day.year }}/</span>{{ day.monthDay }}
 
-        <select v-if="filterType === 'client'" v-model="filterId" class="rounded border px-2 py-1">
-            <option :value="null">利用者を選択</option>
-            <option v-for="c in clientOptions" :key="c.id" :value="c.id">{{ c.label }}</option>
-        </select>
-    </div>
-
-    <!-- 週操作ボタン -->
-    <!--
-        preserve-state
-            ページを移動したときにコンポーネントを作り直さずにpropsだけを入れ替えるので、
-            refが保存される。
-        preserve-scroll:
-            ページを移動しても、スクロール位置をそのまま保つ
-    -->
-    <div class="mb-2 flex items-center gap-2">
-        <Link :href="`/?week=${prevWeek}`" preserve-state preserve-scroll class="rounded border px-3 py-1">← 前週</Link>
-        <Link href="/" preserve-state preserve-scroll class="rounded border px-3 py-1">今週</Link>
-        <input type="date" @change="onDateChange($event)" :value="weekStart" class="rounded border px-3 py-1"/>
-        <Link :href="`/?week=${nextWeek}`" preserve-state preserve-scroll class="rounded border px-3 py-1">次週 →</Link>
-    </div>
-
-    <button @click="onClickEntryButton">新規追加</button>
-
-    <!-- 予約一覧画面 -->
-    <div class="grid grid-cols-7 gap-2">
-        <div v-for="day in days" :key="day.date">
-            <span v-if="day.showYear" class="text-xs text-gray-500">{{ day.year }}/</span>{{ day.monthDay }}
-
-            <!-- シフト・休み情報 -->
-            <div class="text-sm text-gray-600">
-                <template v-for="shift in shiftByDay.shiftMap[day.date] ?? []" :key="shift.id">
-                    <div>
-                        {{ shift.name }} {{ formatTime(shift.start) }}〜{{ formatTime(shift.end) }}
-                        <span v-if="shift.amOff">（午前休）</span>
-                        <span v-else-if="shift.pmOff">（午後休）</span>
-                        <span v-if="shift.changed"
-                            class="rounded bg-cyan-500 px-1 text-xs text-white">変更</span>
+                <!-- シフト・休み情報 -->
+                <div class="text-sm text-gray-600">
+                    <template v-for="shift in shiftByDay.shiftMap[day.date] ?? []" :key="shift.id">
+                        <div>
+                            {{ shift.name }} {{ formatTime(shift.start) }}〜{{ formatTime(shift.end) }}
+                            <span v-if="shift.amOff">（午前休）</span>
+                            <span v-else-if="shift.pmOff">（午後休）</span>
+                            <span v-if="shift.changed"
+                                class="rounded bg-cyan-500 px-1 text-xs text-white">変更</span>
+                        </div>
+                    </template>
+                    <div v-if="shiftByDay.dayOffNameMap[day.date]">休：
+                        <span v-for="dayOffStaff in shiftByDay.dayOffNameMap[day.date] ?? []" :key="dayOffStaff.id">
+                            {{ dayOffStaff.name }}<span v-if="dayOffStaff.changed"
+                                class="rounded bg-cyan-500 px-1 text-xs text-white">変更</span>
+                        </span>
                     </div>
-                </template>
-                <div v-if="shiftByDay.dayOffNameMap[day.date]">休：
-                    <span v-for="dayOffStaff in shiftByDay.dayOffNameMap[day.date] ?? []" :key="dayOffStaff.id">
-                        {{ dayOffStaff.name }}<span v-if="dayOffStaff.changed"
-                            class="rounded bg-cyan-500 px-1 text-xs text-white">変更</span>
-                    </span>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- 予約カード -->
+    <!-- 予約カード -->
+    <div class="grid grid-cols-7 gap-2">
+        <div v-for="day in days" :key="day.date">
             <template v-for="card in reservationsByDay[day.date] ?? []" :key="card.client_id">
                 <!-- 利用者ごとにカードを表示する
                      :class="条件 ? 'クラス' : ''"
@@ -435,7 +442,7 @@
                                 {{ assignedStaff.staff?.name ?? '未定' }}
                             </span>
                             <span>{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
-                            <span v-if="card.reservations.some(r => isProvisional(r))"
+                            <span v-if="isProvisional(res)"
                                 class="rounded bg-amber-500 px-1 text-xs text-white">仮登録</span>
                             <br>
                             <span>{{ res.support_type?.name ?? '削除済'}} {{ res.vehicle?.name ?? 'なし' }}</span>
