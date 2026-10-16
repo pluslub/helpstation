@@ -23,7 +23,11 @@ class ReservationMonthRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            /*
+             * URL(/reservations/monthly/?month=2026-10)のバリデーション
+             * 受け取るフォーマットは'Y-m'
+             */
+            'month' => ['nullable', 'date_format:Y-m'],
         ];
     }
 }

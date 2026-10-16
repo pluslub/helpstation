@@ -62,8 +62,10 @@ class ReservationStoreRequest extends FormRequest
     public function messages()
     {
         return [
-            // 'title.required' => ':attribute は必須です。',
-            // 'body.min' => ':attribute は最低 :min 文字必要です。',
+            'end_time.after' => '終了時刻は、開始時刻より後の時刻を指定してください。',
+            'client_id.required' => ':attributeを選択してください。',
+            'support_type_id.required' => ':attributeを選択してください。',
+            'vehicle_type_choice.required' => ':attributeを選択してください。',
         ];
     }
 
@@ -71,8 +73,14 @@ class ReservationStoreRequest extends FormRequest
     public function attributes()
     {
         return [
-            // 'title' => 'タイトル',
-            // 'body' => '本文',
+            'client_id' => '利用者',
+            'date' => '予約日',
+            'start_time' => '予約開始時間',
+            'end_time' => '予約終了時間',
+            'staff_ids.*' => '担当者',
+            'support_type_id' => '支援内容',
+            'vehicle_type_choice' => '車両',
+            'remarks' => '備考',
         ];
     }
 }
