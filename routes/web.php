@@ -12,5 +12,12 @@ use Inertia\Inertia;
 // ルートの命名　route('reservations.index')で呼び出せるようになる。
 // ⇒   このページ以外は変更後のルートを指定していくことで、
 //      このページのルートを変更すると全体が修正されコストを減らせる。
+
+//予約一覧（週）表示
 Route::get('/',[ReservationController::class, 'index'])->name('reservations.index');
+
+//予約一覧（月）表示
+Route::get('/reservations/monthly',[ReservationController::class, 'monthly'])->name('reservations.monthly');
+//予約新規追加
+
 Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');

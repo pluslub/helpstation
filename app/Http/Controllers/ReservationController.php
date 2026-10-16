@@ -13,6 +13,7 @@ use App\Models\Client;
 use App\Models\Staff;
 use App\Models\SupportType;
 use App\Http\Requests\ReservationIndexRequest;
+use App\Http\Requests\ReservationMonthRequest;
 use App\Http\Requests\ReservationStoreRequest;
 use App\Services\CurrentStaffService;
 use Illuminate\Support\Facades\DB;
@@ -22,6 +23,32 @@ use Illuminate\Support\Facades\DB;
  */
 class ReservationController extends Controller
 {
+    private function getReservations(Carbon $start, Carbon $end){
+        return Reservation::with([             //この列のデータを取得
+                    'client','supportType','vehicle','staffAssignments.staff'
+                ])
+                ->whereBetween('date', [$start, $end])      //date列で日曜日から土曜日だけに絞る
+                ->orderBy('date')->orderBy('start_time')    //date列→start_time列で並べ替え
+                ->get();                                    //データベースに問い合わせる
+    }
+
+    private function getShifts(Carbon $start, Carbon $end){
+        return ShiftDetail::with('shift.staff')
+                ->whereBetween('date', [$start, $end])
+                ->get();                               //データベースに問い合わせる
+    }
+
+    private function getSundayList(Carbon $start, Carbon $end){
+        $sundayList = [];
+
+        $current = $start->copy();
+        while($current <= $end){
+            $sundayList[] = $current->toDateString();
+            $current->addWeek();
+        }
+        return $sundayList;
+    }
+
     //web.phpのRoute::get('/')または('/?week=')から呼び出される。
     public function index(ReservationIndexRequest $request){
         // 表示する週の基準日（指定がなければ今日）
@@ -33,17 +60,10 @@ class ReservationController extends Controller
         $end    = $base->copy()->endOfWeek(Carbon::SATURDAY);   //今週の土曜
 
         //予約の取得
-        $reservations = Reservation::with([             //この列のデータを取得
-                'client','supportType','vehicle','staffAssignments.staff'
-            ])
-            ->whereBetween('date', [$start, $end])      //date列で日曜日から土曜日だけに絞る
-            ->orderBy('date')->orderBy('start_time')    //date列→start_time列で並べ替え
-            ->get();                                    //データベースに問い合わせる
+        $reservations = $this->getReservations($start, $end);
 
         //シフトの取得
-        $shiftDetails = ShiftDetail::with('shift.staff')
-            ->whereBetween('date', [$start, $end])
-            ->get();
+        $shiftDetails = $this->getShifts($start, $end);
 
         return Inertia::render('Reservations/Index', [  //index.vueにデータを送る。
             'reservations' => $reservations,
@@ -51,6 +71,39 @@ class ReservationController extends Controller
             'weekStart' => $start->toDateString(),
             'prevWeek' => $start->copy()->subWeek()->toDateString(),
             'nextWeek' => $start->copy()->addWeek()->toDateString(),
+
+            // 絞り込みの選択肢（論理削除されたものは SoftDeletes により自動で除外される）
+            'vehicleOptions' => Vehicle::orderBy('id')->get(['id', 'name']),
+
+            'formClients' => Client::orderBy('id')->get(['id', 'last_name']),
+            'formStaff' => Staff::orderBy('id')->get(['id', 'name']),
+            'formSupportTypes' => SupportType::orderBy('dispatch_priority')->get(['id', 'name']),
+        ]);
+    }
+
+    //web.phpのRoute::get('/reservations/monthly')または('/reservations/monthly/?month=')から呼び出される。
+    public function monthly(ReservationMonthRequest $request){
+        // 表示する月の基準日（指定がなければ今日）
+        $base  = $request->filled('month') ? Carbon::parse($request->month) : now();
+
+        //上の行で実行したCarbonの時間を複製してから操作する
+        //コピーしないと$baseが上書きされる
+        $start  = $base->copy()->startOfMonth()->startOfWeek(Carbon::SUNDAY);   //今月の最初の日曜
+        $end    = $base->copy()->endOfMonth()->endOfWeek(Carbon::SATURDAY);     //今月の最後の土曜
+
+        //予約の取得
+        $reservations = $this->getReservations($start, $end);
+
+        //シフトの取得
+        $shiftDetails = $this->getShifts($start, $end);
+
+        return Inertia::render('Reservations/Monthly', [  //index.vueにデータを送る。
+            'reservations' => $reservations,
+            'shiftDetails' => $shiftDetails,
+            'month' => $base->format('Y-m'),
+            'prevMonth' => $base->copy()->subMonthNoOverflow()->format('Y-m'),
+            'nextMonth' => $base->copy()->addMonthNoOverflow()->format('Y-m'),
+            'sundayList' => $this->getSundayList($start, $end),
 
             // 絞り込みの選択肢（論理削除されたものは SoftDeletes により自動で除外される）
             'vehicleOptions' => Vehicle::orderBy('id')->get(['id', 'name']),
