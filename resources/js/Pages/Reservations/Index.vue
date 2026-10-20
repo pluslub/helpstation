@@ -10,6 +10,9 @@
     import { useReservationFilter } from "@/Composables/useReservationFilter.js"
     import { formatTime } from "@/Utils/formatTime.js"
 
+    //Heroicons
+    import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, CalendarDaysIcon} from '@heroicons/vue/24/outline';
+
 
     //ReservationControllerからデータを受け取る
     const props = defineProps({
@@ -214,16 +217,24 @@
                 ページを移動しても、スクロール位置をそのまま保つ
         -->
         <div class="mb-2 flex items-center gap-2">
-            <Link :href="`/?week=${prevWeek}`" preserve-state preserve-scroll class="rounded border px-3 py-1">← 前週</Link>
+            <Link :href="`/?week=${prevWeek}`" preserve-state preserve-scroll class="flex items-center gap-1">
+                <ChevronLeftIcon class="w-5 h-5"/>前週
+            </Link>
             <Link href="/" preserve-state preserve-scroll class="rounded border px-3 py-1">今週</Link>
             <input type="date" @change="onDateChange($event)" :value="weekStart" class="rounded border px-3 py-1"/>
-            <Link :href="`/?week=${nextWeek}`" preserve-state preserve-scroll class="rounded border px-3 py-1">次週 →</Link>
+            <Link :href="`/?week=${nextWeek}`" preserve-state preserve-scroll class="flex items-center gap-1">
+                <ChevronRightIcon class="w-5 h-5"/>次週
+            </Link>
         </div>
         <div class="mb-2 flex items-center gap-2">
-            <Link href="/reservations/monthly" class="rounded border px-3 py-1">月表示</Link>
+            <Link href="/reservations/monthly" class="flex items-center gap-1">
+                <CalendarDaysIcon class="w-5 h-5"/>月表示
+            </Link>
         </div>
 
-        <button @click="onClickEntryButton" class="rounded border px-3 py-1">新規追加</button>
+        <button @click="onClickEntryButton" class="flex items-center gap-1">
+            <PlusIcon class="w-5 h-5"/>予約追加
+        </button>
     </div>
 
     <!-- 週一覧画面 -->

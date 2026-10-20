@@ -7,6 +7,10 @@
     import { getVehicleTypeLabel } from "@/Utils/vehicleTypeLabel.js"
     import { usePage } from '@inertiajs/vue3';
 
+    //Heroicons
+    import { PencilIcon, CheckCircleIcon, EyeIcon } from '@heroicons/vue/24/outline';
+    import { TruckIcon, ExclamationTriangleIcon, ArrowPathIcon, ClockIcon } from '@heroicons/vue/16/solid';
+
     //ReservationControllerからデータを受け取る
     const props = defineProps({
         //reservationsの構造
@@ -131,18 +135,25 @@
             <!-- シフト・休み情報 -->
             <div class="text-sm text-gray-600">
                 <template v-for="shift in shiftByDay.shiftMap[day.date] ?? []" :key="shift.id">
-                    <div>
+                    <div class="flex items-center gap-1">
                         {{ shift.name }} {{ formatTime(shift.start) }}〜{{ formatTime(shift.end) }}
                         <span v-if="shift.amOff">（午前休）</span>
                         <span v-else-if="shift.pmOff">（午後休）</span>
-                        <span v-if="shift.changed"
-                            class="rounded bg-cyan-500 px-1 text-xs text-white">変更</span>
+                        <div v-if="shift.changed"
+                            class="rounded bg-cyan-500 px-1 text-xs text-white flex items-center gap-1">
+                            <ArrowPathIcon class="w-4 h-4"/>変更
+                        </div>
                     </div>
                 </template>
                 <div v-if="shiftByDay.dayOffNameMap[day.date]">休：
-                    <span v-for="dayOffStaff in shiftByDay.dayOffNameMap[day.date] ?? []" :key="dayOffStaff.id">
-                        {{ dayOffStaff.name }}<span v-if="dayOffStaff.changed"
-                            class="rounded bg-cyan-500 px-1 text-xs text-white">変更</span>
+                    <span
+                        v-for="dayOffStaff in shiftByDay.dayOffNameMap[day.date] ?? []" :key="dayOffStaff.id"
+                        class="flex items-center gap-1">
+                        {{ dayOffStaff.name }}
+                        <div v-if="dayOffStaff.changed"
+                            class="rounded bg-cyan-500 px-1 text-xs text-white flex items-center gap-1">
+                            <ArrowPathIcon class="w-4 h-4"/>変更
+                        </div>
                     </span>
                 </div>
             </div>
@@ -166,39 +177,46 @@
                     <!-- カードごとに予約情報を表示する -->
                      <div class="space-y-2">
                         <div v-for="res in card.reservations" :key="res.id">
-                            <span v-for="assignedStaff in res.staff_assignments" :key="assignedStaff.staff_id ?? 'none'">
-                                {{ assignedStaff.staff?.name ?? '未定' }}
-                            </span>
-                            <span>{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
-                            <span v-if="isProvisional(res)"
-                                class="rounded bg-amber-500 px-1 text-xs text-white">仮登録
-                            </span>
-                            <!-- 予約操作ボタン -->
-                            <div>
-                                <button
-                                    v-if="page.props.auth.isAdmin"
-                                    @click="onClickUpdateButton(res)"
-                                    class="rounded border px-1 py-0.5">変更</button>
-                                <button
-                                    v-if="page.props.auth.isAdmin && isProvisional(res)"
-                                    @click="onClickApproveButton(res)"
-                                    class="rounded border px-1 py-0.5">承認</button>
-                                <button
-                                    v-if="!page.props.auth.isAdmin"
-                                    @click="onClickViewButton(res)"
-                                    class="rounded border px-1 py-0.5">閲覧</button>
-                            </div>
-                            <br>
-                            <span>
-                                <div>{{ res.support_type?.name ?? '削除済'}}</div>
-                                <div v-if="res.remarks" class="line-clamp-1">{{ res.remarks }}</div>
-                            </span>
-                            <span>
-                                <div>{{ res.vehicle?.name ?? getVehicleTypeLabel(res.vehicle_type_choice) }}</div>
-                                <span v-if="res.vehicle_reassigned_flag"
-                                    class="rounded bg-red-500 px-1 text-xs text-white">配車変更
+                            <div class="flex items-center gap-1">
+                                <span v-for="assignedStaff in res.staff_assignments" :key="assignedStaff.staff_id ?? 'none'">
+                                    {{ assignedStaff.staff?.name ?? '未定' }}
                                 </span>
-                            </span>
+                                <span>{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
+                                <!-- 予約操作ボタン -->
+                                 <button v-if="isProvisional(res)"
+                                        :disabled="!page.props.auth.isAdmin"
+                                        @click="onClickApproveButton(res)"
+                                        class="rounded bg-amber-500 px-1 text-xs text-white flex items-center gap-1">
+                                        <ClockIcon class="h-5 w-5"/>仮登録
+                                </button>
+                                <div>
+                                    <button
+                                        v-if="page.props.auth.isAdmin"
+                                        @click="onClickUpdateButton(res)">
+                                        <PencilIcon class="h-4 w-4"/>
+                                    </button>
+                                    <button
+                                        v-if="!page.props.auth.isAdmin"
+                                        @click="onClickViewButton(res)">
+                                        <EyeIcon class="h-4 w-4"/>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <span class="flex items-center gap-1">
+                                    <div>{{ res.support_type?.name ?? '削除済'}}</div>
+                                    <div v-if="res.remarks" class="line-clamp-1">: {{ res.remarks }}</div>
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    <div>{{ res.vehicle?.name ?? getVehicleTypeLabel(res.vehicle_type_choice) }}</div>
+                                    <div v-if="res.vehicle_reassigned_flag"
+                                        class="rounded bg-red-500 px-1 text-xs text-white flex items-center gap-0.5"
+                                        title="配車変更">
+                                        <ExclamationTriangleIcon class="h-4 w-4"/>
+                                        <TruckIcon class="h-4 w-4"/>
+                                    </div>
+                                </span>
+                            </div>
                             <br>
                         </div>
                     </div>

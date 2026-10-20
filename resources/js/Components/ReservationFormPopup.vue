@@ -13,6 +13,7 @@
 -->
 <script setup>
     import { vehicleTypeLabels } from "@/Utils/vehicleTypeLabel.js"
+    import { PaperAirplaneIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 
     const props = defineProps({
         form: Object,
@@ -97,8 +98,16 @@
             </div>
         </fieldset>
         <div>
-            <button v-if="popupMode !=='view'" @click="onSubmit()" :disabled="form.processing" class="rounded border">申請</button>
-            <button @click="onClose()" class="rounded border">閉じる</button>
+            <button
+                v-if="popupMode !=='view'"
+                @click="onSubmit()"
+                :disabled="form.processing"
+                class="flex items-center gap-1">
+                <PaperAirplaneIcon class="w-5 h-5"/>申請
+            </button>
+            <button @click="onClose()">
+                <XMarkIcon class="w-5 h-5"/>
+            </button>
         </div>
     </div>
 </template>

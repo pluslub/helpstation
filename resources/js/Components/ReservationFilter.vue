@@ -1,4 +1,6 @@
 <script setup>
+    import { FunnelIcon} from '@heroicons/vue/24/outline';
+
     const filterType = defineModel('filterType');
     const filterId = defineModel('filterId');
 
@@ -11,6 +13,7 @@
 
 <template>
     <div class="mb-2 flex items-center gap-2">
+        <FunnelIcon class="w-5 h-5"/>
         <!--
             v-model
                 プルダウンと ref を双方向につなぐ指定。
@@ -20,7 +23,6 @@
             @change="filterId = null"：
                 条件の種類を切り替えたときに、前の選択IDをリセットします
         -->
-
         <select v-model="filterType" @change="filterId = null" class="rounded border px-2 py-1">
             <option value="all">全体</option>
             <option value="self">個人</option>

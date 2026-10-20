@@ -8,6 +8,9 @@
 
     import { useReservationFilter } from "@/Composables/useReservationFilter.js"
 
+    //Heroicons
+    import { ChevronLeftIcon, ChevronRightIcon, CalendarDaysIcon} from '@heroicons/vue/24/outline';
+
     //ReservationControllerからデータを受け取る
     const props = defineProps({
         reservations: Array,    //reservations:Array：'client','supportType','vehicle','staffAssignments.staff'
@@ -120,13 +123,27 @@
                 ページを移動しても、スクロール位置をそのまま保つ
         -->
         <div class="mb-2 flex items-center gap-2">
-            <Link :href="`/reservations/monthly/?month=${prevMonth}`" preserve-state preserve-scroll class="rounded border px-3 py-1">← 先月</Link>
-            <Link href="/reservations/monthly/" preserve-state preserve-scroll class="rounded border px-3 py-1">今月</Link>
-            <input type="date" @change="onDateChange($event)" :value="month" class="rounded border px-3 py-1"/>
-            <Link :href="`/reservations/monthly/?month=${nextMonth}`" preserve-state preserve-scroll class="rounded border px-3 py-1">来月 →</Link>
+            <Link
+                :href="`/reservations/monthly/?month=${prevMonth}`"
+                preserve-state preserve-scroll
+                class="flex items-center gap-1">
+                <ChevronLeftIcon class="w-5 h-5"/>先月</Link>
+            <Link
+                href="/reservations/monthly/"
+                preserve-state preserve-scroll
+                class="rounded border px-3 py-1">今月</Link>
+            <input type="date" @change="onDateChange($event)"
+                :value="month"
+                class="rounded border px-3 py-1"/>
+            <Link
+                :href="`/reservations/monthly/?month=${nextMonth}`"
+                preserve-state preserve-scroll
+                class="flex items-center gap-1">
+                来月<ChevronRightIcon class="w-5 h-5"/></Link>
         </div>
         <div class="mb-2 flex items-center gap-2">
-            <Link href="/" class="rounded border px-3 py-1">週表示</Link>
+            <Link href="/" class="flex items-center gap-1">
+                <CalendarDaysIcon class="w-5 h-5"/>週表示</Link>
         </div>
     </div>
 
