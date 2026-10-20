@@ -89,8 +89,8 @@ class DemoDataSeeder extends Seeder
         ]);
 
         // 支援内容・車両はSupportTypeSeeder・VehicleSeederで登録済みのものを参照
-        $outpatientHospital = SupportType::where('name', '通院（病院）')->first();
-        $homeSupport = SupportType::where('name', '居宅支援')->first();
+        $outpatientHospital = SupportType::where('name', '通院')->first();
+        $homeSupport = SupportType::where('name', '居宅')->first();
         $wheelchairVehicle = Vehicle::where('type', 'care_ev')->first();
         $companyCar = Vehicle::where('type', 'company_car')->first();
 
