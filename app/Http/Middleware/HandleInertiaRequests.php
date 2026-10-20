@@ -36,10 +36,13 @@ class HandleInertiaRequests extends Middleware
      */
     public function share(Request $request): array
     {
+        $loginStaff = app(CurrentStaffService::class)->getLoginStaff();
+
         return [
             ...parent::share($request),
             'auth' => [
-                'staffId' => app(CurrentStaffService::class)->getLoginStaff()?->id,
+                'isAdmin' => $loginStaff?->role === 'admin',
+                'staffId' => $loginStaff?->id,
             ],
         ];
     }

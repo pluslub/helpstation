@@ -15,6 +15,8 @@ use App\Models\SupportType;
 use App\Http\Requests\ReservationIndexRequest;
 use App\Http\Requests\ReservationMonthRequest;
 use App\Http\Requests\ReservationStoreRequest;
+use App\Http\Requests\ReservationUpdateRequest;
+use App\Http\Requests\ReservationApproveRequest;
 use App\Services\CurrentStaffService;
 use Illuminate\Support\Facades\DB;
 
@@ -47,6 +49,13 @@ class ReservationController extends Controller
             $current->addWeek();
         }
         return $sundayList;
+    }
+
+    private function getStaffRows(array $staffIds){
+        //array_map(変換のしかた, 配列)
+        //fn(引数) => (戻り値)
+        $staffRows = array_map(fn($staffId) => ['staff_id' => $staffId], $staffIds);
+        return $staffRows;
     }
 
     //web.phpのRoute::get('/')または('/?week=')から呼び出される。
@@ -122,11 +131,9 @@ class ReservationController extends Controller
         $validatedStaffIds = $request->validated()['staff_ids'] ?? [];
         $staffIds = $validatedStaffIds ? $validatedStaffIds : [null];
 
-        //array_map(変換のしかた, 配列)
-        //fn(引数) => (戻り値)
-        $staffRows = array_map(fn($staffId) => ['staff_id' => $staffId], $staffIds);
+        $staffRows = $this->getStaffRows($staffIds);
 
-        //予約担当者以外のデータはreservationテーブルに保存する。
+        //予約担当者以外のデータはreservationモデルに保存する。
         $reservation = $request->safe()->except(['staff_ids']);
 
         //仮申請か承認済みか
@@ -137,12 +144,12 @@ class ReservationController extends Controller
 
         //予約データにフォームから送られないデータを追加する。
         //status, vehicle_id, vehicle_reassigned_flag
-        $merge_array = [
+        $createValues = [
             'status' => $status,
             'vehicle_id' => null,
             'vehicle_reassigned_flag' => false
         ];
-        $reservation = array_merge($reservation, $merge_array);
+        $reservation = array_merge($reservation, $createValues);
 
         /**
          * 予約データと予約担当者データを一緒に登録する。
@@ -157,6 +164,46 @@ class ReservationController extends Controller
             $reservationModel->staffAssignments()->createMany ($staffRows);
         });
 
+        return back();
+    }
+
+    public function update(ReservationUpdateRequest $request, Reservation $reservation){
+        $validatedStaffIds = $request->validated()['staff_ids'] ?? [];
+        $staffIds = $validatedStaffIds ? $validatedStaffIds : [null];
+
+        $staffRows = $this->getStaffRows($staffIds);
+
+        //予約担当者以外のデータを配列に書き出す。
+        $updateResArray = $request->safe()->except(['staff_ids']);
+
+        //編集画面は管理者しかアクセスできないので承認済みにする。
+        $updateValues = [
+            'status' => 'approved',
+        ];
+        $updateResArray = array_merge($updateResArray, $updateValues);
+
+        //車両の種類が変更されたら配車割り当てをクリアする⇒TODO:配車システムで割り当てしなおす
+        if($updateResArray['vehicle_type_choice'] !== $reservation->vehicle_type_choice){
+            $updateResArray['vehicle_id'] = null;
+            $updateResArray['vehicle_reassigned_flag'] = false;
+        }
+
+        DB::transaction(function() use ($reservation, $updateResArray, $staffRows){
+            $reservation->update($updateResArray);
+            $reservation->staffAssignments()->delete();
+            $reservation->staffAssignments()->createMany ($staffRows);
+        });
+
+        return back();
+    }
+
+    public function approve(ReservationApproveRequest $request, Reservation $reservation){
+        //承認画面は管理者しかアクセスできないので承認済みにする。
+        $approveValues = [
+            'status' => 'approved',
+        ];
+
+        $reservation->update($approveValues);
         return back();
     }
 }

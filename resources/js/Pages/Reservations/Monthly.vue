@@ -1,7 +1,7 @@
 <script setup>
     //データ処理 JavaScript
     import { ref, onMounted, onUnmounted } from 'vue';
-    import { Link, router, usePage, useForm } from '@inertiajs/vue3';
+    import { Link, router, useForm } from '@inertiajs/vue3';
 
     import WeekGrid from "@/Components/WeekGrid.vue";
     import ReservationFilter from '@/Components/ReservationFilter.vue';
@@ -18,16 +18,6 @@
         sundayList: Array,
         vehicleOptions: Array,
     });
-
-    /**
-     * 表示しているページの情報を取り出す
-     * difinePropsとの違いは宣言しなくてもすべてのデータを扱える点
-     *
-     * props：このページに届いたデータすべて
-     * url：今のページのURL	'/?week=2026-10-14'
-     * component：表示しているVueページの名前
-     */
-    const page = usePage();
 
     //予約追加画面
     const reservationForm = useForm({
@@ -138,8 +128,6 @@
         <div class="mb-2 flex items-center gap-2">
             <Link href="/" class="rounded border px-3 py-1">週表示</Link>
         </div>
-
-        <button @click="onClickEntryButton">新規追加</button>
     </div>
 
     <!-- 月一覧画面 -->
@@ -147,7 +135,7 @@
         <WeekGrid
             :reservations="filteredReservations"
             :shiftDetails="shiftDetails"
-            :weekStart="day"        >
+            :weekStart="day">
         </WeekGrid>
     </div>
 

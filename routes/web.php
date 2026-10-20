@@ -18,6 +18,12 @@ Route::get('/',[ReservationController::class, 'index'])->name('reservations.inde
 
 //予約一覧（月）表示
 Route::get('/reservations/monthly',[ReservationController::class, 'monthly'])->name('reservations.monthly');
-//予約新規追加
 
+//予約新規追加
 Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
+
+//予約編集
+Route::put('/reservations/{reservation}', [ReservationController::class, 'update'])->name('reservations.update');
+
+//予約承認
+Route::patch('/reservations/{reservation}/approve', [ReservationController::class, 'approve'])->name('reservations.approve');

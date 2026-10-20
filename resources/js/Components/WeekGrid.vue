@@ -4,6 +4,8 @@
     import { effective } from "@/Utils/effective.js"
     import { formatTime } from "@/Utils/formatTime.js"
     import { isProvisional } from "@/Utils/isProvisional.js"
+    import { getVehicleTypeLabel } from "@/Utils/vehicleTypeLabel.js"
+    import { usePage } from '@inertiajs/vue3';
 
     //ReservationControllerからデータを受け取る
     const props = defineProps({
@@ -14,6 +16,10 @@
         shiftDetails: Array,
         weekStart: String,
     });
+
+    const emit = defineEmits(['update', 'approve', 'view']);
+
+    const page = usePage();
 
     //--------------------------------------------computed関数-------------------------------------------
     /**
@@ -95,6 +101,18 @@
         }
         return {shiftMap, dayOffNameMap};
     });
+
+    const onClickUpdateButton = (res) => {
+        emit('update', res);
+    }
+
+    const onClickApproveButton = (res) => {
+        emit('approve', res);
+    }
+
+    const onClickViewButton = (res) => {
+        emit('view', res);
+    }
 </script>
 
 <!--
@@ -153,11 +171,34 @@
                             </span>
                             <span>{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
                             <span v-if="isProvisional(res)"
-                                class="rounded bg-amber-500 px-1 text-xs text-white">仮登録</span>
+                                class="rounded bg-amber-500 px-1 text-xs text-white">仮登録
+                            </span>
+                            <!-- 予約操作ボタン -->
+                            <div>
+                                <button
+                                    v-if="page.props.auth.isAdmin"
+                                    @click="onClickUpdateButton(res)"
+                                    class="rounded border px-1 py-0.5">変更</button>
+                                <button
+                                    v-if="page.props.auth.isAdmin && isProvisional(res)"
+                                    @click="onClickApproveButton(res)"
+                                    class="rounded border px-1 py-0.5">承認</button>
+                                <button
+                                    v-if="!page.props.auth.isAdmin"
+                                    @click="onClickViewButton(res)"
+                                    class="rounded border px-1 py-0.5">閲覧</button>
+                            </div>
                             <br>
-                            <span>{{ res.support_type?.name ?? '削除済'}} {{ res.vehicle?.name ?? 'なし' }}</span>
-                            <span v-if="res.vehicle_reassigned_flag"
-                                class="rounded bg-red-500 px-1 text-xs text-white">配車変更</span>
+                            <span>
+                                <div>{{ res.support_type?.name ?? '削除済'}}</div>
+                                <div v-if="res.remarks" class="line-clamp-1">{{ res.remarks }}</div>
+                            </span>
+                            <span>
+                                <div>{{ res.vehicle?.name ?? getVehicleTypeLabel(res.vehicle_type_choice) }}</div>
+                                <span v-if="res.vehicle_reassigned_flag"
+                                    class="rounded bg-red-500 px-1 text-xs text-white">配車変更
+                                </span>
+                            </span>
                             <br>
                         </div>
                     </div>
