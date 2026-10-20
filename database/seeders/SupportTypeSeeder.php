@@ -25,6 +25,7 @@ class SupportTypeSeeder extends Seeder
             ['name' => '身体', 'dispatch_priority' => 9],
             ['name' => '県福', 'dispatch_priority' => 10],
             ['name' => '居移', 'dispatch_priority' => 11],
+            ['name' => '行日', 'dispatch_priority' => 12],
         ];
 
         foreach ($types as $type) {
