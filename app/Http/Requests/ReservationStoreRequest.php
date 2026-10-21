@@ -24,7 +24,7 @@ class ReservationStoreRequest extends FormRequest
      * client_id	必須。利用者として存在し、論理削除されていない	required、exists（条件の追加は下の注意を参照）
      * date	必須。2026-10-14 の形	required、date_format
      * start_time	必須。09:00 の形	required、date_format（時刻の形の書き方を調べる）
-     * end_time	必須。時刻の形。開始時刻より後	上に加えて after（比べる相手の項目名を指定できる）
+     * end_time	    空でもよい（終了未定）。入力するときは09:00の形で開始時刻より後。afterで指定する（比べる相手の項目名を指定できる）
      * staff_ids	空でもよい配列	array（required は付けない）
      * staff_ids.*	配列の中身1つずつが、存在して論理削除されていない職員	exists
      * support_type_id	必須。存在して論理削除されていない	required、exists
@@ -42,7 +42,7 @@ class ReservationStoreRequest extends FormRequest
             ],
             'date' => ['required', 'date_format:Y-m-d'],
             'start_time' => ['required', 'date_format:H:i'],
-            'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+            'end_time' => ['nullable', 'date_format:H:i', 'after:start_time'],
             'staff_ids' => ['array', 'nullable'],
             'staff_ids.*' => [
                 Rule::exists('staff', 'id')->withoutTrashed(),

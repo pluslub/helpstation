@@ -28,7 +28,7 @@ class ReservationUpdateRequest extends FormRequest
         return [
             'date' => ['required', 'date_format:Y-m-d'],
             'start_time' => ['required', 'date_format:H:i'],
-            'end_time' => ['required', 'date_format:H:i', 'after:start_time'],
+            'end_time' => ['nullable', 'date_format:H:i', 'after:start_time'],
             'staff_ids' => ['array', 'nullable'],
             'staff_ids.*' => [
                 Rule::exists('staff', 'id')->withoutTrashed(),

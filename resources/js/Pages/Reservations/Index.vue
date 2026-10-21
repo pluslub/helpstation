@@ -67,7 +67,7 @@
     const setValue = (res) =>{
         reservationUpdateForm.date = res.date;
         reservationUpdateForm.start_time = res.start_time.slice(0, 5);
-        reservationUpdateForm.end_time = res.end_time.slice(0, 5);
+        reservationUpdateForm.end_time = res.end_time?.slice(0, 5) ?? '';
         reservationUpdateForm.support_type_id = res.support_type_id;
         reservationUpdateForm.vehicle_type_choice = res.vehicle_type_choice;
         reservationUpdateForm.remarks = res.remarks ?? '';
