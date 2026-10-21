@@ -150,6 +150,7 @@
     <!-- 月一覧画面 -->
     <div v-for="day in props.sundayList" :key="day">
         <WeekGrid
+            :allReservations="props.reservations"
             :reservations="filteredReservations"
             :shiftDetails="shiftDetails"
             :weekStart="day">

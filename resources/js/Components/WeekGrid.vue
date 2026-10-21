@@ -8,13 +8,17 @@
     import { usePage } from '@inertiajs/vue3';
 
     //Heroicons
-    import { PencilIcon, CheckCircleIcon, EyeIcon } from '@heroicons/vue/24/outline';
+    import { PencilIcon, EyeIcon } from '@heroicons/vue/24/outline';
     import { TruckIcon, ExclamationTriangleIcon, ArrowPathIcon, ClockIcon } from '@heroicons/vue/16/solid';
 
     //ReservationControllerからデータを受け取る
     const props = defineProps({
+        //絞り込み前の予約配列
         //reservationsの構造
         // reservations:Array：'client','supportType','vehicle','staffAssignments.staff'
+        allReservations: Array,
+
+        //絞り込み後の予約配列
         reservations: Array,
 
         shiftDetails: Array,
@@ -24,6 +28,14 @@
     const emit = defineEmits(['update', 'approve', 'view']);
 
     const page = usePage();
+    //------------------------------------------------関数-----------------------------------------------
+    const isPrivateCar = (res) => {
+        return res.vehicle_type_choice === 'private_car'
+    };
+
+    const checkUsePrivateCar = (shift, day) => {
+        return shiftByDay.value.privateCarMap[`${shift.staffId}-${day.date}`];
+    };
 
     //--------------------------------------------computed関数-------------------------------------------
     /**
@@ -91,6 +103,7 @@
     const shiftByDay = computed(() => {
         const shiftMap = {};
         const dayOffNameMap = {};
+        const privateCarMap = {};
 
         //シフト内容を日付毎のMapオブジェクトに格納する。
         //全休の場合は休みMapオブジェクトに格納する。
@@ -102,8 +115,20 @@
             }else{
                 (shiftMap[day] ??= []).push(eff);      //それ以外の人は全データ格納
             }
+
+            //私用車利用マークをつけるためのマップを作成 {スタッフｰ日付: {start:~, end:~}}
+            const hasStaff = (r, staffId) => r.staff_assignments.some(a => a.staff_id === staffId);
+            const reservationByStaff = props.allReservations.filter(r => r.date.slice(0, 10) === day &&  hasStaff(r, eff.staffId));
+
+            if(reservationByStaff.length !== 0){
+                const map ={
+                    start: isPrivateCar(reservationByStaff[0]),
+                    end: isPrivateCar(reservationByStaff[reservationByStaff.length - 1])
+                };
+                privateCarMap[`${eff.staffId}-${day}`] = map;
+            }
         }
-        return {shiftMap, dayOffNameMap};
+        return {shiftMap, dayOffNameMap, privateCarMap};
     });
 
     const onClickUpdateButton = (res) => {
@@ -128,17 +153,28 @@
 <template>
     <!-- 日付・シフト・休み情報 -->
     <div class="grid grid-cols-7 gap-2">
+        <!-- computedされた日付配列を繰り返す（7回）各DOMを識別するために一意なkeyが必要 -->
         <div v-for="day in days" :key="day.date">
-        <!-- 日付 -->
+        <!-- 日付ラベル　週の先頭と年の切り替わりだけ年を表示する -->
             <span v-if="day.showYear" class="text-xs text-gray-500">{{ day.year }}/</span>{{ day.monthDay }}
 
-            <!-- シフト・休み情報 -->
+            <!--
+                シフト・休み情報
+                computedにより日付毎に分別されたシフト情報を取得する。
+            -->
             <div class="text-sm text-gray-600">
                 <template v-for="shift in shiftByDay.shiftMap[day.date] ?? []" :key="shift.id">
                     <div class="flex items-center gap-1">
-                        {{ shift.name }} {{ formatTime(shift.start) }}〜{{ formatTime(shift.end) }}
+                        {{ shift.name }}
+                        <div v-if="checkUsePrivateCar(shift, day)?.start"
+                            title="私用車(直行)"
+                            class="text-xs">●</div>
+                        {{ formatTime(shift.start) }}〜{{ formatTime(shift.end) }}
                         <span v-if="shift.amOff">（午前休）</span>
                         <span v-else-if="shift.pmOff">（午後休）</span>
+                        <div v-if="checkUsePrivateCar(shift, day)?.end"
+                            title="私用車(直帰)"
+                            class="text-xs">●</div>
                         <div v-if="shift.changed"
                             class="rounded bg-cyan-500 px-1 text-xs text-white flex items-center gap-1">
                             <ArrowPathIcon class="w-4 h-4"/>変更
@@ -206,9 +242,10 @@
                                 <span class="flex items-center gap-1">
                                     <div>{{ res.support_type?.name ?? '削除済'}}</div>
                                     <div v-if="res.remarks" class="line-clamp-1">: {{ res.remarks }}</div>
+                                    <div v-if="isPrivateCar(res)" class="text-xs" title="私用車">●</div>
                                 </span>
                                 <span class="flex items-center gap-1">
-                                    <div>{{ res.vehicle?.name ?? getVehicleTypeLabel(res.vehicle_type_choice) }}</div>
+                                    <div v-if="!isPrivateCar(res)">{{ res.vehicle?.name ?? getVehicleTypeLabel(res.vehicle_type_choice) }}</div>
                                     <div v-if="res.vehicle_reassigned_flag"
                                         class="rounded bg-red-500 px-1 text-xs text-white flex items-center gap-0.5"
                                         title="配車変更">

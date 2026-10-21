@@ -239,6 +239,7 @@
 
     <!-- 週一覧画面 -->
         <WeekGrid
+            :allReservations="props.reservations"
             :reservations="filteredReservations"
             :shiftDetails="shiftDetails"
             :weekStart="weekStart"

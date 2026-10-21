@@ -2,6 +2,7 @@
 export const effective = (s) => {
     const changed = s.admin_modified_flag;
     return {
+        staffId : s.shift.staff_id,
         id : s.id,
         name: s.shift.staff.name,
         start: changed ? s.modified_start_time : s.applied_start_time,
