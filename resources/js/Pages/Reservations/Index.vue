@@ -54,7 +54,7 @@
 
     //--------------------------------------------ref-------------------------------------------
     // ref：画面の操作で書き換わる値を入れる箱。変わったらこれを使っているcomputedが再計算される。
-    const showPopup = ref(false);
+    const showPopup = ref(false);       //変更すると<ReservationFormPopup>のv-ifによりポップアップが表示される。
     const popupMode = ref(null)
 
     const selectReservationId = ref(null);
@@ -62,6 +62,9 @@
 
     const popupPositionLeft = ref(null);
     const popupPositionTop = ref(null);
+
+    //自動で入れた日付を覚えておく
+    let autofillDate = null;
 
     //--------------------------------------------関数-------------------------------------------
     const setValue = (res) =>{
@@ -77,6 +80,19 @@
         reservationUpdateForm.defaults();
         selectClientName.value = res.client.last_name;
     }
+    const formatDate = (date) => {
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;    //月は0～11で表されるので+1する
+        const day = date.getDate();
+
+        //'yyyy-MM-dd'の文字列を作成
+        return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    }
+
+    const getDefaultReservationDate = () =>{
+        const today = formatDate(new Date());
+        return props.weekStart <= today && today < props.nextWeek ? today : props.weekStart;
+    }
 
     //--------------------------------------------event-------------------------------------------
     //日付が直接入力されたときのイベント
@@ -86,7 +102,18 @@
         router.get('/', { week: date }, { preserveState: true, preserveScroll: true });
     };
 
+    /**
+     * 予約入力ポップアップを表示するときの処理
+     * 今日が表示中の週に入っていれば今日
+     * 入っていなければ（前の週や次の週を表示中なら）その週の日曜日（weekStart）
+     */
     const onClickEntryButton = () =>{
+        if(!reservationForm.date || reservationForm.date === autofillDate){
+            const date = getDefaultReservationDate();
+            reservationForm.date = date;
+            autofillDate = date;
+        }
+
         popupMode.value = 'create';
         showPopup.value = true;
     };
@@ -95,7 +122,6 @@
         switch(popupMode.value) {
             case 'update':
                 if(reservationUpdateForm.isDirty && !confirm("変更を破棄して閉じますか？")){
-                    showPopup.value = false;
                     return;
                 }
                 showPopup.value = false;
@@ -136,6 +162,18 @@
                 return;
         }
 
+    }
+
+    const onClearPopup = () =>{
+        if(confirm("入力内容を消去しますか？")){
+            reservationForm.reset();
+            reservationForm.clearErrors();
+
+            const date = getDefaultReservationDate();
+            reservationForm.date = date;
+            autofillDate = date;
+        }
+        return;
     }
 
     const onApproveReservation = (res) =>{
@@ -263,7 +301,8 @@
         :popupMode=popupMode
         :selectClientName=selectClientName
         @close="onClosePopup"
-        @submit="onSubmitPopup">
+        @submit="onSubmitPopup"
+        @clear="onClearPopup">
     </ReservationFormPopup>
 </template>
 

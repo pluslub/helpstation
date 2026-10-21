@@ -14,7 +14,7 @@
 <script setup>
     import { ref, onUnmounted } from 'vue';
     import { vehicleTypeLabels } from "@/Utils/vehicleTypeLabel.js"
-    import { PaperAirplaneIcon, XMarkIcon } from '@heroicons/vue/24/outline';
+    import { PaperAirplaneIcon, XMarkIcon, TrashIcon } from '@heroicons/vue/24/outline';
 
     const props = defineProps({
         form: Object,
@@ -33,12 +33,15 @@
     let popupGapTop = null;
     let popupGapLeft = null;
 
-    const emit = defineEmits(['close', 'submit']);
+    const emit = defineEmits(['close', 'submit', 'clear']);
     const onClose = () =>{
         emit('close');
     }
     const onSubmit = () =>{
         emit('submit');
+    }
+    const onClear = () =>{
+        emit('clear');
     }
 
     //ポップアップのヘッダーをクリックしたらドラッグ開始と判断する
@@ -167,13 +170,21 @@
                 <div v-if="form.errors.remarks" class="text-red-600">{{ form.errors.remarks }}</div>
             </div>
         </fieldset>
-        <div class="pb-2 flex justify-center">
+        <div class="pb-2 flex justify-center gap-20">
+            <!--:disabled="form.processing" ：　フォーム送信中はボタンを無効にする-->
             <button
                 v-if="popupMode !=='view'"
                 @click="onSubmit()"
                 :disabled="form.processing"
                 class="flex items-center gap-1 rounded px-2 py-1 bg-orange-200">
                 <PaperAirplaneIcon class="w-5 h-5"/>申請
+            </button>
+            <button
+                v-if="popupMode ==='create'"
+                @click="onClear()"
+                :disabled="form.processing"
+                class="flex items-center gap-1 rounded px-2 py-1 bg-gray-200">
+                <TrashIcon class="w-5 h-5"/>クリア
             </button>
         </div>
     </div>
