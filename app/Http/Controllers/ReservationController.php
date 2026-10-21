@@ -106,7 +106,7 @@ class ReservationController extends Controller
         //シフトの取得
         $shiftDetails = $this->getShifts($start, $end);
 
-        return Inertia::render('Reservations/Monthly', [  //index.vueにデータを送る。
+        return Inertia::render('Reservations/Monthly', [
             'reservations' => $reservations,
             'shiftDetails' => $shiftDetails,
             'month' => $base->format('Y-m'),
@@ -116,10 +116,6 @@ class ReservationController extends Controller
 
             // 絞り込みの選択肢（論理削除されたものは SoftDeletes により自動で除外される）
             'vehicleOptions' => Vehicle::orderBy('id')->get(['id', 'name']),
-
-            'formClients' => Client::orderBy('id')->get(['id', 'last_name']),
-            'formStaff' => Staff::orderBy('id')->get(['id', 'name']),
-            'formSupportTypes' => SupportType::orderBy('dispatch_priority')->get(['id', 'name']),
         ]);
     }
 

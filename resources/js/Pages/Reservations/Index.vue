@@ -2,10 +2,10 @@
     //データ処理 JavaScript
     import { ref, onMounted, onUnmounted } from 'vue';
     import { Link, router, useForm } from '@inertiajs/vue3';
-    import ReservationFormPopup from "@/Components/ReservationFormPopup.vue";    //@はresources/jsを指す
 
     import WeekGrid from "@/Components/WeekGrid.vue";
     import ReservationFilter from '@/Components/ReservationFilter.vue';
+    import ReservationFormPopup from "@/Components/ReservationFormPopup.vue";    //@はresources/jsを指す
 
     import { useReservationFilter } from "@/Composables/useReservationFilter.js"
     import { formatTime } from "@/Utils/formatTime.js"
@@ -59,6 +59,9 @@
 
     const selectReservationId = ref(null);
     const selectClientName = ref(null);
+
+    const popupPositionLeft = ref(null);
+    const popupPositionTop = ref(null);
 
     //--------------------------------------------関数-------------------------------------------
     const setValue = (res) =>{
@@ -251,6 +254,8 @@
     <!-- 予約追加ポップアップ画面 -->
     <ReservationFormPopup
         v-if="showPopup"
+        v-model:popupPositionLeft="popupPositionLeft"
+        v-model:popupPositionTop="popupPositionTop"
         :form="popupMode === 'create' ? reservationForm : reservationUpdateForm"
         :formClients="formClients"
         :formStaff="formStaff"

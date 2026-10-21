@@ -23,6 +23,7 @@
 
         shiftDetails: Array,
         weekStart: String,
+        readonly: { type: Boolean, default: false},
     });
 
     const emit = defineEmits(['update', 'approve', 'view']);
@@ -220,19 +221,19 @@
                                 <span>{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
                                 <!-- 予約操作ボタン -->
                                  <button v-if="isProvisional(res)"
-                                        :disabled="!page.props.auth.isAdmin"
+                                        :disabled="!page.props.auth.isAdmin || props.readonly"
                                         @click="onClickApproveButton(res)"
                                         class="rounded bg-amber-500 px-1 text-xs text-white flex items-center gap-1">
                                         <ClockIcon class="h-5 w-5"/>仮登録
                                 </button>
                                 <div>
                                     <button
-                                        v-if="page.props.auth.isAdmin"
+                                        v-if="page.props.auth.isAdmin && !props.readonly"
                                         @click="onClickUpdateButton(res)">
                                         <PencilIcon class="h-4 w-4"/>
                                     </button>
                                     <button
-                                        v-if="!page.props.auth.isAdmin"
+                                        v-if="!page.props.auth.isAdmin && !props.readonly"
                                         @click="onClickViewButton(res)">
                                         <EyeIcon class="h-4 w-4"/>
                                     </button>

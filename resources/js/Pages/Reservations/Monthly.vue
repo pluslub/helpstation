@@ -1,7 +1,7 @@
 <script setup>
     //データ処理 JavaScript
-    import { ref, onMounted, onUnmounted } from 'vue';
-    import { Link, router, useForm } from '@inertiajs/vue3';
+    import { onMounted, onUnmounted } from 'vue';
+    import { Link, router } from '@inertiajs/vue3';
 
     import WeekGrid from "@/Components/WeekGrid.vue";
     import ReservationFilter from '@/Components/ReservationFilter.vue';
@@ -22,68 +22,33 @@
         vehicleOptions: Array,
     });
 
-    //予約追加画面
-    const reservationForm = useForm({
-        client_id: null,
-        date: '',
-        start_time: '',
-        end_time: '',
-        staff_ids: [],
-        support_type_id: null,
-        vehicle_type_choice: null,
-        remarks: '',
-    });
-
     const { filterId, filterType, filteredReservations, clientOptions, staffOptions } = useReservationFilter(props);
-
-    //--------------------------------------------ref-------------------------------------------
-    // ref：画面の操作で書き換わる値を入れる箱。変わったらこれを使っているcomputedが再計算される。
-    const showPopup = ref(false);
 
     //--------------------------------------------event-------------------------------------------
     //日付が直接入力されたときのイベント
     const onDateChange = (e) =>{
-        const date = e.target.value;
-        if(!date) return;
-        router.get('/', { week: date }, { preserveState: true, preserveScroll: true });
+        const month = e.target.value;
+        if(!month) return;
+        router.get('/reservations/monthly/', { month: month }, { preserveState: true, preserveScroll: true });
     };
-
-    const onClickEntryButton = () =>{
-        showPopup.value = true;
-    };
-
-    const onClosePopup = () =>{
-        showPopup.value = false;
-    };
-
-    const onSubmitPopup = () =>{
-        reservationForm.post('/reservations', {
-            preserveState: true,
-            preserveScroll: true,
-            onSuccess: () =>{
-                reservationForm.reset();
-                showPopup.value = false;
-            },
-        });
-    }
 
     //矢印キーが入力されたときのイベント
     //日付入力欄、プルダウン選択中は動かさない
     const handleKeydown = (e) =>{
-        let displayWeekOnKeyDown = null;
+        let displayMonthOnKeyDown = null;
         if( e.target.tagName === 'INPUT'
             || e.target.tagName === 'SELECT'
             || e.target.tagName === 'TEXTAREA') return;
 
         if(e.key === 'ArrowLeft'){
-            displayWeekOnKeyDown = props.prevWeek;
+            displayMonthOnKeyDown = props.prevMonth;
         }else if(e.key === 'ArrowRight'){
-            displayWeekOnKeyDown = props.nextWeek;
+            displayMonthOnKeyDown = props.nextMonth;
         }else{
             return;
         }
 
-        router.get('/', { week: displayWeekOnKeyDown }, { preserveState: true, preserveScroll: true });
+        router.get('/reservations/monthly/', { month: displayMonthOnKeyDown }, { preserveState: true, preserveScroll: true });
     };
 
     //ページ表示時にキーダウンイベントを追加
@@ -132,7 +97,7 @@
                 href="/reservations/monthly/"
                 preserve-state preserve-scroll
                 class="rounded border px-3 py-1">今月</Link>
-            <input type="date" @change="onDateChange($event)"
+            <input type="month" @change="onDateChange($event)"
                 :value="month"
                 class="rounded border px-3 py-1"/>
             <Link
@@ -153,20 +118,10 @@
             :allReservations="props.reservations"
             :reservations="filteredReservations"
             :shiftDetails="shiftDetails"
-            :weekStart="day">
+            :weekStart="day"
+            readonly>
         </WeekGrid>
     </div>
-
-    <!-- 予約追加・編集ポップアップ画面 -->
-    <ReservationFormPopup
-        v-if="showPopup"
-        :form="reservationForm"
-        :formClients="formClients"
-        :formStaff="formStaff"
-        :formSupportTypes="formSupportTypes"
-        @close="onClosePopup"
-        @submit="onSubmitPopup">
-    </ReservationFormPopup>
 </template>
 
 <style>
