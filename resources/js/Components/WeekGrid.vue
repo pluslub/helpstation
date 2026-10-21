@@ -8,8 +8,8 @@
     import { usePage } from '@inertiajs/vue3';
 
     //Heroicons
-    import { PencilIcon, EyeIcon } from '@heroicons/vue/24/outline';
-    import { TruckIcon, ExclamationTriangleIcon, ArrowPathIcon, ClockIcon } from '@heroicons/vue/16/solid';
+    import { PencilIcon, EyeIcon, ClockIcon  } from '@heroicons/vue/24/outline';
+    import { TruckIcon, ExclamationTriangleIcon, ArrowPathIcon} from '@heroicons/vue/16/solid';
 
     //ReservationControllerからデータを受け取る
     const props = defineProps({
@@ -220,11 +220,12 @@
                                 </span>
                                 <span>{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
                                 <!-- 予約操作ボタン -->
-                                 <button v-if="isProvisional(res)"
+                                 <button title="仮登録"
+                                        v-if="isProvisional(res)"
                                         :disabled="!page.props.auth.isAdmin || props.readonly"
                                         @click="onClickApproveButton(res)"
-                                        class="rounded bg-amber-500 px-1 text-xs text-white flex items-center gap-1">
-                                        <ClockIcon class="h-5 w-5"/>仮登録
+                                        class="rounded bg-amber-500 px-1 text-xs text-white flex items-center gap-0.5">
+                                        <ClockIcon class="h-4 w-4"/>仮
                                 </button>
                                 <div>
                                     <button
@@ -240,11 +241,15 @@
                                 </div>
                             </div>
                             <div class="flex items-center gap-1">
+                                <!--支援内容ラベル-->
                                 <span class="flex items-center gap-1">
                                     <div>{{ res.support_type?.name ?? '削除済'}}</div>
                                     <div v-if="res.remarks" class="line-clamp-1">: {{ res.remarks }}</div>
                                     <div v-if="isPrivateCar(res)" class="text-xs" title="私用車">●</div>
                                 </span>
+                            </div>
+                            <div>
+                                <!--車両ラベル-->
                                 <span class="flex items-center gap-1">
                                     <div v-if="!isPrivateCar(res)">{{ res.vehicle?.name ?? getVehicleTypeLabel(res.vehicle_type_choice) }}</div>
                                     <div v-if="res.vehicle_reassigned_flag"
@@ -255,7 +260,6 @@
                                     </div>
                                 </span>
                             </div>
-                            <br>
                         </div>
                     </div>
                 </div>
