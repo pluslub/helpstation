@@ -172,7 +172,7 @@
                 v-if="popupMode !=='view'"
                 @click="onSubmit()"
                 :disabled="form.processing"
-                class="flex items-center gap-1">
+                class="flex items-center gap-1 rounded px-2 py-1 bg-orange-200">
                 <PaperAirplaneIcon class="w-5 h-5"/>申請
             </button>
         </div>
