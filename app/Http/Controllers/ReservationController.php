@@ -17,6 +17,7 @@ use App\Http\Requests\ReservationMonthRequest;
 use App\Http\Requests\ReservationStoreRequest;
 use App\Http\Requests\ReservationUpdateRequest;
 use App\Http\Requests\ReservationApproveRequest;
+use App\Http\Requests\ReservationDestroyRequest;
 use App\Services\CurrentStaffService;
 use Illuminate\Support\Facades\DB;
 
@@ -147,6 +148,8 @@ class ReservationController extends Controller
         ];
         $reservation = array_merge($reservation, $createValues);
 
+        //TODO:予約登録のログ出力
+
         /**
          * 予約データと予約担当者データを一緒に登録する。
          * どちらかが失敗すると両方失敗にする。
@@ -154,7 +157,6 @@ class ReservationController extends Controller
          *
          * function内から外部のデータを参照できないので、useで取り込む必要がある。
          */
-
         DB::transaction(function() use ($reservation, $staffRows){
             $reservationModel = Reservation::create($reservation);
             $reservationModel->staffAssignments()->createMany ($staffRows);
@@ -184,6 +186,8 @@ class ReservationController extends Controller
             $updateResArray['vehicle_reassigned_flag'] = false;
         }
 
+        //TODO:予約更新のログ出力
+
         DB::transaction(function() use ($reservation, $updateResArray, $staffRows){
             $reservation->update($updateResArray);
             $reservation->staffAssignments()->delete();
@@ -200,6 +204,17 @@ class ReservationController extends Controller
         ];
 
         $reservation->update($approveValues);
+        return back();
+    }
+
+    public function destroy(ReservationDestroyRequest $request, Reservation $reservation){
+        //TODO:予約削除のログ出力
+
+        DB::transaction(function() use ($reservation){
+            $reservation->staffAssignments()->delete();
+            $reservation->delete();
+        });
+
         return back();
     }
 }

@@ -33,7 +33,7 @@
     let popupGapTop = null;
     let popupGapLeft = null;
 
-    const emit = defineEmits(['close', 'submit', 'clear']);
+    const emit = defineEmits(['close', 'submit', 'clear', 'destroy']);
     const onClose = () =>{
         emit('close');
     }
@@ -42,6 +42,9 @@
     }
     const onClear = () =>{
         emit('clear');
+    }
+    const onDestroy = () =>{
+        emit('destroy');
     }
 
     //ポップアップのヘッダーをクリックしたらドラッグ開始と判断する
@@ -185,6 +188,13 @@
                 :disabled="form.processing"
                 class="flex items-center gap-1 rounded px-2 py-1 bg-gray-200">
                 <TrashIcon class="w-5 h-5"/>クリア
+            </button>
+            <button
+                v-if="popupMode ==='update'"
+                @click="onDestroy()"
+                :disabled="form.processing"
+                class="flex items-center gap-1 rounded px-2 py-1 bg-red-200">
+                <TrashIcon class="w-5 h-5"/>削除
             </button>
         </div>
     </div>

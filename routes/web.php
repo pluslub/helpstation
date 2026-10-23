@@ -27,3 +27,6 @@ Route::put('/reservations/{reservation}', [ReservationController::class, 'update
 
 //予約承認
 Route::patch('/reservations/{reservation}/approve', [ReservationController::class, 'approve'])->name('reservations.approve');
+
+//予約削除
+Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy'])->name('reservations.destroy');

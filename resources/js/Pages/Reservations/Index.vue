@@ -57,8 +57,7 @@
     const showPopup = ref(false);       //変更すると<ReservationFormPopup>のv-ifによりポップアップが表示される。
     const popupMode = ref(null)
 
-    const selectReservationId = ref(null);
-    const selectClientName = ref(null);
+    const selectReservation = ref(null);
 
     const popupPositionLeft = ref(null);
     const popupPositionTop = ref(null);
@@ -78,7 +77,8 @@
         reservationUpdateForm.staff_ids = res.staff_assignments.map(a => a.staff_id).filter(id => id !== null);
 
         reservationUpdateForm.defaults();
-        selectClientName.value = res.client.last_name;
+
+        selectReservation.value = res;
     }
     const formatDate = (date) => {
         const year = date.getFullYear();
@@ -127,7 +127,7 @@
         if(!reservationForm.date || reservationForm.date === autofillDate.value){
             const date = getDefaultReservationDate();
             reservationForm.date = date;    //予約入力ポップアップに日付の初期値を送る。
-            autofillDate.value = date;            //自動入力の場合に他の日付に切り替えられるように記憶する。
+            autofillDate.value = date;      //自動入力の場合に他の日付に切り替えられるように記憶する。
         }
 
         popupMode.value = 'create';
@@ -165,7 +165,7 @@
                 return;
 
             case 'update':
-                reservationUpdateForm.put(`/reservations/${selectReservationId.value}`, {
+                reservationUpdateForm.put(`/reservations/${selectReservation.value?.id}`, {
                     preserveState: true,
                     preserveScroll: true,
                     onSuccess: () =>{
@@ -192,6 +192,25 @@
         return;
     }
 
+    /**
+     * 予約情報の削除
+     * Popupで削除するのでPopup側に渡すデータ（SetValueメソッドで提供されたデータ）から削除情報を取り出す
+     */
+    const onDestroyPopup = () =>{
+        const deleteMessage = `${selectReservation.value.client.last_name}様の予約（${selectReservation.value.date} ${formatTime(selectReservation.value.start_time)}）を削除しますか？`;
+        if(!confirm(deleteMessage)){
+            return;
+        }
+        reservationUpdateForm.delete(`/reservations/${selectReservation.value.id}`, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () =>{
+                showPopup.value = false;
+            },
+        });
+        return;
+    }
+
     const onApproveReservation = (res) =>{
         if(!confirm(`${res.client.last_name}様の予約（${res.date} ${formatTime(res.start_time)}）を承認しますか？`)){
             return;
@@ -203,7 +222,6 @@
     };
 
     const onUpdateReservation = (res) =>{
-        selectReservationId.value = res.id;
         setValue(res);
 
         popupMode.value = 'update';
@@ -211,7 +229,6 @@
     };
 
     const onViewReservation = (res) =>{
-        selectReservationId.value = res.id;
         setValue(res);
 
         popupMode.value = 'view';
@@ -291,7 +308,7 @@
 
         <button @click="onClickEntryButton" class="flex items-center gap-1 relative ">
             <PlusIcon class="w-5 h-5"/>予約追加
-            <span v-if="isDirtyPopup && !showPopup"
+            <span v-if="isDirtyPopup"
                 title="入力中の予約があります"
                 class="absolute rounded-full bg-red-500 -top-0 -right-2 w-1.5 h-1.5"></span>
         </button>
@@ -318,10 +335,11 @@
         :formStaff="formStaff"
         :formSupportTypes="formSupportTypes"
         :popupMode=popupMode
-        :selectClientName=selectClientName
+        :selectClientName="selectReservation?.client.last_name"
         @close="onClosePopup"
         @submit="onSubmitPopup"
-        @clear="onClearPopup">
+        @clear="onClearPopup"
+        @destroy="onDestroyPopup">
     </ReservationFormPopup>
 </template>
 
