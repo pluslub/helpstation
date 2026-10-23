@@ -23,13 +23,15 @@ class ReservationIndexRequest extends FormRequest
      */
     public function rules(): array
     {
+        $minDate = config('helpstation_setting.selectable_min_date');
+
         return [
             /*
              * URL(/?week=2026-10-06)のバリデーション
              * nullable：/?week=は/になる。
              * 受け取るフォーマットは'Y-m-d'
              */
-            'week' => ['nullable', 'date_format:Y-m-d'],
+            'week' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:'.$minDate],
         ];
     }
 }

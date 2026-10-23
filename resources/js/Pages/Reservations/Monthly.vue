@@ -1,7 +1,7 @@
 <script setup>
     //データ処理 JavaScript
     import { onMounted, onUnmounted } from 'vue';
-    import { Link, router } from '@inertiajs/vue3';
+    import { Link, router, usePage } from '@inertiajs/vue3';
 
     import WeekGrid from "@/Components/WeekGrid.vue";
     import ReservationFilter from '@/Components/ReservationFilter.vue';
@@ -10,6 +10,8 @@
 
     //Heroicons
     import { ChevronLeftIcon, ChevronRightIcon, CalendarDaysIcon} from '@heroicons/vue/24/outline';
+
+    const page = usePage();
 
     //ReservationControllerからデータを受け取る
     const props = defineProps({
@@ -24,12 +26,36 @@
 
     const { filterId, filterType, filteredReservations, clientOptions, staffOptions } = useReservationFilter(props);
 
+    //日付直接入力欄でキーダウンされたかどうか
+    //入力途中の遷移を防ぐため、keydown中なら無視し、カレンダーの選択・エンターキー押下・フォーカスの移動で遷移する
+    let keydownOnInputDate = false;
+    //--------------------------------------------関数-------------------------------------------
+    const moveMonth = (month, isValid) => {
+        if(!month || !isValid) return;
+        if(props.month === month) return;
+
+        router.get('/reservations/monthly/', { month: month }, { preserveState: true, preserveScroll: true });
+    }
+
     //--------------------------------------------event-------------------------------------------
     //日付が直接入力されたときのイベント
     const onDateChange = (e) =>{
-        const month = e.target.value;
-        if(!month) return;
-        router.get('/reservations/monthly/', { month: month }, { preserveState: true, preserveScroll: true });
+        if(keydownOnInputDate) return;
+        moveMonth(e.target.value, e.target.validity.valid);
+    };
+
+    const onEnterOnInputDate = (e) =>{
+        keydownOnInputDate = false;
+        moveMonth(e.target.value, e.target.validity.valid);
+    };
+
+    const onBlurFromInputDate = (e) =>{
+        keydownOnInputDate = false;
+        moveMonth(e.target.value, e.target.validity.valid);
+    };
+
+    const onKeyDownOnInputDate = () =>{
+        keydownOnInputDate = true;
     };
 
     //矢印キーが入力されたときのイベント
@@ -97,9 +123,14 @@
                 href="/reservations/monthly/"
                 preserve-state preserve-scroll
                 class="rounded border px-3 py-1">今月</Link>
-            <input type="month" @change="onDateChange($event)"
+            <input type="month"
+                @change="onDateChange($event)"
+                @keydown="onKeyDownOnInputDate()"
+                @keydown.enter="onEnterOnInputDate($event)"
+                @blur="onBlurFromInputDate($event)"
                 :value="month"
-                class="rounded border px-3 py-1"/>
+                class="rounded border px-3 py-1"
+                :min="page.props.selectableMinDate.slice(0, 7)"/>
             <Link
                 :href="`/reservations/monthly/?month=${nextMonth}`"
                 preserve-state preserve-scroll

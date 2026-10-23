@@ -1,7 +1,7 @@
 <script setup>
     //データ処理 JavaScript
     import { ref, computed, onMounted, onUnmounted } from 'vue';
-    import { Link, router, useForm } from '@inertiajs/vue3';
+    import { Link, router, useForm, usePage } from '@inertiajs/vue3';
 
     import WeekGrid from "@/Components/WeekGrid.vue";
     import ReservationFilter from '@/Components/ReservationFilter.vue';
@@ -13,6 +13,7 @@
     //Heroicons
     import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, CalendarDaysIcon} from '@heroicons/vue/24/outline';
 
+    const page = usePage();
 
     //ReservationControllerからデータを受け取る
     const props = defineProps({
@@ -52,9 +53,15 @@
 
     const { filterId, filterType, filteredReservations, clientOptions, staffOptions } = useReservationFilter(props);
 
+    //日付直接入力欄でキーダウンされたかどうか
+    //入力途中の遷移を防ぐため、keydown中なら無視し、カレンダーの選択・エンターキー押下・フォーカスの移動で遷移する
+    let keydownOnInputDate = false;
+
     //--------------------------------------------ref-------------------------------------------
     // ref：画面の操作で書き換わる値を入れる箱。変わったらこれを使っているcomputedが再計算される。
-    const showPopup = ref(false);       //変更すると<ReservationFormPopup>のv-ifによりポップアップが表示される。
+
+    //変更すると<ReservationFormPopup>のv-ifによりポップアップが表示される。
+    const showPopup = ref(false);
     const popupMode = ref(null)
 
     const selectReservation = ref(null);
@@ -94,6 +101,13 @@
         return props.weekStart <= today && today < props.nextWeek ? today : props.weekStart;
     }
 
+    const moveWeek = (date, isValid) => {
+        if(!date || !isValid) return;
+        if(props.weekStart <= date && date < props.nextWeek) return;
+
+        router.get('/', { week: date }, { preserveState: true, preserveScroll: true });
+    }
+
     //--------------------------------------------computed関数-------------------------------------------
     const isDirtyPopup = computed(() => {
         const checkArray = [
@@ -112,9 +126,22 @@
     //-----------------------------------------------event----------------------------------------------
     //日付が直接入力されたときのイベント
     const onDateChange = (e) =>{
-        const date = e.target.value;
-        if(!date) return;
-        router.get('/', { week: date }, { preserveState: true, preserveScroll: true });
+        if(keydownOnInputDate) return;
+        moveWeek(e.target.value, e.target.validity.valid);
+    };
+
+    const onEnterOnInputDate = (e) =>{
+        keydownOnInputDate = false;
+        moveWeek(e.target.value, e.target.validity.valid);
+    };
+
+    const onBlurFromInputDate = (e) =>{
+        keydownOnInputDate = false;
+        moveWeek(e.target.value, e.target.validity.valid);
+    };
+
+    const onKeyDownOnInputDate = () =>{
+        keydownOnInputDate = true;
     };
 
     /**
@@ -295,7 +322,14 @@
                 <ChevronLeftIcon class="w-5 h-5"/>前週
             </Link>
             <Link href="/" preserve-state preserve-scroll class="rounded border px-3 py-1">今週</Link>
-            <input type="date" @change="onDateChange($event)" :value="weekStart" class="rounded border px-3 py-1"/>
+            <input type="date"
+                @change="onDateChange($event)"
+                @keydown="onKeyDownOnInputDate()"
+                @keydown.enter="onEnterOnInputDate($event)"
+                @blur="onBlurFromInputDate($event)"
+                :value="weekStart"
+                class="rounded border px-3 py-1"
+                :min="page.props.selectableMinDate"/>
             <Link :href="`/?week=${nextWeek}`" preserve-state preserve-scroll class="flex items-center gap-1">
                 <ChevronRightIcon class="w-5 h-5"/>次週
             </Link>

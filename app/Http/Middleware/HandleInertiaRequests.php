@@ -44,6 +44,7 @@ class HandleInertiaRequests extends Middleware
                 'isAdmin' => $loginStaff?->role === 'admin',
                 'staffId' => $loginStaff?->id,
             ],
+            'selectableMinDate' => config('helpstation_setting.selectable_min_date'),
         ];
     }
 }
