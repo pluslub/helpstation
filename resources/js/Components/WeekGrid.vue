@@ -132,16 +132,18 @@
         return {shiftMap, dayOffNameMap, privateCarMap};
     });
 
-    const onClickUpdateButton = (res) => {
-        emit('update', res);
+    const onClickUpdateButton = (res, e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        emit('update', res, rect);
     }
 
     const onClickApproveButton = (res) => {
         emit('approve', res);
     }
 
-    const onClickViewButton = (res) => {
-        emit('view', res);
+    const onClickViewButton = (res, e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        emit('view', res, rect);
     }
 </script>
 
@@ -230,12 +232,12 @@
                                 <div>
                                     <button
                                         v-if="page.props.auth.isAdmin && !props.readonly"
-                                        @click="onClickUpdateButton(res)">
+                                        @click="onClickUpdateButton(res, $event)">
                                         <PencilIcon class="h-4 w-4"/>
                                     </button>
                                     <button
                                         v-if="!page.props.auth.isAdmin && !props.readonly"
-                                        @click="onClickViewButton(res)">
+                                        @click="onClickViewButton(res, $event)">
                                         <EyeIcon class="h-4 w-4"/>
                                     </button>
                                 </div>
