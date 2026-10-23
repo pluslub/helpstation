@@ -473,6 +473,7 @@
         :formSupportTypes="formSupportTypes"
         :popupMode=popupMode
         :selectClientName="selectReservation?.client.last_name"
+        :selectReservationId="selectReservation?.id"
         @close="onClosePopup"
         @submit="onSubmitPopup"
         @clear="onClearPopup"

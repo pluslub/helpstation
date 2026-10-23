@@ -24,6 +24,7 @@
         formSupportTypes: Array,
         popupMode: String,
         selectClientName: String,
+        selectReservationId: Number,
     });
 
     const popupPositionLeft = defineModel('popupPositionLeft');
@@ -67,10 +68,10 @@
 
     //--------------------------------------------watch関数-------------------------------------------
     //ポップアップを開いたまま、別の予約の変更ボタンを押したときなどに位置を直す
-    watch([popupPositionLeft, popupPositionTop], ([left, top]) => {
-        if(top == null) return;
-        clampPopupPosition(left, top);
-    })
+    watch([() => props.selectReservationId, () => props.popupMode], () => {
+        if(popupPositionTop.value == null) return;
+        clampPopupPosition(popupPositionLeft.value, popupPositionTop.value);
+    }, {flush: 'post'})
 
     //--------------------------------------------event-------------------------------------------
     //ポップアップのヘッダーをクリックしたらドラッグ開始と判断する
