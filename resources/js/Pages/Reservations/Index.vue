@@ -1,6 +1,6 @@
 <script setup>
     //データ処理 JavaScript
-    import { ref, onMounted, onUnmounted } from 'vue';
+    import { ref, computed, onMounted, onUnmounted } from 'vue';
     import { Link, router, useForm } from '@inertiajs/vue3';
 
     import WeekGrid from "@/Components/WeekGrid.vue";
@@ -64,7 +64,7 @@
     const popupPositionTop = ref(null);
 
     //自動で入れた日付を覚えておく
-    let autofillDate = null;
+    const autofillDate = ref(null);
 
     //--------------------------------------------関数-------------------------------------------
     const setValue = (res) =>{
@@ -94,7 +94,22 @@
         return props.weekStart <= today && today < props.nextWeek ? today : props.weekStart;
     }
 
-    //--------------------------------------------event-------------------------------------------
+    //--------------------------------------------computed関数-------------------------------------------
+    const isDirtyPopup = computed(() => {
+        const checkArray = [
+            reservationForm.date !== '' && reservationForm.date !== autofillDate.value,
+            reservationForm.client_id !== null,
+            reservationForm.support_type_id !== null,
+            reservationForm.vehicle_type_choice !== null,
+            reservationForm.start_time !== '',
+            reservationForm.end_time !== '',
+            reservationForm.remarks !== '',
+            reservationForm.staff_ids.length > 0,
+        ];
+        return checkArray.some(a => a);
+    });
+
+    //-----------------------------------------------event----------------------------------------------
     //日付が直接入力されたときのイベント
     const onDateChange = (e) =>{
         const date = e.target.value;
@@ -108,10 +123,11 @@
      * 入っていなければ（前の週や次の週を表示中なら）その週の日曜日（weekStart）
      */
     const onClickEntryButton = () =>{
-        if(!reservationForm.date || reservationForm.date === autofillDate){
+        //予約入力ポップアップを開いたときに、日付が空か自動入力の場合は、初期値を入力する。
+        if(!reservationForm.date || reservationForm.date === autofillDate.value){
             const date = getDefaultReservationDate();
-            reservationForm.date = date;
-            autofillDate = date;
+            reservationForm.date = date;    //予約入力ポップアップに日付の初期値を送る。
+            autofillDate.value = date;            //自動入力の場合に他の日付に切り替えられるように記憶する。
         }
 
         popupMode.value = 'create';
@@ -171,7 +187,7 @@
 
             const date = getDefaultReservationDate();
             reservationForm.date = date;
-            autofillDate = date;
+            autofillDate.value = date;
         }
         return;
     }
@@ -273,8 +289,11 @@
             </Link>
         </div>
 
-        <button @click="onClickEntryButton" class="flex items-center gap-1">
+        <button @click="onClickEntryButton" class="flex items-center gap-1 relative ">
             <PlusIcon class="w-5 h-5"/>予約追加
+            <span v-if="isDirtyPopup && !showPopup"
+                title="入力中の予約があります"
+                class="absolute rounded-full bg-red-500 -top-0 -right-2 w-1.5 h-1.5"></span>
         </button>
     </div>
 

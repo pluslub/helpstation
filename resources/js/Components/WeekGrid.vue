@@ -169,13 +169,13 @@
                         {{ shift.name }}
                         <div v-if="checkUsePrivateCar(shift, day)?.start"
                             title="私用車(直行)"
-                            class="text-xs">●</div>
+                            class="rounded-full bg-black w-2 h-2"></div>
                         {{ formatTime(shift.start) }}〜{{ formatTime(shift.end) }}
                         <span v-if="shift.amOff">（午前休）</span>
                         <span v-else-if="shift.pmOff">（午後休）</span>
                         <div v-if="checkUsePrivateCar(shift, day)?.end"
                             title="私用車(直帰)"
-                            class="text-xs">●</div>
+                            class="rounded-full bg-black w-2 h-2"></div>
                         <div v-if="shift.changed"
                             class="rounded bg-cyan-500 px-1 text-xs text-white flex items-center gap-1">
                             <ArrowPathIcon class="w-4 h-4"/>変更
@@ -245,7 +245,7 @@
                                 <span class="flex items-center gap-1">
                                     <div>{{ res.support_type?.name ?? '削除済'}}</div>
                                     <div v-if="res.remarks" class="line-clamp-1">: {{ res.remarks }}</div>
-                                    <div v-if="isPrivateCar(res)" class="text-xs" title="私用車">●</div>
+                                    <div v-if="isPrivateCar(res)" class="rounded-full bg-black w-2 h-2" title="私用車"></div>
                                 </span>
                             </div>
                             <div>
