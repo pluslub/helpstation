@@ -12,10 +12,11 @@
     });
 -->
 <script setup>
-    import { ref, onUnmounted } from 'vue';
+    import { ref, onMounted, onUnmounted, watch } from 'vue';
     import { vehicleTypeLabels } from "@/Utils/vehicleTypeLabel.js"
     import { PaperAirplaneIcon, XMarkIcon, TrashIcon } from '@heroicons/vue/24/outline';
 
+    //--------------------------------------------変数-------------------------------------------
     const props = defineProps({
         form: Object,
         formClients: Array,
@@ -47,6 +48,31 @@
         emit('destroy');
     }
 
+    //--------------------------------------------関数-------------------------------------------
+    /**
+     * ポップアップが画面の外に出ないように、位置を範囲内に収める
+     * ドラッグ中・表示したとき・位置が変わったときに使う
+     */
+    const clampPopupPosition = (left, top) =>{
+        const rect = popup.value.getBoundingClientRect();
+
+        //画面右、下の限界値（画面サイズからポップアップの大きさを引いた値）
+        const maxLeft = window.innerWidth - rect.width;
+        const maxTop = window.innerHeight - rect.height;
+
+        //最小値は0、最大値は上の限界値
+        popupPositionLeft.value = Math.min(Math.max(0, left), maxLeft);
+        popupPositionTop.value = Math.min(Math.max(0, top), maxTop);
+    }
+
+    //--------------------------------------------watch関数-------------------------------------------
+    //ポップアップを開いたまま、別の予約の変更ボタンを押したときなどに位置を直す
+    watch([popupPositionLeft, popupPositionTop], ([left, top]) => {
+        if(top == null) return;
+        clampPopupPosition(left, top);
+    })
+
+    //--------------------------------------------event-------------------------------------------
     //ポップアップのヘッダーをクリックしたらドラッグ開始と判断する
     const onDragStart = (e) =>{
         if(!window.matchMedia('(min-width: 768px)').matches){
@@ -63,24 +89,25 @@
     }
 
     const onDragMove = (e) =>{
-        const rect = popup.value.getBoundingClientRect();
-
-        //画面右、下の限界値
-        const maxLeft = window.innerWidth - rect.width;
-        const maxTop = window.innerHeight - rect.height;
-
+        //マウスの位置から、つかんだ位置のずれを引いた値がポップアップの左上
         const left = e.clientX - popupGapLeft;
         const top = e.clientY - popupGapTop;
 
-        //最小値は0、最大値は画面サイズからポップアップの大きさを引いた値
-        popupPositionLeft.value = Math.min(Math.max(0, left), maxLeft);
-        popupPositionTop.value = Math.min(Math.max(0, top), maxTop);
+        clampPopupPosition(left, top);
     }
 
     const onDragEnd = () => {
         window.removeEventListener("pointermove", onDragMove);
         window.removeEventListener("pointerup", onDragEnd);
     }
+
+    //ポップアップを表示したときに、画面からはみ出していれば位置を直す
+    onMounted(() => {
+        //スマホ、または位置の指定がない場合は何もしない
+        if(popupPositionTop.value == null) return;
+
+        clampPopupPosition(popupPositionLeft.value, popupPositionTop.value);
+    })
 
     onUnmounted(() => {
         window.removeEventListener("pointermove", onDragMove);

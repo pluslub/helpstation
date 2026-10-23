@@ -57,6 +57,13 @@
     //入力途中の遷移を防ぐため、keydown中なら無視し、カレンダーの選択・エンターキー押下・フォーカスの移動で遷移する
     let keydownOnInputDate = false;
 
+    //予約入力ポップアップの幅
+    //ReservationFormPopupのmd:w-120(480px)に合わせるように
+    const popupWidth = 480;
+
+    //ボタンとポップアップの隙間（px）
+    const popupDisplayMargin = 2;
+
     //--------------------------------------------ref-------------------------------------------
     // ref：画面の操作で書き換わる値を入れる箱。変わったらこれを使っているcomputedが再計算される。
 
@@ -108,6 +115,33 @@
         router.get('/', { week: date }, { preserveState: true, preserveScroll: true });
     }
 
+    const setPopupPosition = (left, top) =>{
+        if(window.matchMedia('(min-width: 768px)').matches){
+            //ポップアップの位置を調整
+            popupPositionLeft.value = left;
+            popupPositionTop.value = top;
+        }else{
+            //スマホの場合は位置を指定しない
+            popupPositionLeft.value = null;
+            popupPositionTop.value = null;
+        }
+    }
+    const setSidePopupPosition = (rect, width) =>{
+        let left = null;
+        let top = null;
+
+        //ポップアップの位置を調整
+        //右側に出してはみ出す場合は左側へ
+        if(rect.right + width + popupDisplayMargin <= window.innerWidth){
+            left = rect.right + popupDisplayMargin;
+        }else{
+            left = rect.left - width - popupDisplayMargin;
+        }
+        top = rect.top;
+
+        setPopupPosition(left, top);
+    }
+
     //--------------------------------------------computed関数-------------------------------------------
     const isDirtyPopup = computed(() => {
         const checkArray = [
@@ -124,22 +158,35 @@
     });
 
     //-----------------------------------------------event----------------------------------------------
-    //日付が直接入力されたときのイベント
+    /**
+     * 日付入力欄でカレンダーで選択されたときのイベント
+     * keydownOnInputDateは日付入力欄で入力を始めるとtrueになるので、
+     * カレンダー以外ではこのメソッドは動かない
+     * @param e
+     */
     const onDateChange = (e) =>{
         if(keydownOnInputDate) return;
         moveWeek(e.target.value, e.target.validity.valid);
     };
 
+    //日付入力欄でエンターキーが押されたときのイベント
     const onEnterOnInputDate = (e) =>{
         keydownOnInputDate = false;
         moveWeek(e.target.value, e.target.validity.valid);
     };
 
+    //日付入力欄からフォーカスが離れたときのイベント
     const onBlurFromInputDate = (e) =>{
         keydownOnInputDate = false;
         moveWeek(e.target.value, e.target.validity.valid);
     };
 
+    /**
+     * 日付入力欄が直接入力されたときのイベント
+     * 入力中1文字ずつOnDateChangeが発生して日付が切り替わってしまうので、
+     * 入力が始まるとkeydownOnInputDateをtrueにして、その間onDateChangeを実行しないようにする。
+     * 入力欄でエンターキーを押すか、フォーカスが離れたときにfalseに変更する。
+     */
     const onKeyDownOnInputDate = () =>{
         keydownOnInputDate = true;
     };
@@ -149,7 +196,7 @@
      * 今日が表示中の週に入っていれば今日
      * 入っていなければ（前の週や次の週を表示中なら）その週の日曜日（weekStart）
      */
-    const onClickEntryButton = () =>{
+    const onClickEntryButton = (e) =>{
         //予約入力ポップアップを開いたときに、日付が空か自動入力の場合は、初期値を入力する。
         if(!reservationForm.date || reservationForm.date === autofillDate.value){
             const date = getDefaultReservationDate();
@@ -157,10 +204,19 @@
             autofillDate.value = date;      //自動入力の場合に他の日付に切り替えられるように記憶する。
         }
 
+        //押したボタンの位置を取得してポップアップの位置を調整
+        const rect = e.currentTarget.getBoundingClientRect();
+        setPopupPosition(rect.left, rect.bottom + popupDisplayMargin);
+
         popupMode.value = 'create';
         showPopup.value = true;
     };
 
+    /**
+     * 予約入力ポップアップが閉じられた時の処理
+     * 予約更新の際、form.isDirtyメソッドで変更があったか調べてあればメッセージを出す。
+     * それ以外の場合は何もせずに閉じる
+     */
     const onClosePopup = () =>{
         switch(popupMode.value) {
             case 'update':
@@ -178,6 +234,14 @@
         }
     };
 
+    /**
+     * 予約入力ポップアップで申請ボタンを押下された時の処理
+     * 新規追加はPost:/reservations, 更新はPut:/reservations/予約IDに遷移し、
+     * それ以外はなにもしない
+     *
+        preserveState: true    画面の更新時に表示中の内容を保持する
+        preserveScroll: true   画面の更新時にスクロールの位置を保持する。
+     */
     const onSubmitPopup = () =>{
         switch(popupMode.value) {
             case 'create':
@@ -207,16 +271,27 @@
 
     }
 
+    /**
+     * 予約入力ポップアップの内容を破棄する処理
+     * 新規追加の場合のみ注意メッセージを出してから破棄する。
+     * それ以外は何もしない
+     */
     const onClearPopup = () =>{
-        if(confirm("入力内容を消去しますか？")){
-            reservationForm.reset();
-            reservationForm.clearErrors();
+        switch(popupMode.value) {
+            case 'create':
+                if(confirm("入力内容を消去しますか？")){
+                    reservationForm.reset();
+                    reservationForm.clearErrors();
 
-            const date = getDefaultReservationDate();
-            reservationForm.date = date;
-            autofillDate.value = date;
+                    const date = getDefaultReservationDate();
+                    reservationForm.date = date;
+                    autofillDate.value = date;
+                }
+                return;
+
+            default:
+                return;
         }
-        return;
     }
 
     /**
@@ -238,7 +313,14 @@
         return;
     }
 
+    /**
+     * 仮申請アイコンを押したときの処理
+     * 管理者以外は承認できないようにする。
+     * @param res, rect
+     */
     const onApproveReservation = (res) =>{
+        if(!page.props.auth.isAdmin) return;
+
         if(!confirm(`${res.client.last_name}様の予約（${res.date} ${formatTime(res.start_time)}）を承認しますか？`)){
             return;
         }
@@ -248,22 +330,43 @@
         });
     };
 
-    const onUpdateReservation = (res) =>{
+    /**
+     * 予約更新ボタンを押したときの処理
+     * 管理者はポップアップウインドウを表示する。
+     * それ以外はなにもしない。
+     *
+     * setValue　ポップアップウインドウに渡すデータをformに入力する。
+     * formはisDirtyメソッドで変更状況を調べたり、
+     * form.postのように書くことで、そのformをロックして関連するボタンの操作を止めることができる
+     * @param res, rect
+     */
+    const onUpdateReservation = (res, rect) =>{
+        if(!page.props.auth.isAdmin) return;
+
         setValue(res);
+        setSidePopupPosition(rect, popupWidth);
 
         popupMode.value = 'update';
         showPopup.value = true;
     };
 
-    const onViewReservation = (res) =>{
+    /**
+     * 予約閲覧ボタンを押したときの処理
+     * ポップアップウインドウを表示する。
+     * @param res, event
+     */
+    const onViewReservation = (res, rect) =>{
         setValue(res);
+        setSidePopupPosition(rect, popupWidth);
 
         popupMode.value = 'view';
         showPopup.value = true;
     };
 
-    //矢印キーが入力されたときのイベント
-    //日付入力欄、プルダウン選択中は動かさない
+    /**
+     * 矢印キーが入力されたときのイベント
+     * 日付入力欄、プルダウン選択中は動かさない
+     */
     const handleKeydown = (e) =>{
         let displayWeekOnKeyDown = null;
         if( e.target.tagName === 'INPUT'
@@ -340,7 +443,7 @@
             </Link>
         </div>
 
-        <button @click="onClickEntryButton" class="flex items-center gap-1 relative ">
+        <button @click="onClickEntryButton($event)" class="flex items-center gap-1 relative ">
             <PlusIcon class="w-5 h-5"/>予約追加
             <span v-if="isDirtyPopup"
                 title="入力中の予約があります"
