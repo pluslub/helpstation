@@ -4,6 +4,62 @@
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    /* 書体：BIZ UDPゴシック（app.blade.php で読み込み）。読み込めない場合は端末の書体 */
+    --font-sans: 'BIZ UDPGothic', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Noto Sans JP', ui-sans-serif, system-ui, sans-serif;
+
+    /* ---- 色：意味ごとの名前（ここを変えると全画面に反映される） ---- */
+    /* 画面全体 */
+    --color-base: var(--color-stone-200);       /* 背景 */
+    --color-surface: var(--color-white);       /* カード・ヘッダーの背景 */
+    --color-ink: var(--color-stone-800);       /* 本文の文字 */
+    --color-ink-muted: var(--color-stone-600); /* 補足の文字 */
+    --color-line: var(--color-stone-300);      /* 区切り線 */
+
+    /* 予約（メインの色） */
+    --color-reservation: var(--color-amber-500);
+    --color-reservation-soft: var(--color-amber-200);
+
+    /* シフト */
+    --color-shift: var(--color-sky-500);
+    --color-shift-soft: var(--color-sky-100);
+
+    /* 状態 */
+    --color-provisional: var(--color-lime-900);         /* 仮登録 */
+    --color-provisional-soft: var(--color-lime-100);
+    --color-provisional-line: var(--color-lime-600);
+    --color-reassigned: var(--color-rose-600);          /* 配車変更 */
+    --color-danger: var(--color-red-700);               /* 削除 */
+    --color-neutral: var(--color-stone-200);            /* クリア・閉じるなどの控えめなボタン */
+--color-rest-soft: var(--color-emerald-700);            /* 休み */
+    --color-rest: var(--color-emerald-100);
+}
+
+/* ---- 共通のクラス（3か所以上で使う形だけ） ---- */
+
+/* ボタンの形（色は使う側で bg-reservation text-white などを付ける） */
+@utility btn {
+    @apply inline-flex items-center gap-1 rounded-lg px-3 py-1.5 font-bold shadow-sm;
+    @apply disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* 枠線だけのボタン 色は使う側でつける */
+@utility btn-outline {
+    @apply bg-surface border-2;
+}
+
+/* 入力欄（input・select・textarea）の形。入力中はメインの色の線が出る */
+@utility field {
+    @apply rounded-lg border border-line bg-surface px-2 py-1 focus:ring-2 focus:outline-none focus:ring-reservation;
+}
+
+/* バッジの形（色は使う側で bg-provisional-soft text-provisional などを付ける） */
+@utility badge {
+    @apply inline-flex items-center gap-0.5 rounded-md px-1 text-xs shrink-0;
+}
+
+/* ---- ページ全体の標準 ---- */
+@layer base {
+    body {
+        @apply bg-base text-ink font-sans;
+    }
 }

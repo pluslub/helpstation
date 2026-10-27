@@ -157,6 +157,14 @@
         return checkArray.some(a => a);
     });
 
+    const openedReservationId = computed(() => {
+        if(showPopup.value && popupMode.value !== 'create'){
+            return selectReservation.value?.id;
+        }else{
+            return null;
+        }
+    });
+
     //-----------------------------------------------event----------------------------------------------
     /**
      * 日付入力欄でカレンダーで選択されたときのイベント
@@ -342,6 +350,7 @@
      */
     const onUpdateReservation = (res, rect) =>{
         if(!page.props.auth.isAdmin) return;
+        if(showPopup.value && openedReservationId.value === res.id && popupMode.value === 'update') return;
 
         setValue(res);
         setSidePopupPosition(rect, popupWidth);
@@ -356,6 +365,8 @@
      * @param res, event
      */
     const onViewReservation = (res, rect) =>{
+        if(showPopup.value && openedReservationId.value === res.id && popupMode.value === 'view') return;
+
         setValue(res);
         setSidePopupPosition(rect, popupWidth);
 
@@ -402,16 +413,7 @@
     @：           v-on:の省略形。イベントが起きたときに実行する処理を書く。
  -->
 <template>
-    <div class="sticky top-0 z-5 bg-white">
-        <!-- フィルター -->
-        <ReservationFilter
-            :staffOptions="staffOptions"
-            :vehicleOptions="props.vehicleOptions"
-            :clientOptions="clientOptions"
-            v-model:filterType="filterType"
-            v-model:filterId="filterId"
-        ></ReservationFilter>
-
+    <div class="bg-surface border-b border-line shadow-sm sticky top-0 z-5 px-2 py-2 flex flex-col gap-2">
         <!-- 週操作ボタン -->
         <!--
             preserve-state
@@ -420,35 +422,44 @@
             preserve-scroll:
                 ページを移動しても、スクロール位置をそのまま保つ
         -->
-        <div class="mb-2 flex items-center gap-2">
-            <Link :href="`/?week=${prevWeek}`" preserve-state preserve-scroll class="flex items-center gap-1">
-                <ChevronLeftIcon class="w-5 h-5"/>前週
-            </Link>
-            <Link href="/" preserve-state preserve-scroll class="rounded border px-3 py-1">今週</Link>
-            <input type="date"
-                @change="onDateChange($event)"
-                @keydown="onKeyDownOnInputDate()"
-                @keydown.enter="onEnterOnInputDate($event)"
-                @blur="onBlurFromInputDate($event)"
-                :value="weekStart"
-                class="rounded border px-3 py-1"
-                :min="page.props.selectableMinDate"/>
-            <Link :href="`/?week=${nextWeek}`" preserve-state preserve-scroll class="flex items-center gap-1">
-                <ChevronRightIcon class="w-5 h-5"/>次週
-            </Link>
+        <div class="flex justify-between flex-wrap gap-2">
+            <div class="flex items-center gap-2 ">
+                <Link :href="`/?week=${prevWeek}`" preserve-state preserve-scroll class="btn bg-neutral text-ink">
+                    <ChevronLeftIcon class="w-5 h-5"/>前週
+                </Link>
+                <Link href="/" preserve-state preserve-scroll class="btn bg-neutral text-ink">今週</Link>
+                <input type="date"
+                    @change="onDateChange($event)"
+                    @keydown="onKeyDownOnInputDate()"
+                    @keydown.enter="onEnterOnInputDate($event)"
+                    @blur="onBlurFromInputDate($event)"
+                    :value="weekStart"
+                    class="field"
+                    :min="page.props.selectableMinDate"/>
+                <Link :href="`/?week=${nextWeek}`" preserve-state preserve-scroll class="btn bg-neutral text-ink">
+                    <ChevronRightIcon class="w-5 h-5"/>次週
+                </Link>
+            </div>
+            <div class="flex items-center gap-2">
+                <Link href="/reservations/monthly" class="btn btn-outline border-line text-ink">
+                    <CalendarDaysIcon class="w-5 h-5"/>月表示
+                </Link>
+                <button @click="onClickEntryButton($event)" class="btn bg-reservation text-ink relative">
+                    <PlusIcon class="w-5 h-5"/>予約追加
+                    <span v-if="isDirtyPopup"
+                        title="入力中の予約があります"
+                        class="absolute rounded-full bg-danger ring-2 ring-surface top-0 -right-0.5 w-2.5 h-2.5"></span>
+                </button>
+            </div>
         </div>
-        <div class="mb-2 flex items-center gap-2">
-            <Link href="/reservations/monthly" class="flex items-center gap-1">
-                <CalendarDaysIcon class="w-5 h-5"/>月表示
-            </Link>
-        </div>
-
-        <button @click="onClickEntryButton($event)" class="flex items-center gap-1 relative ">
-            <PlusIcon class="w-5 h-5"/>予約追加
-            <span v-if="isDirtyPopup"
-                title="入力中の予約があります"
-                class="absolute rounded-full bg-red-500 -top-0 -right-2 w-1.5 h-1.5"></span>
-        </button>
+        <!-- フィルター -->
+        <ReservationFilter
+            :staffOptions="staffOptions"
+            :vehicleOptions="props.vehicleOptions"
+            :clientOptions="clientOptions"
+            v-model:filterType="filterType"
+            v-model:filterId="filterId"
+        ></ReservationFilter>
     </div>
 
     <!-- 週一覧画面 -->
@@ -457,6 +468,7 @@
             :reservations="filteredReservations"
             :shiftDetails="shiftDetails"
             :weekStart="weekStart"
+            :openedReservationId="openedReservationId"
             @update="onUpdateReservation"
             @approve="onApproveReservation"
             @view="onViewReservation">

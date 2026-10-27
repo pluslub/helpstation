@@ -68,7 +68,7 @@
 
     //--------------------------------------------watch関数-------------------------------------------
     //ポップアップを開いたまま、別の予約の変更ボタンを押したときなどに位置を直す
-    watch([() => props.selectReservationId, () => props.popupMode], () => {
+    watch([() => props.selectReservationId, () => props.popupMode, popupPositionLeft, popupPositionTop], () => {
         if(popupPositionTop.value == null) return;
         clampPopupPosition(popupPositionLeft.value, popupPositionTop.value);
     }, {flush: 'post'})
@@ -135,7 +135,7 @@
         fixed rounded border  z-10 bg-white shadow-lg
         inset-0 max-h-screen overflow-y-auto
         md:top-0 md:bottom-auto md:left-auto md:right-0 md:w-120">   <!-- md:大きい画面用設定 -->
-        <div @pointerdown="onDragStart" class="bg-orange-200 p-2 cursor-move select-none touch-none flex justify-between">
+        <div @pointerdown="onDragStart" class="bg-reservation-soft p-2 cursor-move select-none touch-none flex justify-between">
             <div>
                 <h1 v-if="popupMode === 'create'">予約申請</h1>
                 <h1 v-else-if="popupMode === 'update'">予約変更</h1>
@@ -150,7 +150,7 @@
                 <label>予約日
                     <input type="date" v-model="form.date" class="rounded border px-3 py-1 bg-white"/>
                 </label>
-                <div v-if="form.errors.date" class="text-red-600">{{ form.errors.date }}</div>
+                <div v-if="form.errors.date" class="text-danger">{{ form.errors.date }}</div>
 
                 <fieldset>
                     <legend class="sr-only">予約時間</legend>
@@ -159,8 +159,8 @@
                         ～<input type="time" v-model="form.end_time" class="rounded border px-3 py-1 bg-white"/>
                     </label>
                 </fieldset>
-                <div v-if="form.errors.start_time" class="text-red-600">{{ form.errors.start_time }}</div>
-                <div v-if="form.errors.end_time" class="text-red-600">{{ form.errors.end_time }}</div>
+                <div v-if="form.errors.start_time" class="text-danger">{{ form.errors.start_time }}</div>
+                <div v-if="form.errors.end_time" class="text-danger">{{ form.errors.end_time }}</div>
 
                 <div class="flex gap-4">
                     <label class="flex items-center gap-2">利用者氏名
@@ -171,7 +171,7 @@
                         <div v-else>{{ selectClientName }}</div>
                     </label>
                 </div>
-                <div v-if="form.errors.client_id" class="text-red-600">{{ form.errors.client_id }}</div>
+                <div v-if="form.errors.client_id" class="text-danger">{{ form.errors.client_id }}</div>
 
                 <fieldset>
                     <legend class="sr-only">担当者</legend>
@@ -192,7 +192,7 @@
                         </select>
                     </label>
                 </div>
-                <div v-if="form.errors.support_type_id" class="text-red-600">{{ form.errors.support_type_id }}</div>
+                <div v-if="form.errors.support_type_id" class="text-danger">{{ form.errors.support_type_id }}</div>
 
                 <fieldset class="p-1">
                     <legend class="sr-only">車両</legend>
@@ -204,12 +204,12 @@
                         </label>
                     </div>
                 </fieldset>
-                <div v-if="form.errors.vehicle_type_choice" class="text-red-600">{{ form.errors.vehicle_type_choice }}</div>
+                <div v-if="form.errors.vehicle_type_choice" class="text-danger">{{ form.errors.vehicle_type_choice }}</div>
 
                 <label class="flex items-center gap-2">備考
                     <textarea v-model="form.remarks" id="remarks" class="bg-white rounded border px-3 py-1"></textarea>
                 </label>
-                <div v-if="form.errors.remarks" class="text-red-600">{{ form.errors.remarks }}</div>
+                <div v-if="form.errors.remarks" class="text-danger">{{ form.errors.remarks }}</div>
             </div>
         </fieldset>
         <div class="pb-2 flex justify-center gap-20">
@@ -218,21 +218,21 @@
                 v-if="popupMode !=='view'"
                 @click="onSubmit()"
                 :disabled="form.processing"
-                class="flex items-center gap-1 rounded px-2 py-1 bg-orange-200">
+                class="btn bg-reservation text-ink">
                 <PaperAirplaneIcon class="w-5 h-5"/>申請
             </button>
             <button
                 v-if="popupMode ==='create'"
                 @click="onClear()"
                 :disabled="form.processing"
-                class="flex items-center gap-1 rounded px-2 py-1 bg-gray-200">
+                class="btn bg-neutral text-ink">
                 <TrashIcon class="w-5 h-5"/>クリア
             </button>
             <button
                 v-if="popupMode ==='update'"
                 @click="onDestroy()"
                 :disabled="form.processing"
-                class="flex items-center gap-1 rounded px-2 py-1 bg-red-200">
+                class="btn btn-outline border-danger text-danger">
                 <TrashIcon class="w-5 h-5"/>削除
             </button>
         </div>

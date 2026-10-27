@@ -95,7 +95,45 @@
     @：           v-on:の省略形。イベントが起きたときに実行する処理を書く。
  -->
 <template>
-    <div class="sticky top-0 z-5 bg-white">
+    <div class="bg-surface border-b border-line shadow-sm sticky top-0 z-5 px-2 py-2 flex flex-col gap-2">
+        <div class="flex justify-between flex-wrap gap-2">
+            <!-- 月操作ボタン -->
+            <!--
+                preserve-state
+                    ページを移動したときにコンポーネントを作り直さずにpropsだけを入れ替えるので、
+                    refが保存される。
+                preserve-scroll:
+                    ページを移動しても、スクロール位置をそのまま保つ
+            -->
+            <div class="flex items-center gap-2">
+                <Link
+                    :href="`/reservations/monthly/?month=${prevMonth}`"
+                    preserve-state preserve-scroll
+                    class="btn bg-neutral text-ink">
+                    <ChevronLeftIcon class="w-5 h-5"/>先月</Link>
+                <Link
+                    href="/reservations/monthly/"
+                    preserve-state preserve-scroll
+                    class="btn bg-neutral text-ink">今月</Link>
+                <input type="month"
+                    @change="onDateChange($event)"
+                    @keydown="onKeyDownOnInputDate()"
+                    @keydown.enter="onEnterOnInputDate($event)"
+                    @blur="onBlurFromInputDate($event)"
+                    :value="month"
+                    class="field"
+                    :min="page.props.selectableMinDate.slice(0, 7)"/>
+                <Link
+                    :href="`/reservations/monthly/?month=${nextMonth}`"
+                    preserve-state preserve-scroll
+                    class="btn bg-neutral text-ink">
+                    来月<ChevronRightIcon class="w-5 h-5"/></Link>
+            </div>
+            <div class="flex items-center gap-2">
+                <Link href="/" class="btn btn-outline border-line text-ink">
+                    <CalendarDaysIcon class="w-5 h-5"/>週表示</Link>
+            </div>
+        </div>
         <!-- フィルター -->
         <ReservationFilter
             :staffOptions="staffOptions"
@@ -104,54 +142,19 @@
             v-model:filterType="filterType"
             v-model:filterId="filterId"
         ></ReservationFilter>
-
-        <!-- 月操作ボタン -->
-        <!--
-            preserve-state
-                ページを移動したときにコンポーネントを作り直さずにpropsだけを入れ替えるので、
-                refが保存される。
-            preserve-scroll:
-                ページを移動しても、スクロール位置をそのまま保つ
-        -->
-        <div class="mb-2 flex items-center gap-2">
-            <Link
-                :href="`/reservations/monthly/?month=${prevMonth}`"
-                preserve-state preserve-scroll
-                class="flex items-center gap-1">
-                <ChevronLeftIcon class="w-5 h-5"/>先月</Link>
-            <Link
-                href="/reservations/monthly/"
-                preserve-state preserve-scroll
-                class="rounded border px-3 py-1">今月</Link>
-            <input type="month"
-                @change="onDateChange($event)"
-                @keydown="onKeyDownOnInputDate()"
-                @keydown.enter="onEnterOnInputDate($event)"
-                @blur="onBlurFromInputDate($event)"
-                :value="month"
-                class="rounded border px-3 py-1"
-                :min="page.props.selectableMinDate.slice(0, 7)"/>
-            <Link
-                :href="`/reservations/monthly/?month=${nextMonth}`"
-                preserve-state preserve-scroll
-                class="flex items-center gap-1">
-                来月<ChevronRightIcon class="w-5 h-5"/></Link>
-        </div>
-        <div class="mb-2 flex items-center gap-2">
-            <Link href="/" class="flex items-center gap-1">
-                <CalendarDaysIcon class="w-5 h-5"/>週表示</Link>
-        </div>
     </div>
 
     <!-- 月一覧画面 -->
-    <div v-for="day in props.sundayList" :key="day">
-        <WeekGrid
-            :allReservations="props.reservations"
-            :reservations="filteredReservations"
-            :shiftDetails="shiftDetails"
-            :weekStart="day"
-            readonly>
-        </WeekGrid>
+    <div class="flex flex-col gap-6 px-2">
+        <div v-for="day in props.sundayList" :key="day">
+            <WeekGrid
+                :allReservations="props.reservations"
+                :reservations="filteredReservations"
+                :shiftDetails="shiftDetails"
+                :weekStart="day"
+                readonly>
+            </WeekGrid>
+        </div>
     </div>
 </template>
 
