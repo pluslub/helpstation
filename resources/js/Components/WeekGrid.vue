@@ -9,7 +9,7 @@
 
     //Heroicons
     import { PencilIcon, EyeIcon, ClockIcon  } from '@heroicons/vue/24/outline';
-    import { TruckIcon, ExclamationTriangleIcon, ArrowPathIcon} from '@heroicons/vue/16/solid';
+    import { ArrowPathIcon} from '@heroicons/vue/16/solid';
 
     //ReservationControllerからデータを受け取る
     const props = defineProps({
@@ -257,8 +257,7 @@
                                     <div v-if="res.vehicle_reassigned_flag"
                                         class="rounded bg-red-500 px-1 text-xs text-white flex items-center gap-0.5"
                                         title="配車変更">
-                                        <ExclamationTriangleIcon class="h-4 w-4"/>
-                                        <TruckIcon class="h-4 w-4"/>
+                                        <ArrowPathIcon class="w-4 h-4"/>配車変更
                                     </div>
                                 </span>
                             </div>

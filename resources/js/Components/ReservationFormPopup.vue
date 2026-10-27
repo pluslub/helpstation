@@ -102,15 +102,26 @@
         window.removeEventListener("pointerup", onDragEnd);
     }
 
+    const onKeydownEscape = (e) =>{
+        if(e.key !== 'Escape') return;
+
+        //日本語入力中は閉じない
+        if(e.isComposing) return;
+
+        onClose();
+    }
+
     //ポップアップを表示したときに、画面からはみ出していれば位置を直す
     onMounted(() => {
+        window.addEventListener("keydown", onKeydownEscape);
+
         //スマホ、または位置の指定がない場合は何もしない
         if(popupPositionTop.value == null) return;
-
         clampPopupPosition(popupPositionLeft.value, popupPositionTop.value);
     })
 
     onUnmounted(() => {
+        window.removeEventListener("keydown", onKeydownEscape);
         window.removeEventListener("pointermove", onDragMove);
         window.removeEventListener("pointerup", onDragEnd);
     })
