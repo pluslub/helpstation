@@ -227,8 +227,8 @@
                         <div class="divide-y divide-line">
                             <!--カードを装飾する。予約が選択されているとき-->
                             <div v-for="res in card.reservations" :key="res.id"
-                                :class="{ 'ring-2 ring-reservation': res.id === props.openedReservationId }"
-                                class="p-1 rounded ring-inset">
+                                :class="{ 'bg-reservation-soft': res.id === props.openedReservationId }"
+                                class="p-1 rounded">
                                 <div class="flex items-center gap-1">
                                     <span class="shrink-0">{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
 
