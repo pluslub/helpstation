@@ -50,6 +50,17 @@
         return props.clickableShift && (props.clickableDate == null || props.clickableDate === day.date);
     }
 
+    /**
+     * ポップアップを出す位置の基準を作る。左右はその日の列の端（カードにかぶらないように）、上は押したボタンの高さ
+     * @param e
+     */
+    const getPopupTargetRect = (e) => {
+        const dayColumnRect = e.currentTarget.closest('[data-day-column]').getBoundingClientRect();
+        const buttonRect = e.currentTarget.getBoundingClientRect();
+        const rect = { left: dayColumnRect.left, right: dayColumnRect.right, top: buttonRect.top, bottom: buttonRect.bottom };
+        return rect;
+    }
+
     //--------------------------------------------computed関数-------------------------------------------
     /**
      * 今週の７日間の日付を入力する。
@@ -145,7 +156,7 @@
     });
 
     const onClickUpdateButton = (res, e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
+        const rect = getPopupTargetRect(e);
         emit('update', res, rect);
     }
 
@@ -154,7 +165,7 @@
     }
 
     const onClickViewButton = (res, e) => {
-        const rect = e.currentTarget.getBoundingClientRect();
+        const rect = getPopupTargetRect(e);
         emit('view', res, rect);
     }
 
@@ -228,7 +239,7 @@
 
         <!-- 予約カード -->
         <div class="grid grid-cols-7 gap-2">
-            <div v-for="day in days" :key="day.date" class="flex flex-col gap-2 min-w-0">
+            <div v-for="day in days" :key="day.date" class="flex flex-col gap-2 min-w-0" data-day-column>
                 <template v-for="card in reservationsByDay[day.date] ?? []" :key="card.client_id">
                     <!-- 利用者ごとにカードを表示する -->
                     <div class="rounded-lg shadow-sm p-2 flex flex-col gap-1"

@@ -115,6 +115,7 @@
         router.get('/', { week: date }, { preserveState: true, preserveScroll: true });
     }
 
+    //予約入力ポップアップの位置を設定する
     const setPopupPosition = (left, top) =>{
         if(window.matchMedia('(min-width: 768px)').matches){
             //ポップアップの位置を調整
@@ -126,6 +127,8 @@
             popupPositionTop.value = null;
         }
     }
+
+    //予約入力ポップアップの位置を計算する
     const setSidePopupPosition = (rect, width) =>{
         let left = null;
         let top = null;
