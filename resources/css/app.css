@@ -33,6 +33,7 @@
     --color-rest-soft: var(--color-emerald-700);        /* 休み */
     --color-rest: var(--color-emerald-100);
 
+    /* 日付の色 */
     --color-sunday: var(--color-red-600);
     --color-saturday: var(--color-blue-600);
 }
