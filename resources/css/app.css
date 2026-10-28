@@ -30,8 +30,10 @@
     --color-reassigned: var(--color-rose-600);          /* 配車変更 */
     --color-rest-soft: var(--color-emerald-100);        /* 休み */
     --color-rest: var(--color-emerald-700);
-    --color-care-vehicle: var(--color-green-600);                 /* 福祉車両バッジ */
-    --color-company-car: var(--color-blue-600);                 /* 社用車バッジ */
+    --color-care-vehicle-soft: var(--color-green-200);  /* 福祉車両バッジ */
+    --color-care-vehicle: var(--color-green-600);
+    --color-company-car-soft: var(--color-blue-200);         /* 社用車バッジ */
+    --color-company-car: var(--color-blue-600);
 
     /* ボタン */
     --color-danger: var(--color-red-700);               /* 削除 */

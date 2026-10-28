@@ -246,7 +246,7 @@
             <div v-for="day in days" :key="day.date" class="flex flex-col gap-2 min-w-0" data-day-column>
                 <template v-for="card in reservationsByDay[day.date] ?? []" :key="card.client_id">
                     <!-- 利用者ごとにカードを表示する -->
-                    <div class="rounded-lg shadow-sm p-2 flex flex-col gap-1"
+                    <div class="rounded-lg shadow-sm p-1 flex flex-col"
                         :class="card.reservations.some(r => isProvisional(r))   ? 'bg-provisional-soft border-2 border-dashed border-provisional-line'
                                                                                 : 'bg-surface border-l-4 border-reservation'">
                         <!-- カードごとに予約情報を表示する -->
@@ -254,7 +254,7 @@
                             <!--カードを装飾する。予約が選択されているとき-->
                             <div v-for="(res, index) in card.reservations" :key="res.id"
                                 :class="{ 'bg-reservation-soft': res.id === props.openedReservationId }"
-                                class="p-1 rounded grid grid-cols-[3rem_1fr]">
+                                class="p-1 rounded grid grid-cols-[4.5rem_1fr] gap-1">
                                 <div>
                                     <span v-if="index===0">{{ card.client_last_name }}</span>
                                 </div>
@@ -288,10 +288,10 @@
                                     </div>
                                 </div>
                                 <!--担当者-->
-                                <div class="flex flex-col gap-y-1 min-w-0">
+                                <div class="grid grid-cols-2 gap-x-1 min-w-0">
                                     <span v-for="assignedStaff in res.staff_assignments"
                                         :key="assignedStaff.staff_id ?? 'none'"
-                                        class="whitespace-nowrap truncate">
+                                        class="truncate">
                                         {{ assignedStaff.staff?.name ?? '未定' }}
                                     </span>
                                 </div>
@@ -301,9 +301,9 @@
                                     <!--車両ラベル-->
                                     <span class="flex items-center gap-1">
                                         <div v-if="!isPrivateCar(res) && !isNotUseCar(res)"
-                                            class="badge text-white"
+                                            class="badge font-bold"
                                             :title="res.vehicle?.name"
-                                            :class="res.vehicle_type_choice === 'care_vehicle' ? 'bg-care-vehicle' : 'bg-company-car'" >
+                                            :class="res.vehicle_type_choice === 'care_vehicle' ? 'bg-care-vehicle-soft text-care-vehicle' : 'bg-company-car-soft text-company-car'">
                                             {{ getVehicleTypeShortLabel(res.vehicle_type_choice) }}
                                         </div>
                                         <div v-if="res.vehicle_reassigned_flag"
