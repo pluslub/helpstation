@@ -165,6 +165,22 @@
         }
     });
 
+    const clickableShift = computed(() => {
+        return showPopup.value && ( popupMode.value === 'create' || popupMode.value === 'update')
+    });
+
+    const clickableDate = computed(() => {
+        if(showPopup.value && popupMode.value === 'update'){
+            return 	reservationUpdateForm.date;
+        }else{
+            return null;
+        }
+    });
+
+    const activeForm = computed(() => {
+        return popupMode.value === 'create' ? reservationForm : reservationUpdateForm;
+    })
+
     //-----------------------------------------------event----------------------------------------------
     /**
      * 日付入力欄でカレンダーで選択されたときのイベント
@@ -395,6 +411,17 @@
         router.get('/', { week: displayWeekOnKeyDown }, { preserveState: true, preserveScroll: true });
     };
 
+    const onClickShift = (date, staffId) =>{
+        if(!clickableShift.value) return;
+        if(clickableDate.value != null && clickableDate.value !== date) return;
+        activeForm.value.date = date;
+        if(activeForm.value.staff_ids.includes(staffId)){
+            activeForm.value.staff_ids = activeForm.value.staff_ids.filter(id => id !== staffId);
+        }else{
+            activeForm.value.staff_ids.push(staffId);
+        }
+    };
+
     //ページ表示時にキーダウンイベントを追加
     onMounted(() =>{
         window.addEventListener("keydown", handleKeydown);
@@ -478,10 +505,13 @@
             :reservations="filteredReservations"
             :shiftDetails="shiftDetails"
             :weekStart="weekStart"
+            :clickableShift="clickableShift"
+            :clickableDate="clickableDate"
             :openedReservationId="openedReservationId"
             @update="onUpdateReservation"
             @approve="onApproveReservation"
-            @view="onViewReservation">
+            @view="onViewReservation"
+            @click-shift="onClickShift">
         </WeekGrid>
 
     <!-- 予約追加ポップアップ画面 -->
@@ -489,7 +519,7 @@
         v-if="showPopup"
         v-model:popupPositionLeft="popupPositionLeft"
         v-model:popupPositionTop="popupPositionTop"
-        :form="popupMode === 'create' ? reservationForm : reservationUpdateForm"
+        :form="activeForm"
         :formClients="formClients"
         :formStaff="formStaff"
         :formSupportTypes="formSupportTypes"

@@ -9,7 +9,7 @@
 
     //Heroicons
     import { PencilIcon, EyeIcon, ClockIcon  } from '@heroicons/vue/24/outline';
-    import { ArrowPathIcon} from '@heroicons/vue/16/solid';
+    import { ArrowPathIcon } from '@heroicons/vue/16/solid';
 
     //ReservationControllerからデータを受け取る
     const props = defineProps({
@@ -25,10 +25,12 @@
         weekStart: String,
         openedReservationId: Number,
         showYearOnFirstDay: { type: Boolean, default: true},
+        clickableShift: { type: Boolean, default: false},
+        clickableDate: String,
         readonly: { type: Boolean, default: false},
     });
 
-    const emit = defineEmits(['update', 'approve', 'view']);
+    const emit = defineEmits(['update', 'approve', 'view', 'click-shift']);
 
     const page = usePage();
     //------------------------------------------------関数-----------------------------------------------
@@ -42,6 +44,10 @@
 
     const hasShiftInfo = (day) => {
         return shiftByDay.value.shiftMap[day.date]?.length > 0 || shiftByDay.value.dayOffNameMap[day.date]?.length > 0;
+    }
+
+    const clickableShiftByDay = (day) => {
+        return props.clickableShift && (props.clickableDate == null || props.clickableDate === day.date);
     }
 
     //--------------------------------------------computed関数-------------------------------------------
@@ -151,6 +157,10 @@
         const rect = e.currentTarget.getBoundingClientRect();
         emit('view', res, rect);
     }
+
+    const onClickShift = (date, staffId) => {
+        emit('click-shift', date, staffId);
+    }
 </script>
 
 <!--
@@ -177,29 +187,32 @@
                 <div v-if="hasShiftInfo(day)"
                     class="rounded-lg bg-shift-soft border-t-4 border-shift p-1 text-sm">
                     <template v-for="shift in shiftByDay.shiftMap[day.date] ?? []" :key="shift.id">
-                        <div class="flex items-center gap-1 whitespace-nowrap">
+                        <button class="flex items-center gap-1 whitespace-nowrap w-full text-left rounded"
+                                type="button"
+                                @click="onClickShift(day.date, shift.staffId)"
+                                :disabled="!clickableShiftByDay(day)"
+                                :class="{ 'cursor-pointer hover:bg-reservation-soft' : clickableShiftByDay(day) }">
                             <span class="truncate min-w-0">{{ shift.name }}</span>
-                            <div v-if="checkUsePrivateCar(shift, day)?.start"
+                            <span v-if="checkUsePrivateCar(shift, day)?.start"
                                 title="私用車(直行)"
-                                class="rounded-full bg-ink w-2 h-2"></div>
+                                class="rounded-full bg-ink w-2 h-2"></span>
                             <span class="text-xs shrink-0">{{ formatTime(shift.start) }}〜{{ formatTime(shift.end) }}</span>
                             <span v-if="shift.amOff" class="badge bg-rest-soft text-rest font-bold">AM</span>
                             <span v-else-if="shift.pmOff" class="badge bg-rest-soft text-rest font-bold">PM</span>
-                            <div v-if="checkUsePrivateCar(shift, day)?.end"
+                            <span v-if="checkUsePrivateCar(shift, day)?.end"
                                 title="私用車(直帰)"
-                                class="rounded-full bg-ink w-2 h-2"></div>
-                            <div v-if="shift.changed"
+                                class="rounded-full bg-ink w-2 h-2"></span>
+                            <span v-if="shift.changed"
                                 class="badge bg-shift text-white">
                                 <ArrowPathIcon class="w-4 h-4"/>
-                            </div>
-                        </div>
+                            </span>
+                        </button>
                     </template>
                     <div v-if="shiftByDay.dayOffNameMap[day.date]" class="flex items-start">
                         <span class="shrink-0">休：</span>
                         <div class="flex flex-wrap gap-x-1 gap-y-0.5 flex-1  min-w-0">
-                            <span
-                                v-for="(dayOffStaff, index) in shiftByDay.dayOffNameMap[day.date] ?? []" :key="dayOffStaff.id"
-                                class="flex items-center gap-1">
+                            <span v-for="(dayOffStaff, index) in shiftByDay.dayOffNameMap[day.date] ?? []" :key="dayOffStaff.id"
+                                    class="flex items-center gap-1">
                                 <span v-if="index >= 1">･</span>
                                 <span class="whitespace-nowrap">{{ dayOffStaff.name }}</span>
                                 <div v-if="dayOffStaff.changed"
@@ -242,17 +255,17 @@
                                                 :disabled="!page.props.auth.isAdmin || props.readonly"
                                                 @click="onClickApproveButton(res)"
                                                 class="badge bg-provisional-soft text-provisional">
-                                                <ClockIcon class="h-4 w-4"/>仮
+                                                <ClockIcon class="h-4 w-4 stroke-2"/>仮
                                         </button>
                                         <button
                                             v-if="page.props.auth.isAdmin && !props.readonly"
                                             @click="onClickUpdateButton(res, $event)">
-                                            <PencilIcon class="h-4 w-4"/>
+                                            <PencilIcon class="h-4 w-4 stroke-2"/>
                                         </button>
                                         <button
                                             v-if="!page.props.auth.isAdmin && !props.readonly"
                                             @click="onClickViewButton(res, $event)">
-                                            <EyeIcon class="h-4 w-4"/>
+                                            <EyeIcon class="h-4 w-4 stroke-2"/>
                                         </button>
                                     </div>
                                 </div>
