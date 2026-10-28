@@ -23,15 +23,19 @@
     --color-shift: var(--color-sky-500);
     --color-shift-soft: var(--color-sky-100);
 
-    /* 状態 */
+    /* バッジ */
     --color-provisional: var(--color-lime-900);         /* 仮登録 */
     --color-provisional-soft: var(--color-lime-100);
     --color-provisional-line: var(--color-lime-600);
     --color-reassigned: var(--color-rose-600);          /* 配車変更 */
+    --color-rest-soft: var(--color-emerald-100);        /* 休み */
+    --color-rest: var(--color-emerald-700);
+    --color-care-vehicle: var(--color-green-600);                 /* 福祉車両バッジ */
+    --color-company-car: var(--color-blue-600);                 /* 社用車バッジ */
+
+    /* ボタン */
     --color-danger: var(--color-red-700);               /* 削除 */
     --color-neutral: var(--color-stone-200);            /* クリア・閉じるなどの控えめなボタン */
-    --color-rest-soft: var(--color-emerald-700);        /* 休み */
-    --color-rest: var(--color-emerald-100);
 
     /* 日付の色 */
     --color-sunday: var(--color-red-600);

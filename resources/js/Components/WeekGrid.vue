@@ -4,7 +4,7 @@
     import { effective } from "@/Utils/effective.js"
     import { formatTime } from "@/Utils/formatTime.js"
     import { isProvisional } from "@/Utils/isProvisional.js"
-    import { getVehicleTypeLabel } from "@/Utils/vehicleTypeLabel.js"
+    import { getVehicleTypeShortLabel } from "@/Utils/vehicleTypeLabel.js"
     import { usePage } from '@inertiajs/vue3';
 
     //Heroicons
@@ -36,6 +36,10 @@
     //------------------------------------------------関数-----------------------------------------------
     const isPrivateCar = (res) => {
         return res.vehicle_type_choice === 'private_car'
+    };
+
+    const isNotUseCar = (res) => {
+        return res.vehicle_type_choice === 'none'
     };
 
     const checkUsePrivateCar = (shift, day) => {
@@ -208,8 +212,8 @@
                                 title="私用車(直行)"
                                 class="rounded-full bg-ink w-2 h-2"></span>
                             <span class="text-xs shrink-0">{{ formatTime(shift.start) }}〜{{ formatTime(shift.end) }}</span>
-                            <span v-if="shift.amOff" class="badge bg-rest-soft text-rest font-bold">AM</span>
-                            <span v-else-if="shift.pmOff" class="badge bg-rest-soft text-rest font-bold">PM</span>
+                            <span v-if="shift.amOff" class="badge bg-rest text-rest-soft font-bold">AM</span>
+                            <span v-else-if="shift.pmOff" class="badge bg-rest text-rest-soft font-bold">PM</span>
                             <span v-if="checkUsePrivateCar(shift, day)?.end"
                                 title="私用車(直帰)"
                                 class="rounded-full bg-ink w-2 h-2"></span>
@@ -245,19 +249,22 @@
                     <div class="rounded-lg shadow-sm p-2 flex flex-col gap-1"
                         :class="card.reservations.some(r => isProvisional(r))   ? 'bg-provisional-soft border-2 border-dashed border-provisional-line'
                                                                                 : 'bg-surface border-l-4 border-reservation'">
-
-                        <div class="border-b border-line pb-1">
-                            <span>{{ card.client_last_name }}</span>
-                        </div>
-
                         <!-- カードごとに予約情報を表示する -->
                         <div class="divide-y divide-line">
                             <!--カードを装飾する。予約が選択されているとき-->
-                            <div v-for="res in card.reservations" :key="res.id"
+                            <div v-for="(res, index) in card.reservations" :key="res.id"
                                 :class="{ 'bg-reservation-soft': res.id === props.openedReservationId }"
-                                class="p-1 rounded">
-                                <div class="flex items-center gap-1">
-                                    <span class="shrink-0">{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
+                                class="p-1 rounded grid grid-cols-[3rem_1fr]">
+                                <div>
+                                    <span v-if="index===0">{{ card.client_last_name }}</span>
+                                </div>
+                                <!--支援内容-->
+                                <div class="flex flex-wrap items-center gap-1">
+                                    <span class="flex items-center gap-1 min-w-0">
+                                        <div class="shrink-0">{{ res.support_type?.name ?? '削除済'}}</div>
+                                        <div v-if="res.remarks" :title="res.remarks" class="line-clamp-1">: {{ res.remarks }}</div>
+                                        <div v-if="isPrivateCar(res)" class="rounded-full bg-ink w-2 h-2" title="私用車"></div>
+                                    </span>
 
                                     <!-- 予約操作ボタン -->
                                     <div class="flex ml-auto">
@@ -266,7 +273,7 @@
                                                 :disabled="!page.props.auth.isAdmin || props.readonly"
                                                 @click="onClickApproveButton(res)"
                                                 class="badge bg-provisional-soft text-provisional">
-                                                <ClockIcon class="h-4 w-4 stroke-2"/>仮
+                                                <ClockIcon class="h-4 w-4 stroke-2"/>
                                         </button>
                                         <button
                                             v-if="page.props.auth.isAdmin && !props.readonly"
@@ -280,29 +287,30 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div class="flex justify-between flex-wrap gap-x-1">
-                                    <div>
-                                        <span v-for="(assignedStaff, index) in res.staff_assignments" :key="assignedStaff.staff_id ?? 'none'" class="whitespace-nowrap">
-                                            <span v-if="index >= 1">･</span>
-                                            {{ assignedStaff.staff?.name ?? '未定' }}
-                                        </span>
-                                    </div>
+                                <!--担当者-->
+                                <div class="flex flex-col gap-y-1 min-w-0">
+                                    <span v-for="assignedStaff in res.staff_assignments"
+                                        :key="assignedStaff.staff_id ?? 'none'"
+                                        class="whitespace-nowrap truncate">
+                                        {{ assignedStaff.staff?.name ?? '未定' }}
+                                    </span>
+                                </div>
+                                <!--時刻と車両-->
+                                <div class="flex items-center gap-1">
+                                    <span class="shrink-0">{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
                                     <!--車両ラベル-->
                                     <span class="flex items-center gap-1">
-                                        <div v-if="!isPrivateCar(res)">{{ res.vehicle?.name ?? getVehicleTypeLabel(res.vehicle_type_choice) }}</div>
+                                        <div v-if="!isPrivateCar(res) && !isNotUseCar(res)"
+                                            class="badge text-white"
+                                            :title="res.vehicle?.name"
+                                            :class="res.vehicle_type_choice === 'care_vehicle' ? 'bg-care-vehicle' : 'bg-company-car'" >
+                                            {{ getVehicleTypeShortLabel(res.vehicle_type_choice) }}
+                                        </div>
                                         <div v-if="res.vehicle_reassigned_flag"
                                             class="badge bg-reassigned text-white"
                                             title="配車変更">
-                                            <ArrowPathIcon class="w-4 h-4"/>配車変更
+                                            <ArrowPathIcon class="w-4 h-4"/>
                                         </div>
-                                    </span>
-                                </div>
-                                <div class="flex flex-wrap items-center gap-1">
-                                    <!--支援内容ラベル-->
-                                    <span class="flex items-center gap-1 min-w-0">
-                                        <div class="shrink-0">{{ res.support_type?.name ?? '削除済'}}</div>
-                                        <div v-if="res.remarks" :title="res.remarks" class="line-clamp-1">: {{ res.remarks }}</div>
-                                        <div v-if="isPrivateCar(res)" class="rounded-full bg-ink w-2 h-2" title="私用車"></div>
                                     </span>
                                 </div>
                             </div>
