@@ -30,8 +30,11 @@
     --color-reassigned: var(--color-rose-600);          /* 配車変更 */
     --color-danger: var(--color-red-700);               /* 削除 */
     --color-neutral: var(--color-stone-200);            /* クリア・閉じるなどの控えめなボタン */
---color-rest-soft: var(--color-emerald-700);            /* 休み */
+    --color-rest-soft: var(--color-emerald-700);        /* 休み */
     --color-rest: var(--color-emerald-100);
+
+    --color-sunday: var(--color-red-600);
+    --color-saturday: var(--color-blue-600);
 }
 
 /* ---- 共通のクラス（3か所以上で使う形だけ） ---- */
@@ -44,7 +47,7 @@
 
 /* 枠線だけのボタン 色は使う側でつける */
 @utility btn-outline {
-    @apply bg-surface border-2;
+    @apply bg-surface border-1;
 }
 
 /* 入力欄（input・select・textarea）の形。入力中はメインの色の線が出る */

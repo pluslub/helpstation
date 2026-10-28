@@ -24,6 +24,7 @@
         shiftDetails: Array,
         weekStart: String,
         openedReservationId: Number,
+        showYearOnFirstDay: { type: Boolean, default: true},
         readonly: { type: Boolean, default: false},
     });
 
@@ -73,7 +74,7 @@
                 day: day,
                 weekNum: d.getDay(),
                 monthDay: `${month}/${day}(${weekNames[d.getDay()]})`,  //M/d(w)の文字列
-                showYear: i === 0 || year !== result[i - 1].year,       //ループの一つ前のオブジェクトresult[i - 1]と比較
+                showYear: i === 0 ? props.showYearOnFirstDay : year !== result[i - 1].year,       //ループの一つ前のオブジェクトresult[i - 1]と比較
             });
         }
         return result;
@@ -165,8 +166,10 @@
             <!-- computedされた日付配列を繰り返す（7回）各DOMを識別するために一意なkeyが必要 -->
             <div v-for="day in days" :key="day.date" class="min-w-0">
             <!-- 日付ラベル 週の先頭と年の切り替わりだけ年を表示する -->
-                <span v-if="day.showYear" class="text-xs text-ink-muted">{{ day.year }}/</span>{{ day.monthDay }}
-
+                <div class="text-center m-1"
+                    :class="{ 'text-sunday' : day.weekNum===0,  'text-saturday' : day.weekNum===6  }">
+                    <span v-if="day.showYear" class="text-xs">{{ day.year }}/</span>{{ day.monthDay }}
+                </div>
                 <!--
                     シフト・休み情報
                     computedにより日付毎に分別されたシフト情報を取得する。
@@ -253,21 +256,13 @@
                                         </button>
                                     </div>
                                 </div>
-                                <div class="flex flex-wrap gap-x-1">
-                                    <span v-for="(assignedStaff, index) in res.staff_assignments" :key="assignedStaff.staff_id ?? 'none'" class="whitespace-nowrap">
-                                        <span v-if="index >= 1">･</span>
-                                        {{ assignedStaff.staff?.name ?? '未定' }}
-                                    </span>
-                                </div>
-                                <div class="flex flex-wrap items-center gap-1">
-                                    <!--支援内容ラベル-->
-                                    <span class="flex items-center gap-1 min-w-0">
-                                        <div class="shrink-0">{{ res.support_type?.name ?? '削除済'}}</div>
-                                        <div v-if="res.remarks" :title="res.remarks" class="line-clamp-1">: {{ res.remarks }}</div>
-                                        <div v-if="isPrivateCar(res)" class="rounded-full bg-ink w-2 h-2" title="私用車"></div>
-                                    </span>
-                                </div>
-                                <div>
+                                <div class="flex justify-between flex-wrap gap-x-1">
+                                    <div>
+                                        <span v-for="(assignedStaff, index) in res.staff_assignments" :key="assignedStaff.staff_id ?? 'none'" class="whitespace-nowrap">
+                                            <span v-if="index >= 1">･</span>
+                                            {{ assignedStaff.staff?.name ?? '未定' }}
+                                        </span>
+                                    </div>
                                     <!--車両ラベル-->
                                     <span class="flex items-center gap-1">
                                         <div v-if="!isPrivateCar(res)">{{ res.vehicle?.name ?? getVehicleTypeLabel(res.vehicle_type_choice) }}</div>
@@ -276,6 +271,14 @@
                                             title="配車変更">
                                             <ArrowPathIcon class="w-4 h-4"/>配車変更
                                         </div>
+                                    </span>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-1">
+                                    <!--支援内容ラベル-->
+                                    <span class="flex items-center gap-1 min-w-0">
+                                        <div class="shrink-0">{{ res.support_type?.name ?? '削除済'}}</div>
+                                        <div v-if="res.remarks" :title="res.remarks" class="line-clamp-1">: {{ res.remarks }}</div>
+                                        <div v-if="isPrivateCar(res)" class="rounded-full bg-ink w-2 h-2" title="私用車"></div>
                                     </span>
                                 </div>
                             </div>

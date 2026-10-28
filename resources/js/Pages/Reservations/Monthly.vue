@@ -146,12 +146,13 @@
 
     <!-- 月一覧画面 -->
     <div class="flex flex-col gap-6 px-2">
-        <div v-for="day in props.sundayList" :key="day">
+        <div v-for="(day, index) in props.sundayList" :key="day">
             <WeekGrid
                 :allReservations="props.reservations"
                 :reservations="filteredReservations"
                 :shiftDetails="shiftDetails"
                 :weekStart="day"
+                :showYearOnFirstDay="index === 0"
                 readonly>
             </WeekGrid>
         </div>

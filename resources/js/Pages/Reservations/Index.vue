@@ -413,7 +413,17 @@
     @：           v-on:の省略形。イベントが起きたときに実行する処理を書く。
  -->
 <template>
-    <div class="bg-surface border-b border-line shadow-sm sticky top-0 z-5 px-2 py-2 flex flex-col gap-2">
+    <!--border-b        下側に線を引く
+        border-line     app.cssの--color-lineを参照する
+        shadow-sm       小さく影をつける
+        sticky top-0    画面の上端に固定する
+        z-5             重なったときに手前に表示する　ポップアップ(z-10)よりも下
+        p-2             内側に8pxの余白を設ける
+        gap-2           要素ごとの間隔を8px設ける
+        flex            要素を flex の入れ物にする　gap・items-・justify-などが適用できるようになる
+        flex-col        並べる向きを縦にする
+    -->
+    <div class="bg-surface border-b border-line shadow-sm sticky top-0 z-5 p-2 flex flex-col gap-2">
         <!-- 週操作ボタン -->
         <!--
             preserve-state
