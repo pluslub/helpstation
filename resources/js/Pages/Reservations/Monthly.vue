@@ -99,45 +99,7 @@
     @：           v-on:の省略形。イベントが起きたときに実行する処理を書く。
  -->
 <template>
-    <div ref="headerRef" class="bg-surface sticky top-0 z-5 p-2 flex flex-col gap-2">
-        <div class="flex justify-between flex-wrap gap-2">
-            <!-- 月操作ボタン -->
-            <!--
-                preserve-state
-                    ページを移動したときにコンポーネントを作り直さずにpropsだけを入れ替えるので、
-                    refが保存される。
-                preserve-scroll:
-                    ページを移動しても、スクロール位置をそのまま保つ
-            -->
-            <div class="flex items-center gap-2">
-                <Link
-                    :href="`/reservations/monthly/?month=${prevMonth}`"
-                    preserve-state preserve-scroll
-                    class="btn bg-neutral text-ink">
-                    <ChevronLeftIcon class="w-5 h-5"/>先月</Link>
-                <Link
-                    href="/reservations/monthly/"
-                    preserve-state preserve-scroll
-                    class="btn bg-neutral text-ink">今月</Link>
-                <input type="month"
-                    @change="onDateChange($event)"
-                    @keydown="onKeyDownOnInputDate()"
-                    @keydown.enter="onEnterOnInputDate($event)"
-                    @blur="onBlurFromInputDate($event)"
-                    :value="month"
-                    class="field"
-                    :min="page.props.selectableMinDate.slice(0, 7)"/>
-                <Link
-                    :href="`/reservations/monthly/?month=${nextMonth}`"
-                    preserve-state preserve-scroll
-                    class="btn bg-neutral text-ink">
-                    来月<ChevronRightIcon class="w-5 h-5"/></Link>
-            </div>
-            <div class="flex items-center gap-2">
-                <Link href="/" class="btn btn-outline border-line text-ink">
-                    <CalendarDaysIcon class="w-5 h-5"/>週表示</Link>
-            </div>
-        </div>
+    <div ref="headerRef" class="bg-surface sticky top-0 z-5 p-2 flex flex-wrap gap-2 lg:grid lg:grid-cols-[1fr_auto_1fr]">
         <!-- フィルター -->
         <ReservationFilter
             :staffOptions="staffOptions"
@@ -145,7 +107,44 @@
             :clientOptions="clientOptions"
             v-model:filterType="filterType"
             v-model:filterId="filterId"
-        ></ReservationFilter>
+            class="lg:justify-self-start">
+        </ReservationFilter>
+        <!-- 月操作ボタン -->
+        <!--
+            preserve-state
+                ページを移動したときにコンポーネントを作り直さずにpropsだけを入れ替えるので、
+                refが保存される。
+            preserve-scroll:
+                ページを移動しても、スクロール位置をそのまま保つ
+        -->
+        <div class="flex items-center gap-2">
+            <Link
+                :href="`/reservations/monthly/?month=${prevMonth}`"
+                preserve-state preserve-scroll
+                class="btn bg-neutral text-ink">
+                <ChevronLeftIcon class="w-5 h-5"/>先月</Link>
+            <Link
+                href="/reservations/monthly/"
+                preserve-state preserve-scroll
+                class="btn bg-neutral text-ink">今月</Link>
+            <input type="month"
+                @change="onDateChange($event)"
+                @keydown="onKeyDownOnInputDate()"
+                @keydown.enter="onEnterOnInputDate($event)"
+                @blur="onBlurFromInputDate($event)"
+                :value="month"
+                class="field"
+                :min="page.props.selectableMinDate.slice(0, 7)"/>
+            <Link
+                :href="`/reservations/monthly/?month=${nextMonth}`"
+                preserve-state preserve-scroll
+                class="btn bg-neutral text-ink">
+                来月<ChevronRightIcon class="w-5 h-5"/></Link>
+        </div>
+        <div class="flex items-center gap-2 lg:justify-self-end">
+            <Link href="/" class="btn btn-outline border-line text-ink">
+                <CalendarDaysIcon class="w-5 h-5"/>週表示</Link>
+        </div>
     </div>
 
     <!-- 月一覧画面 -->

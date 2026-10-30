@@ -24,16 +24,16 @@
     --color-shift-soft: var(--color-sky-50);
 
     /* バッジ */
-    --color-provisional: var(--color-lime-900);         /* 仮登録 */
+    --color-provisional: var(--color-yellow-900);         /* 仮登録 */
     --color-provisional-soft: var(--color-yellow-100);
     --color-provisional-line: var(--color-yellow-600);
     --color-reassigned: var(--color-rose-600);          /* 配車変更 */
     --color-rest-soft: var(--color-yellow-300);        /* 休み */
     --color-rest: var(--color-yellow-800);
-    --color-care-vehicle-soft: var(--color-green-200);  /* 福祉車両バッジ */
-    --color-care-vehicle: var(--color-green-800);
+    --color-care-vehicle-soft: var(--color-green-100);  /* 福祉車両バッジ */
+    --color-care-vehicle: var(--color-green-900);
     --color-company-car-soft: var(--color-sky-200);         /* 社用車バッジ */
-    --color-company-car: var(--color-blue-800);
+    --color-company-car: var(--color-blue-900);
 
     /* ボタン */
     --color-danger: var(--color-red-700);               /* 削除 */
@@ -69,7 +69,7 @@
 
 /* バッジの形（色は使う側で bg-provisional-soft text-provisional などを付ける） */
 @utility badge {
-    @apply inline-flex items-center gap-0.5 rounded-md px-1 text-xs shrink-0;
+    @apply inline-flex items-center gap-0.5 rounded-md px-0.5 py-0.5 text-sm shrink-0 font-bold;
 }
 
 /* 入力フォームの1行。左に項目名（5rem）、右に入力欄 */
