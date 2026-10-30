@@ -10,6 +10,7 @@
     /* ---- 色：意味ごとの名前（ここを変えると全画面に反映される） ---- */
     /* 画面全体 */
     --color-base: var(--color-stone-400);       /* 背景 */
+    --color-date: var(--color-stone-200);       /* 日付の背景 */
     --color-surface: var(--color-white);       /* カード・ヘッダーの背景 */
     --color-ink: var(--color-stone-800);       /* 本文の文字 */
     --color-ink-muted: var(--color-stone-600); /* 補足の文字 */

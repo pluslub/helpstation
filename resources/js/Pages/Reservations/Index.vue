@@ -486,15 +486,15 @@
             </Link>
         </div>
         <div class="flex items-center gap-2 lg:justify-self-end">
-            <Link href="/reservations/monthly" class="btn btn-outline border-line text-ink">
-                <CalendarDaysIcon class="w-5 h-5"/>月表示
-            </Link>
             <button @click="onClickEntryButton($event)" class="btn bg-reservation text-ink relative">
                 <PlusIcon class="w-5 h-5"/>予約追加
                 <span v-if="isDirtyPopup"
                     title="入力中の予約があります"
                     class="absolute rounded-full bg-danger ring-2 ring-surface top-0 -right-0.5 w-2.5 h-2.5"></span>
             </button>
+            <Link href="/reservations/monthly" class="btn btn-outline border-line text-ink">
+                <CalendarDaysIcon class="w-5 h-5"/>月表示
+            </Link>
         </div>
     </div>
 
