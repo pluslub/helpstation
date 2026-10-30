@@ -9,7 +9,7 @@
 
     /* ---- 色：意味ごとの名前（ここを変えると全画面に反映される） ---- */
     /* 画面全体 */
-    --color-base: var(--color-stone-200);       /* 背景 */
+    --color-base: var(--color-stone-400);       /* 背景 */
     --color-surface: var(--color-white);       /* カード・ヘッダーの背景 */
     --color-ink: var(--color-stone-800);       /* 本文の文字 */
     --color-ink-muted: var(--color-stone-600); /* 補足の文字 */
@@ -21,19 +21,19 @@
 
     /* シフト */
     --color-shift: var(--color-sky-500);
-    --color-shift-soft: var(--color-sky-100);
+    --color-shift-soft: var(--color-sky-50);
 
     /* バッジ */
     --color-provisional: var(--color-lime-900);         /* 仮登録 */
-    --color-provisional-soft: var(--color-lime-100);
-    --color-provisional-line: var(--color-lime-600);
+    --color-provisional-soft: var(--color-yellow-100);
+    --color-provisional-line: var(--color-yellow-600);
     --color-reassigned: var(--color-rose-600);          /* 配車変更 */
     --color-rest-soft: var(--color-yellow-300);        /* 休み */
     --color-rest: var(--color-yellow-800);
     --color-care-vehicle-soft: var(--color-green-200);  /* 福祉車両バッジ */
-    --color-care-vehicle: var(--color-green-600);
-    --color-company-car-soft: var(--color-blue-200);         /* 社用車バッジ */
-    --color-company-car: var(--color-blue-600);
+    --color-care-vehicle: var(--color-green-800);
+    --color-company-car-soft: var(--color-sky-200);         /* 社用車バッジ */
+    --color-company-car: var(--color-blue-800);
 
     /* ボタン */
     --color-danger: var(--color-red-700);               /* 削除 */
@@ -41,7 +41,7 @@
 
     /* 日付の色 */
     --color-sunday: var(--color-red-600);
-    --color-saturday: var(--color-blue-600);
+    --color-saturday: var(--color-sky-500);
 }
 
 /* ---- 共通のクラス（3か所以上で使う形だけ） ---- */

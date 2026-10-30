@@ -200,30 +200,38 @@
                     computedにより日付毎に分別されたシフト情報を取得する。
                 -->
                 <div v-if="hasShiftInfo(day)"
-                    class="rounded-lg bg-shift-soft border-t-4 border-shift p-1 text-sm">
+                    class="grid grid-cols-[auto_auto_auto_auto_1fr] gap-x-1 rounded-lg bg-shift-soft border-t-4 border-shift p-1 text-sm">
                     <template v-for="shift in shiftByDay.shiftMap[day.date] ?? []" :key="shift.id">
-                        <button class="flex items-center gap-1 whitespace-nowrap w-full text-left rounded"
+                        <button class="grid grid-cols-subgrid col-span-5 text-left rounded items-center"
                                 type="button"
                                 @click="onClickShift(day.date, shift.staffId)"
                                 :disabled="!clickableShiftByDay(day)"
                                 :class="{ 'cursor-pointer hover:bg-reservation-soft' : clickableShiftByDay(day) }">
                             <span class="truncate min-w-0">{{ shift.name }}</span>
-                            <span v-if="checkUsePrivateCar(shift, day)?.start"
-                                title="私用車(直行)"
-                                class="rounded-full bg-ink w-2 h-2"></span>
-                            <span class="text-xs shrink-0">{{ formatTime(shift.start) }}〜{{ formatTime(shift.end) }}</span>
-                            <span v-if="shift.amOff" class="badge bg-rest-soft text-rest font-bold">AM</span>
-                            <span v-else-if="shift.pmOff" class="badge bg-rest-soft text-rest font-bold">PM</span>
-                            <span v-if="checkUsePrivateCar(shift, day)?.end"
-                                title="私用車(直帰)"
-                                class="rounded-full bg-ink w-2 h-2"></span>
-                            <span v-if="shift.changed"
-                                class="badge bg-shift text-white">
-                                <ArrowPathIcon class="w-4 h-4"/>
+                            <span>
+                                <span v-if="checkUsePrivateCar(shift, day)?.start"
+                                    title="私用車(直行)"
+                                    class="rounded-full bg-ink w-2 h-2 inline-block">
+                                </span>
+                            </span>
+                            <span class="text-xs text-right tabular-nums">{{ formatTime(shift.start) }} 〜
+                            </span>
+                            <span class="text-xs tabular-nums">{{ formatTime(shift.end) }}
+                            </span>
+                            <span class="flex items-center gap-1">
+                                <span v-if="shift.amOff" class="badge bg-rest-soft text-rest font-bold">AM</span>
+                                <span v-else-if="shift.pmOff" class="badge bg-rest-soft text-rest font-bold">PM</span>
+                                <span v-if="checkUsePrivateCar(shift, day)?.end"
+                                    title="私用車(直帰)"
+                                    class="rounded-full bg-ink w-2 h-2 inline-block"></span>
+                                <span v-if="shift.changed"
+                                    class="badge bg-shift text-white">
+                                    <ArrowPathIcon class="w-4 h-4"/>
+                                </span>
                             </span>
                         </button>
                     </template>
-                    <div v-if="shiftByDay.dayOffNameMap[day.date]" class="flex items-start">
+                    <div v-if="shiftByDay.dayOffNameMap[day.date]" class="flex items-start col-span-full pt-2">
                         <span class="shrink-0">休：</span>
                         <div class="flex flex-wrap gap-x-1 gap-y-0.5 flex-1  min-w-0">
                             <span v-for="(dayOffStaff, index) in shiftByDay.dayOffNameMap[day.date] ?? []" :key="dayOffStaff.id"
@@ -254,12 +262,12 @@
                             <!--カードを装飾する。予約が選択されているとき-->
                             <div v-for="(res, index) in card.reservations" :key="res.id"
                                 :class="{ 'bg-reservation-soft': res.id === props.openedReservationId }"
-                                class="p-1 rounded grid grid-cols-[4.5rem_1fr] gap-1">
-                                <div>
-                                    <span v-if="index===0">{{ card.client_last_name }}</span>
+                                class="p-1 rounded grid grid-cols-[4.5rem_1fr] gap-x-1">
+                                <div class="col-start-1 row-start-1">
+                                    <span v-if="index === 0">{{ card.client_last_name }}</span>
                                 </div>
                                 <!--支援内容-->
-                                <div class="flex flex-col gap-1 min-w-0">
+                                <div class="min-w-0 col-start-2 row-start-1">
                                     <div class="flex items-center gap-1">
                                         <span class="flex items-center gap-1 flex-1 min-w-0">
                                             <span class="truncate min-w-0">{{ res.support_type?.name ?? '削除済'}}</span>
@@ -290,23 +298,24 @@
                                             </button>
                                         </div>
                                     </div>
-                                    <span v-if="res.remarks"
-                                        :title="res.remarks"
+                                </div>
+                                <!--担当者-->
+                                <div class="grid grid-cols-2 gap-x-1 min-w-0 col-start-1 row-start-2 row-span-2 self-end">
+                                    <span v-for="assignedStaff in res.staff_assignments"
+                                        :key="assignedStaff.staff_id ?? 'none'"
+                                        class="truncate text-sm">
+                                        {{ assignedStaff.staff?.name ?? '未定' }}
+                                    </span>
+                                </div>
+                                <div v-if="res.remarks" class="col-start-2 row-start-2">
+                                    <span :title="res.remarks"
                                         class="text-ink-muted break-words line-clamp-2 text-xs">
                                         {{ res.remarks }}
                                     </span>
                                 </div>
-                                <!--担当者-->
-                                <div class="grid grid-cols-2 gap-x-1 min-w-0">
-                                    <span v-for="assignedStaff in res.staff_assignments"
-                                        :key="assignedStaff.staff_id ?? 'none'"
-                                        class="truncate">
-                                        {{ assignedStaff.staff?.name ?? '未定' }}
-                                    </span>
-                                </div>
                                 <!--時刻と車両-->
-                                <div class="flex items-center gap-1">
-                                    <span class="shrink-0">{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
+                                <div class="flex items-center gap-1 col-start-2 row-start-3">
+                                    <span class="shrink-0 text-sm">{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
                                     <!--車両ラベル-->
                                     <span class="flex items-center gap-1">
                                         <div v-if="!isPrivateCar(res) && !isNotUseCar(res)"
