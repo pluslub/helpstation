@@ -1,5 +1,8 @@
 <script setup>
+    import { ref, onMounted } from 'vue';
     import { FunnelIcon} from '@heroicons/vue/24/outline';
+
+    const selectKey = ref(0);
 
     const filterType = defineModel('filterType');
     const filterId = defineModel('filterId');
@@ -8,6 +11,12 @@
         staffOptions: Array,
         vehicleOptions: Array,
         clientOptions: Array,
+    });
+
+    onMounted(() =>{
+        document.fonts.ready.then(() => {
+            selectKey.value++;
+        });
     });
 </script>
 
@@ -24,7 +33,7 @@
         -->
         <div class="relative">
             <FunnelIcon class="absolute top-1/2 -translate-y-1/2 pointer-events-none left-2 w-5 h-5" aria-hidden="true"/>
-            <select v-model="filterType" @change="filterId = null" class="field pl-8" aria-label="絞り込み">
+            <select v-model="filterType" @change="filterId = null" :key="selectKey" class="field pl-8" aria-label="絞り込み">
                 <option value="all">全体</option>
                 <option value="self">個人</option>
                 <option value="staff">職員</option>
