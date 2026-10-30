@@ -3,6 +3,7 @@
     import { computed } from 'vue';
     import { effective } from "@/Utils/effective.js"
     import { formatTime } from "@/Utils/formatTime.js"
+    import { formatDate } from "@/Utils/formatDate.js"
     import { isProvisional } from "@/Utils/isProvisional.js"
     import { getVehicleTypeShortLabel } from "@/Utils/vehicleTypeLabel.js"
     import { usePage } from '@inertiajs/vue3';
@@ -64,6 +65,8 @@
         const rect = { left: dayColumnRect.left, right: dayColumnRect.right, top: buttonRect.top, bottom: buttonRect.bottom };
         return rect;
     }
+
+    const today = formatDate(new Date());
 
     //--------------------------------------------computed関数-------------------------------------------
     /**
@@ -187,62 +190,70 @@
 <template>
     <div class="flex flex-col gap-2">
         <!-- 日付・シフト・休み情報 -->
-        <div class="grid grid-cols-7 gap-2">
+        <div class="grid grid-cols-7 gap-2 px-2 sticky top-(--header-height) z-4 bg-surface p-1 shadow-sm font-bold">
             <!-- computedされた日付配列を繰り返す（7回）各DOMを識別するために一意なkeyが必要 -->
             <div v-for="day in days" :key="day.date" class="min-w-0">
             <!-- 日付ラベル 週の先頭と年の切り替わりだけ年を表示する -->
-                <div class="text-center m-1"
-                    :class="{ 'text-sunday' : day.weekNum===0,  'text-saturday' : day.weekNum===6  }">
+                <div class="text-center p-1 m-1"
+                    :class="{ 'text-sunday' : day.weekNum === 0,
+                             'text-saturday' : day.weekNum === 6,
+                             'bg-reservation rounded-lg' : day.date === today}">
                     <span v-if="day.showYear" class="text-xs">{{ day.year }}/</span>{{ day.monthDay }}
                 </div>
-                <!--
-                    シフト・休み情報
-                    computedにより日付毎に分別されたシフト情報を取得する。
-                -->
-                <div v-if="hasShiftInfo(day)"
-                    class="grid grid-cols-[auto_auto_auto_auto_1fr] gap-x-1 rounded-lg bg-shift-soft border-t-4 border-shift p-1 text-sm">
-                    <template v-for="shift in shiftByDay.shiftMap[day.date] ?? []" :key="shift.id">
-                        <button class="grid grid-cols-subgrid col-span-5 text-left rounded items-center"
-                                type="button"
-                                @click="onClickShift(day.date, shift.staffId)"
-                                :disabled="!clickableShiftByDay(day)"
-                                :class="{ 'cursor-pointer hover:bg-reservation-soft' : clickableShiftByDay(day) }">
-                            <span class="truncate min-w-0">{{ shift.name }}</span>
-                            <span>
-                                <span v-if="checkUsePrivateCar(shift, day)?.start"
-                                    title="私用車(直行)"
-                                    class="rounded-full bg-ink w-2 h-2 inline-block">
+            </div>
+        </div>
+        <!--
+            シフト・休み情報
+            computedにより日付毎に分別されたシフト情報を取得する。
+        -->
+        <div class="grid grid-cols-7 gap-2 px-2">
+            <div v-for="day in days" :key="day.date" class="min-w-0">
+                <div>
+                    <div v-if="hasShiftInfo(day)"
+                        class="grid grid-cols-[auto_auto_auto_auto_1fr] gap-x-1 rounded-lg bg-shift-soft border-t-4 border-shift p-1 text-sm">
+                        <template v-for="shift in shiftByDay.shiftMap[day.date] ?? []" :key="shift.id">
+                            <button class="grid grid-cols-subgrid col-span-5 text-left rounded items-center"
+                                    type="button"
+                                    @click="onClickShift(day.date, shift.staffId)"
+                                    :disabled="!clickableShiftByDay(day)"
+                                    :class="{ 'cursor-pointer hover:bg-reservation-soft' : clickableShiftByDay(day) }">
+                                <span class="truncate min-w-0">{{ shift.name }}</span>
+                                <span>
+                                    <span v-if="checkUsePrivateCar(shift, day)?.start"
+                                        title="私用車(直行)"
+                                        class="rounded-full bg-ink w-2 h-2 inline-block">
+                                    </span>
                                 </span>
-                            </span>
-                            <span class="text-xs text-right tabular-nums">{{ formatTime(shift.start) }} 〜
-                            </span>
-                            <span class="text-xs tabular-nums">{{ formatTime(shift.end) }}
-                            </span>
-                            <span class="flex items-center gap-1">
-                                <span v-if="shift.amOff" class="badge bg-rest-soft text-rest font-bold">AM</span>
-                                <span v-else-if="shift.pmOff" class="badge bg-rest-soft text-rest font-bold">PM</span>
-                                <span v-if="checkUsePrivateCar(shift, day)?.end"
-                                    title="私用車(直帰)"
-                                    class="rounded-full bg-ink w-2 h-2 inline-block"></span>
-                                <span v-if="shift.changed"
-                                    class="badge bg-shift text-white">
-                                    <ArrowPathIcon class="w-4 h-4"/>
+                                <span class="text-xs text-right tabular-nums">{{ formatTime(shift.start) }} 〜
                                 </span>
-                            </span>
-                        </button>
-                    </template>
-                    <div v-if="shiftByDay.dayOffNameMap[day.date]" class="flex items-start col-span-full pt-2">
-                        <span class="shrink-0">休：</span>
-                        <div class="flex flex-wrap gap-x-1 gap-y-0.5 flex-1  min-w-0">
-                            <span v-for="(dayOffStaff, index) in shiftByDay.dayOffNameMap[day.date] ?? []" :key="dayOffStaff.id"
-                                    class="flex items-center gap-1">
-                                <span v-if="index >= 1">･</span>
-                                <span class="whitespace-nowrap">{{ dayOffStaff.name }}</span>
-                                <div v-if="dayOffStaff.changed"
-                                    class="badge bg-shift text-white">
-                                    <ArrowPathIcon class="w-4 h-4"/>
-                                </div>
-                            </span>
+                                <span class="text-xs tabular-nums">{{ formatTime(shift.end) }}
+                                </span>
+                                <span class="flex items-center gap-1">
+                                    <span v-if="shift.amOff" class="badge bg-rest-soft text-rest font-bold">AM</span>
+                                    <span v-else-if="shift.pmOff" class="badge bg-rest-soft text-rest font-bold">PM</span>
+                                    <span v-if="checkUsePrivateCar(shift, day)?.end"
+                                        title="私用車(直帰)"
+                                        class="rounded-full bg-ink w-2 h-2 inline-block"></span>
+                                    <span v-if="shift.changed"
+                                        class="badge bg-shift text-white">
+                                        <ArrowPathIcon class="w-4 h-4"/>
+                                    </span>
+                                </span>
+                            </button>
+                        </template>
+                        <div v-if="shiftByDay.dayOffNameMap[day.date]" class="flex items-start col-span-full pt-2">
+                            <span class="shrink-0">休：</span>
+                            <div class="flex flex-wrap gap-x-1 gap-y-0.5 flex-1  min-w-0">
+                                <span v-for="(dayOffStaff, index) in shiftByDay.dayOffNameMap[day.date] ?? []" :key="dayOffStaff.id"
+                                        class="flex items-center gap-1">
+                                    <span v-if="index >= 1">･</span>
+                                    <span class="whitespace-nowrap">{{ dayOffStaff.name }}</span>
+                                    <div v-if="dayOffStaff.changed"
+                                        class="badge bg-shift text-white">
+                                        <ArrowPathIcon class="w-4 h-4"/>
+                                    </div>
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -250,7 +261,7 @@
         </div>
 
         <!-- 予約カード -->
-        <div class="grid grid-cols-7 gap-2">
+        <div class="grid grid-cols-7 gap-2 px-2">
             <div v-for="day in days" :key="day.date" class="flex flex-col gap-2 min-w-0" data-day-column>
                 <template v-for="card in reservationsByDay[day.date] ?? []" :key="card.client_id">
                     <!-- 利用者ごとにカードを表示する -->

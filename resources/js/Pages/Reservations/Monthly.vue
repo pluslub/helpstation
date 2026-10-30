@@ -7,6 +7,7 @@
     import ReservationFilter from '@/Components/ReservationFilter.vue';
 
     import { useReservationFilter } from "@/Composables/useReservationFilter.js"
+    import { useHeaderHeight } from "@/Composables/useHeaderHeight.js"
 
     //Heroicons
     import { ChevronLeftIcon, ChevronRightIcon, CalendarDaysIcon} from '@heroicons/vue/24/outline';
@@ -29,6 +30,9 @@
     //日付直接入力欄でキーダウンされたかどうか
     //入力途中の遷移を防ぐため、keydown中なら無視し、カレンダーの選択・エンターキー押下・フォーカスの移動で遷移する
     let keydownOnInputDate = false;
+
+    const headerRef = useHeaderHeight();
+
     //--------------------------------------------関数-------------------------------------------
     const moveMonth = (month, isValid) => {
         if(!month || !isValid) return;
@@ -95,7 +99,7 @@
     @：           v-on:の省略形。イベントが起きたときに実行する処理を書く。
  -->
 <template>
-    <div class="bg-surface border-b border-line shadow-sm sticky top-0 z-5 px-2 py-2 flex flex-col gap-2">
+    <div ref="headerRef" class="bg-surface sticky top-0 z-5 p-2 flex flex-col gap-2">
         <div class="flex justify-between flex-wrap gap-2">
             <!-- 月操作ボタン -->
             <!--
@@ -145,7 +149,7 @@
     </div>
 
     <!-- 月一覧画面 -->
-    <div class="flex flex-col gap-6 px-2">
+    <div class="flex flex-col gap-6">
         <div v-for="(day, index) in props.sundayList" :key="day">
             <WeekGrid
                 :allReservations="props.reservations"

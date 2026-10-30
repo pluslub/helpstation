@@ -40,8 +40,8 @@
     --color-neutral: var(--color-stone-200);            /* クリア・閉じるなどの控えめなボタン */
 
     /* 日付の色 */
-    --color-sunday: var(--color-red-600);
-    --color-saturday: var(--color-sky-500);
+    --color-sunday: var(--color-red-700);
+    --color-saturday: var(--color-sky-700);
 }
 
 /* ---- 共通のクラス（3か所以上で使う形だけ） ---- */

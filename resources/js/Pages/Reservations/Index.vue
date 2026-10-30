@@ -8,7 +8,9 @@
     import ReservationFormPopup from "@/Components/ReservationFormPopup.vue";    //@はresources/jsを指す
 
     import { useReservationFilter } from "@/Composables/useReservationFilter.js"
+    import { useHeaderHeight } from "@/Composables/useHeaderHeight.js"
     import { formatTime } from "@/Utils/formatTime.js"
+    import { formatDate } from "@/Utils/formatDate.js"
 
     //Heroicons
     import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, CalendarDaysIcon} from '@heroicons/vue/24/outline';
@@ -64,6 +66,8 @@
     //ボタンとポップアップの隙間（px）
     const popupDisplayMargin = 2;
 
+    const headerRef = useHeaderHeight();
+
     //--------------------------------------------ref-------------------------------------------
     // ref：画面の操作で書き換わる値を入れる箱。変わったらこれを使っているcomputedが再計算される。
 
@@ -93,14 +97,6 @@
         reservationUpdateForm.defaults();
 
         selectReservation.value = res;
-    }
-    const formatDate = (date) => {
-        const year = date.getFullYear();
-        const month = date.getMonth() + 1;    //月は0～11で表されるので+1する
-        const day = date.getDate();
-
-        //'yyyy-MM-dd'の文字列を作成
-        return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
     }
 
     const getDefaultReservationDate = () =>{
@@ -453,7 +449,7 @@
         flex            要素を flex の入れ物にする　gap・items-・justify-などが適用できるようになる
         flex-col        並べる向きを縦にする
     -->
-    <div class="bg-surface border-b border-line shadow-sm sticky top-0 z-5 p-2 flex flex-col gap-2">
+    <div ref="headerRef" class="bg-surface sticky top-0 z-5 p-2 flex flex-col gap-2">
         <!-- 週操作ボタン -->
         <!--
             preserve-state
@@ -463,7 +459,7 @@
                 ページを移動しても、スクロール位置をそのまま保つ
         -->
         <div class="flex justify-between flex-wrap gap-2">
-            <div class="flex items-center gap-2 ">
+            <div class="flex items-center gap-2">
                 <Link :href="`/?week=${prevWeek}`" preserve-state preserve-scroll class="btn bg-neutral text-ink">
                     <ChevronLeftIcon class="w-5 h-5"/>前週
                 </Link>
