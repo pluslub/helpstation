@@ -212,8 +212,8 @@
                                 title="私用車(直行)"
                                 class="rounded-full bg-ink w-2 h-2"></span>
                             <span class="text-xs shrink-0">{{ formatTime(shift.start) }}〜{{ formatTime(shift.end) }}</span>
-                            <span v-if="shift.amOff" class="badge bg-rest text-rest-soft font-bold">AM</span>
-                            <span v-else-if="shift.pmOff" class="badge bg-rest text-rest-soft font-bold">PM</span>
+                            <span v-if="shift.amOff" class="badge bg-rest-soft text-rest font-bold">AM</span>
+                            <span v-else-if="shift.pmOff" class="badge bg-rest-soft text-rest font-bold">PM</span>
                             <span v-if="checkUsePrivateCar(shift, day)?.end"
                                 title="私用車(直帰)"
                                 class="rounded-full bg-ink w-2 h-2"></span>
@@ -259,33 +259,42 @@
                                     <span v-if="index===0">{{ card.client_last_name }}</span>
                                 </div>
                                 <!--支援内容-->
-                                <div class="flex flex-wrap items-center gap-1">
-                                    <span class="flex items-center gap-1 min-w-0">
-                                        <div class="shrink-0">{{ res.support_type?.name ?? '削除済'}}</div>
-                                        <div v-if="res.remarks" :title="res.remarks" class="line-clamp-1">: {{ res.remarks }}</div>
-                                        <div v-if="isPrivateCar(res)" class="rounded-full bg-ink w-2 h-2" title="私用車"></div>
-                                    </span>
+                                <div class="flex flex-col gap-1 min-w-0">
+                                    <div class="flex items-center gap-1">
+                                        <span class="flex items-center gap-1 flex-1 min-w-0">
+                                            <span class="truncate min-w-0">{{ res.support_type?.name ?? '削除済'}}</span>
+                                            <span v-if="isPrivateCar(res)"
+                                                    class="rounded-full bg-ink w-2 h-2 shrink-0"
+                                                    title="私用車">
+                                            </span>
+                                        </span>
 
-                                    <!-- 予約操作ボタン -->
-                                    <div class="flex ml-auto">
-                                        <button title="仮登録"
-                                                v-if="isProvisional(res)"
-                                                :disabled="!page.props.auth.isAdmin || props.readonly"
-                                                @click="onClickApproveButton(res)"
-                                                class="badge bg-provisional-soft text-provisional">
-                                                <ClockIcon class="h-4 w-4 stroke-2"/>
-                                        </button>
-                                        <button
-                                            v-if="page.props.auth.isAdmin && !props.readonly"
-                                            @click="onClickUpdateButton(res, $event)">
-                                            <PencilIcon class="h-4 w-4 stroke-2"/>
-                                        </button>
-                                        <button
-                                            v-if="!page.props.auth.isAdmin && !props.readonly"
-                                            @click="onClickViewButton(res, $event)">
-                                            <EyeIcon class="h-4 w-4 stroke-2"/>
-                                        </button>
+                                        <!-- 予約操作ボタン -->
+                                        <div class="flex ml-auto shrink-0">
+                                            <button title="仮登録"
+                                                    v-if="isProvisional(res)"
+                                                    :disabled="!page.props.auth.isAdmin || props.readonly"
+                                                    @click="onClickApproveButton(res)"
+                                                    class="badge bg-provisional-soft text-provisional">
+                                                    <ClockIcon class="h-4 w-4 stroke-2"/>
+                                            </button>
+                                            <button
+                                                v-if="page.props.auth.isAdmin && !props.readonly"
+                                                @click="onClickUpdateButton(res, $event)">
+                                                <PencilIcon class="h-4 w-4 stroke-2"/>
+                                            </button>
+                                            <button
+                                                v-if="!page.props.auth.isAdmin && !props.readonly"
+                                                @click="onClickViewButton(res, $event)">
+                                                <EyeIcon class="h-4 w-4 stroke-2"/>
+                                            </button>
+                                        </div>
                                     </div>
+                                    <span v-if="res.remarks"
+                                        :title="res.remarks"
+                                        class="text-ink-muted break-words line-clamp-2 text-xs">
+                                        {{ res.remarks }}
+                                    </span>
                                 </div>
                                 <!--担当者-->
                                 <div class="grid grid-cols-2 gap-x-1 min-w-0">

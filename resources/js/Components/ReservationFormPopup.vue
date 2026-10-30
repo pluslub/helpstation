@@ -12,7 +12,7 @@
     });
 -->
 <script setup>
-    import { ref, onMounted, onUnmounted, watch } from 'vue';
+    import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
     import { vehicleTypeLabels } from "@/Utils/vehicleTypeLabel.js"
     import { PaperAirplaneIcon, XMarkIcon, TrashIcon } from '@heroicons/vue/24/outline';
 
@@ -20,7 +20,7 @@
     const props = defineProps({
         form: Object,
         formClients: Array,
-        formStaff: Array,
+        formStaff: Array,   //['id', 'name']
         formSupportTypes: Array,
         popupMode: String,
         selectClientName: String,
@@ -31,6 +31,7 @@
     const popupPositionTop = defineModel('popupPositionTop');
 
     const popup = ref(null);
+    const addStaffId = ref(null);
 
     let popupGapTop = null;
     let popupGapLeft = null;
@@ -66,13 +67,20 @@
         popupPositionTop.value = Math.min(Math.max(0, top), maxTop);
     }
 
-    //--------------------------------------------watch関数-------------------------------------------
+    //--------------------------------------------computed, watch関数-------------------------------------------
     //ポップアップを開いたまま、別の予約の変更ボタンを押したときなどに位置を直す
     watch([() => props.selectReservationId, () => props.popupMode, popupPositionLeft, popupPositionTop], () => {
         if(popupPositionTop.value == null) return;
         clampPopupPosition(popupPositionLeft.value, popupPositionTop.value);
     }, {flush: 'post'})
 
+    const selectedStaffs = computed(() => {
+        return props.formStaff.filter((s) => props.form.staff_ids.includes(s.id));
+    });
+
+    const unselectedStaffs = computed(() => {
+        return props.formStaff.filter((s) => !props.form.staff_ids.includes(s.id));
+    });
     //--------------------------------------------event-------------------------------------------
     //ポップアップのヘッダーをクリックしたらドラッグ開始と判断する
     const onDragStart = (e) =>{
@@ -111,6 +119,15 @@
         onClose();
     }
 
+    const onSelectedStaff = () =>{
+        props.form.staff_ids.push(addStaffId.value);
+        addStaffId.value = null;
+    }
+
+    const onUnselectStaff = (unselectedStaffId) =>{
+        props.form.staff_ids = props.form.staff_ids.filter((id) => id !== unselectedStaffId);
+    }
+
     //ポップアップを表示したときに、画面からはみ出していれば位置を直す
     onMounted(() => {
         window.addEventListener("keydown", onKeydownEscape);
@@ -132,7 +149,7 @@
         ref="popup"
         :style="popupPositionTop != null ? {top:`${popupPositionTop}px`, left:`${popupPositionLeft}px`, right:'auto'} : {}"
         class="
-        fixed rounded border  z-10 bg-white shadow-lg
+        fixed rounded border z-10 bg-surface shadow-lg
         inset-0 max-h-screen overflow-y-auto
         md:top-0 md:bottom-auto md:left-auto md:right-0 md:w-120">   <!-- md:大きい画面用設定 -->
         <div @pointerdown="onDragStart" class="bg-reservation-soft p-2 cursor-move select-none touch-none flex justify-between">
@@ -145,71 +162,86 @@
                 <XMarkIcon class="w-5 h-5"/>
             </button>
         </div>
-        <fieldset :disabled="popupMode==='view'" class="p-2 ">
+        <fieldset :disabled="popupMode==='view'" class="p-2">
             <div class="flex flex-col gap-2">
-                <label>予約日
-                    <input type="date" v-model="form.date" class="rounded border px-3 py-1 bg-white"/>
+                <label class="form-row">
+                    <span>予約日</span>
+                    <input type="date" v-model="form.date" class="field"/>
                 </label>
-                <div v-if="form.errors.date" class="text-danger">{{ form.errors.date }}</div>
+                <div v-if="form.errors.date" class="form-danger">{{ form.errors.date }}</div>
 
                 <fieldset>
                     <legend class="sr-only">予約時間</legend>
-                    <label class="flex items-center gap-2">予約時間
-                        <input type="time" v-model="form.start_time" class="rounded border px-3 py-1 bg-white"/>
-                        ～<input type="time" v-model="form.end_time" class="rounded border px-3 py-1 bg-white"/>
+                    <label class="form-row">
+                        <span>予約時間</span>
+                        <span  class="flex items-center gap-1">
+                            <input type="time" v-model="form.start_time" class="field"/>
+                            ～<input type="time" v-model="form.end_time" class="field"/>
+                        </span >
                     </label>
                 </fieldset>
-                <div v-if="form.errors.start_time" class="text-danger">{{ form.errors.start_time }}</div>
-                <div v-if="form.errors.end_time" class="text-danger">{{ form.errors.end_time }}</div>
+                <div v-if="form.errors.start_time" class="form-danger">{{ form.errors.start_time }}</div>
+                <div v-if="form.errors.end_time" class="form-danger">{{ form.errors.end_time }}</div>
 
-                <div class="flex gap-4">
-                    <label class="flex items-center gap-2">利用者氏名
-                        <select v-if="popupMode === 'create'" v-model="form.client_id" class="bg-white rounded border px-3 py-1">
-                            <option :value="null">利用者を選択</option>
-                            <option v-for="s in formClients" :key="s.id" :value="s.id">{{ s.last_name }}</option>
-                        </select>
-                        <div v-else>{{ selectClientName }}</div>
-                    </label>
-                </div>
-                <div v-if="form.errors.client_id" class="text-danger">{{ form.errors.client_id }}</div>
+                <label class="form-row">
+                    <span>利用者氏名</span>
+                    <select v-if="popupMode === 'create'" v-model="form.client_id" class="field">
+                        <option :value="null">利用者を選択</option>
+                        <option v-for="s in formClients" :key="s.id" :value="s.id">{{ s.last_name }}</option>
+                    </select>
+                    <div v-else>{{ selectClientName }}</div>
+                </label>
+                <div v-if="form.errors.client_id" class="form-danger">{{ form.errors.client_id }}</div>
 
                 <fieldset>
                     <legend class="sr-only">担当者</legend>
-                    <div class="flex gap-4">
+                    <div class="form-row">
                         <span>担当者</span>
-                        <label v-for="s in formStaff" :key="s.id" class="flex items-center gap-1 p-1">
-                            <input type="checkbox" v-model="form.staff_ids" :value="s.id"/>{{ s.name }}
-                        </label>
-
+                        <div class="flex flex-col gap-1">
+                            <div v-if="selectedStaffs.length > 0" class="flex flex-wrap gap-1">
+                                <span v-for="s in selectedStaffs" :key="s.id" class="badge bg-reservation-soft text-ink">
+                                    {{ s.name }}
+                                    <button type="button" @click="onUnselectStaff(s.id)" :aria-label="`${s.name}を外す`">
+                                        <XMarkIcon class="w-4 h-4"/>
+                                    </button>
+                                </span>
+                            </div>
+                            <select v-model="addStaffId" @change="onSelectedStaff()" class="field">
+                                <option :value="null">担当者を選択</option>
+                                <option v-for="s in unselectedStaffs" :key="s.id" :value="s.id">{{ s.name }}</option>
+                            </select>
+                        </div>
                     </div>
                 </fieldset>
 
-                <div class="flex gap-4">
-                    <label>支援内容
-                        <select v-model="form.support_type_id" class="bg-white rounded border px-3 py-1">
-                            <option :value="null">支援内容を選択</option>
-                            <option v-for="s in formSupportTypes" :key="s.id" :value="s.id">{{ s.name }}</option>
-                        </select>
-                    </label>
-                </div>
-                <div v-if="form.errors.support_type_id" class="text-danger">{{ form.errors.support_type_id }}</div>
-
-                <fieldset class="p-1">
-                    <legend class="sr-only">車両</legend>
-                    <div class="flex gap-4">
-                        <span>車両</span>
-                        <label v-for="(label, value) in vehicleTypeLabels" :key="value" class="flex items-center gap-1">
-                            <input type="radio" v-model="form.vehicle_type_choice" :value="value"/>
-                            {{ label }}
-                        </label>
-                    </div>
-                </fieldset>
-                <div v-if="form.errors.vehicle_type_choice" class="text-danger">{{ form.errors.vehicle_type_choice }}</div>
-
-                <label class="flex items-center gap-2">備考
-                    <textarea v-model="form.remarks" id="remarks" class="bg-white rounded border px-3 py-1"></textarea>
+                <label class="form-row">
+                    <span>支援内容</span>
+                    <select v-model="form.support_type_id" class="field">
+                        <option :value="null">支援内容を選択</option>
+                        <option v-for="s in formSupportTypes" :key="s.id" :value="s.id">{{ s.name }}</option>
+                    </select>
                 </label>
-                <div v-if="form.errors.remarks" class="text-danger">{{ form.errors.remarks }}</div>
+                <div v-if="form.errors.support_type_id" class="form-danger">{{ form.errors.support_type_id }}</div>
+
+                <fieldset>
+                    <legend class="sr-only">車両</legend>
+                    <div class="form-row">
+                        <span>車両</span>
+                        <div class="flex flex-wrap gap-x-3">
+                            <label v-for="(label, value) in vehicleTypeLabels" :key="value" class="mark">
+                                <input type="radio" v-model="form.vehicle_type_choice" :value="value"/>
+                                {{ label }}
+                            </label>
+                        </div>
+                    </div>
+                </fieldset>
+                <div v-if="form.errors.vehicle_type_choice" class="form-danger">{{ form.errors.vehicle_type_choice }}</div>
+
+                <label class="form-row">
+                    <span>備考</span>
+                    <textarea v-model="form.remarks" id="remarks" class="field w-full field-sizing-content"></textarea>
+                </label>
+                <div v-if="form.errors.remarks" class="form-danger">{{ form.errors.remarks }}</div>
             </div>
         </fieldset>
         <div class="pb-2 flex justify-center gap-20">

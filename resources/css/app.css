@@ -28,8 +28,8 @@
     --color-provisional-soft: var(--color-lime-100);
     --color-provisional-line: var(--color-lime-600);
     --color-reassigned: var(--color-rose-600);          /* 配車変更 */
-    --color-rest-soft: var(--color-emerald-100);        /* 休み */
-    --color-rest: var(--color-emerald-700);
+    --color-rest-soft: var(--color-yellow-300);        /* 休み */
+    --color-rest: var(--color-yellow-800);
     --color-care-vehicle-soft: var(--color-green-200);  /* 福祉車両バッジ */
     --color-care-vehicle: var(--color-green-600);
     --color-company-car-soft: var(--color-blue-200);         /* 社用車バッジ */
@@ -62,9 +62,24 @@
     @apply rounded-lg border border-line bg-surface px-2 py-1 focus:ring-2 focus:outline-none focus:ring-reservation;
 }
 
+/* checkbox, radiobutton */
+@utility mark {
+    @apply bg-surface flex items-center gap-1;
+}
+
 /* バッジの形（色は使う側で bg-provisional-soft text-provisional などを付ける） */
 @utility badge {
     @apply inline-flex items-center gap-0.5 rounded-md px-1 text-xs shrink-0;
+}
+
+/* 入力フォームの1行。左に項目名（5rem）、右に入力欄 */
+@utility form-row {
+    @apply grid grid-cols-[5rem_1fr] items-center gap-2 *:justify-self-start;
+}
+
+/* 入力フォームのエラーメッセージ 上の5rem + gap-2(0.5rem)*/
+@utility form-danger {
+    @apply text-danger ml-[5.5rem];
 }
 
 /* ---- ページ全体の標準 ---- */
