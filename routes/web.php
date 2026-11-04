@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\TimerController;
 use App\Http\Controllers\ReservationController;
+use App\Http\Controllers\AuthController;
 use Inertia\Inertia;
 
 // URL(/)が呼び出されたときにReservationControllerクラスのindexメソッドを実行する。
@@ -13,20 +14,28 @@ use Inertia\Inertia;
 // ⇒   このページ以外は変更後のルートを指定していくことで、
 //      このページのルートを変更すると全体が修正されコストを減らせる。
 
-//予約一覧（週）表示
-Route::get('/',[ReservationController::class, 'index'])->name('reservations.index');
+Route::get('/login',[AuthController::class, 'index'])->name('login')->middleware('guest');
+Route::post('/login',[AuthController::class, 'login'])->name('login.send')->middleware('guest');
 
-//予約一覧（月）表示
-Route::get('/reservations/monthly',[ReservationController::class, 'monthly'])->name('reservations.monthly');
+//ログインしてる場合だけ表示
+Route::middleware('auth')->group(function () {
+    Route::post('/logout',[AuthController::class, 'logout'])->name('logout');
 
-//予約新規追加
-Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
+    //予約一覧（週）表示
+    Route::get('/',[ReservationController::class, 'index'])->name('reservations.index');
 
-//予約編集
-Route::put('/reservations/{reservation}', [ReservationController::class, 'update'])->name('reservations.update');
+    //予約一覧（月）表示
+    Route::get('/reservations/monthly',[ReservationController::class, 'monthly'])->name('reservations.monthly');
 
-//予約承認
-Route::patch('/reservations/{reservation}/approve', [ReservationController::class, 'approve'])->name('reservations.approve');
+    //予約新規追加
+    Route::post('/reservations', [ReservationController::class, 'store'])->name('reservations.store');
 
-//予約削除
-Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy'])->name('reservations.destroy');
+    //予約編集
+    Route::put('/reservations/{reservation}', [ReservationController::class, 'update'])->name('reservations.update');
+
+    //予約承認
+    Route::patch('/reservations/{reservation}/approve', [ReservationController::class, 'approve'])->name('reservations.approve');
+
+    //予約削除
+    Route::delete('/reservations/{reservation}', [ReservationController::class, 'destroy'])->name('reservations.destroy');
+});

@@ -5,6 +5,7 @@
 
     import WeekGrid from "@/Components/WeekGrid.vue";
     import ReservationFilter from '@/Components/ReservationFilter.vue';
+    import UserMenu from "@/Components/UserMenu.vue";
 
     import { useReservationFilter } from "@/Composables/useReservationFilter.js"
     import { useHeaderHeight } from "@/Composables/useHeaderHeight.js"
@@ -143,7 +144,9 @@
         </div>
         <div class="flex items-center gap-2 lg:justify-self-end">
             <Link href="/" class="btn btn-outline border-line text-ink">
-                <CalendarDaysIcon class="w-5 h-5"/>週表示</Link>
+                <CalendarDaysIcon class="w-5 h-5"/>週表示
+            </Link>
+            <UserMenu class="pl-4"/>
         </div>
     </div>
 

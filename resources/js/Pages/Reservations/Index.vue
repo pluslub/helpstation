@@ -6,6 +6,7 @@
     import WeekGrid from "@/Components/WeekGrid.vue";
     import ReservationFilter from '@/Components/ReservationFilter.vue';
     import ReservationFormPopup from "@/Components/ReservationFormPopup.vue";    //@はresources/jsを指す
+    import UserMenu from "@/Components/UserMenu.vue";
 
     import { useReservationFilter } from "@/Composables/useReservationFilter.js"
     import { useHeaderHeight } from "@/Composables/useHeaderHeight.js"
@@ -13,7 +14,7 @@
     import { formatDate } from "@/Utils/formatDate.js"
 
     //Heroicons
-    import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, CalendarDaysIcon} from '@heroicons/vue/24/outline';
+    import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, CalendarDaysIcon } from '@heroicons/vue/24/outline';
 
     const page = usePage();
 
@@ -495,6 +496,7 @@
             <Link href="/reservations/monthly" class="btn btn-outline border-line text-ink">
                 <CalendarDaysIcon class="w-5 h-5"/>月表示
             </Link>
+            <UserMenu class="pl-4" :hasDraft="isDirtyPopup"/>
         </div>
     </div>
 
