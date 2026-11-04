@@ -18,6 +18,7 @@
 
     /* 予約（メインの色） */
     --color-reservation: var(--color-amber-500);
+    --color-reservation-medium: var(--color-amber-300);
     --color-reservation-soft: var(--color-amber-200);
 
     /* シフト */
@@ -37,7 +38,6 @@
     --color-company-car: var(--color-blue-900);
 
     /* ボタン */
-    --color-reservation-button: var(--color-amber-300);
     --color-danger: var(--color-red-700);               /* 削除 */
     --color-neutral: var(--color-stone-200);            /* クリア・閉じるなどの控えめなボタン */
 
@@ -48,7 +48,7 @@
 
 /* ---- 共通のクラス（3か所以上で使う形だけ） ---- */
 
-/* ボタンの形（色は使う側で bg-reservation text-white などを付ける） */
+/* ボタンの形（色は使う側で bg-reservation text-ink などを付ける） */
 @utility btn {
     @apply inline-flex items-center gap-1 rounded-lg px-3 py-1.5 font-bold shadow-sm;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;

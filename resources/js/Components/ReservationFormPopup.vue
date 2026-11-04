@@ -35,6 +35,7 @@
 
     let popupGapTop = null;
     let popupGapLeft = null;
+    let isSelectingStaffByKey = false;
 
     const emit = defineEmits(['close', 'submit', 'clear', 'destroy']);
     const onClose = () =>{
@@ -119,13 +120,55 @@
         onClose();
     }
 
+    const onKeydownStaff = (e) =>{
+        if(e.key === 'Enter' || e.key === 'Tab') return;
+
+        isSelectingStaffByKey = true;
+    }
+
+    const onKeydownEnterStaff = (e) =>{
+        if(!addStaffId.value) return;
+
+        props.form.staff_ids.push(addStaffId.value);
+        addStaffId.value = null;
+
+        isSelectingStaffByKey = false;
+        e.stopPropagation();    //onEnterを動かさない
+    }
+
+    const onBlurStaff = () =>{
+        isSelectingStaffByKey = false;
+        addStaffId.value = null;
+    }
+
     const onSelectedStaff = () =>{
+        if(!addStaffId.value) return;
+        if(isSelectingStaffByKey) return;
+
         props.form.staff_ids.push(addStaffId.value);
         addStaffId.value = null;
     }
 
     const onUnselectStaff = (unselectedStaffId) =>{
         props.form.staff_ids = props.form.staff_ids.filter((id) => id !== unselectedStaffId);
+    }
+
+    //エンターキーを押したら次の入力欄へ遷移するように
+    const onEnter = (e) =>{
+        if(e.isComposing) return;   //変換中は無効
+        if(e.target.tagName === 'TEXTAREA') return; //備考欄はEnterキーで改行するので遷移しないように
+        if(e.target.tagName === 'BUTTON') return; //ボタンはEnterキーで押す動作のままに
+
+        e.preventDefault(); //標準の動作を止める
+
+        const elements = Array.from(popup.value.querySelectorAll('input, select, textarea'));
+        const selectableElements = elements.filter(s => !s.matches(':disabled'));
+        const rearElements = selectableElements.slice(selectableElements.indexOf(e.target) + 1);
+        let nextElement = rearElements.find(el => !(e.target.type === 'radio' && el.type === 'radio' && el.name === e.target.name));
+        if(nextElement?.type === 'radio'){
+            nextElement = rearElements.find(s =>s.name === nextElement.name  && s.checked) ?? nextElement;
+        }
+        nextElement?.focus();
     }
 
     //ポップアップを表示したときに、画面からはみ出していれば位置を直す
@@ -152,7 +195,7 @@
         fixed rounded border z-10 bg-surface shadow-lg
         inset-0 max-h-screen overflow-y-auto
         md:top-0 md:bottom-auto md:left-auto md:right-0 md:w-120">   <!-- md:大きい画面用設定 -->
-        <div @pointerdown="onDragStart" class="bg-reservation-soft p-2 cursor-move select-none touch-none flex justify-between">
+        <div @pointerdown="onDragStart" class="bg-reservation-medium p-2 cursor-move select-none touch-none flex justify-between">
             <div>
                 <h1 v-if="popupMode === 'create'">予約申請</h1>
                 <h1 v-else-if="popupMode === 'update'">予約変更</h1>
@@ -162,7 +205,7 @@
                 <XMarkIcon class="w-5 h-5"/>
             </button>
         </div>
-        <fieldset :disabled="popupMode==='view'" class="p-2">
+        <fieldset :disabled="popupMode==='view'" class="p-2" @keydown.enter="onEnter">
             <div class="flex flex-col gap-2">
                 <label class="form-row">
                     <span>予約日</span>
@@ -199,14 +242,18 @@
                         <span>担当者</span>
                         <div class="flex flex-col gap-1">
                             <div v-if="selectedStaffs.length > 0" class="flex flex-wrap gap-1">
-                                <span v-for="s in selectedStaffs" :key="s.id" class="badge bg-reservation-soft text-ink pl-2">
+                                <span v-for="s in selectedStaffs" :key="s.id" class="badge bg-reservation-medium text-ink pl-2">
                                     {{ s.name }}
                                     <button type="button" @click="onUnselectStaff(s.id)" :aria-label="`${s.name}を外す`">
                                         <XMarkIcon class="w-4 h-4"/>
                                     </button>
                                 </span>
                             </div>
-                            <select v-model="addStaffId" @change="onSelectedStaff()" class="field">
+                            <select v-model="addStaffId"
+                                    @change="onSelectedStaff()"
+                                    @keydown="onKeydownStaff"
+                                    @keydown.enter="onKeydownEnterStaff"
+                                    @blur="onBlurStaff" class="field">
                                 <option :value="null">担当者を選択</option>
                                 <option v-for="s in unselectedStaffs" :key="s.id" :value="s.id">{{ s.name }}</option>
                             </select>
@@ -229,7 +276,7 @@
                         <span>車両</span>
                         <div class="flex flex-wrap gap-x-3">
                             <label v-for="(label, value) in vehicleTypeLabels" :key="value" class="mark">
-                                <input type="radio" v-model="form.vehicle_type_choice" :value="value"/>
+                                <input type="radio" v-model="form.vehicle_type_choice" :value="value" name="vehicle_type_choice"/>
                                 {{ label }}
                             </label>
                         </div>

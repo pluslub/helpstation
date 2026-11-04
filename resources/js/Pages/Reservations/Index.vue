@@ -486,7 +486,7 @@
             </Link>
         </div>
         <div class="flex items-center gap-2 lg:justify-self-end">
-            <button @click="onClickEntryButton($event)" class="btn bg-reservation-button text-ink relative">
+            <button @click="onClickEntryButton($event)" class="btn bg-reservation-medium text-ink relative">
                 <PlusIcon class="w-5 h-5"/>予約追加
                 <span v-if="isDirtyPopup"
                     title="入力中の予約があります"
