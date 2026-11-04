@@ -15,6 +15,9 @@
     const onSubmit = () =>{
         loginForm.post('/login');
     }
+    const onInput = () =>{
+        loginForm.clearErrors('login_id');
+    }
 </script>
 
 <template>
@@ -31,10 +34,11 @@
                             autocapitalize="off"
                             autocorrect="off"
                             spellcheck="false"
-                            inputmode="latin">
+                            inputmode="latin"
+                            @input="onInput">
                 </label>
                 <div v-if="loginForm.errors.login_id" class="form-danger">{{ loginForm.errors.login_id }}</div>
-                <div v-if="hasNonHalfWidthChar" class="form-danger">半角英数字で入力してください。</div>
+                <div v-else-if="hasNonHalfWidthChar" class="form-danger">半角英数字で入力してください。</div>
                 <label class="form-row">
                     <span>パスワード</span>
                     <input type="password" autocomplete="current-password" v-model="loginForm.password" class="field">
