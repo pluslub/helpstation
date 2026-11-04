@@ -37,6 +37,7 @@
     --color-company-car: var(--color-blue-900);
 
     /* ボタン */
+    --color-reservation-button: var(--color-amber-300);
     --color-danger: var(--color-red-700);               /* 削除 */
     --color-neutral: var(--color-stone-200);            /* クリア・閉じるなどの控えめなボタン */
 

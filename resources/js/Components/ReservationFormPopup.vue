@@ -199,7 +199,7 @@
                         <span>担当者</span>
                         <div class="flex flex-col gap-1">
                             <div v-if="selectedStaffs.length > 0" class="flex flex-wrap gap-1">
-                                <span v-for="s in selectedStaffs" :key="s.id" class="badge bg-reservation-soft text-ink">
+                                <span v-for="s in selectedStaffs" :key="s.id" class="badge bg-reservation-soft text-ink pl-2">
                                     {{ s.name }}
                                     <button type="button" @click="onUnselectStaff(s.id)" :aria-label="`${s.name}を外す`">
                                         <XMarkIcon class="w-4 h-4"/>

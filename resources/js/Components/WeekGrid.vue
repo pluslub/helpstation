@@ -197,7 +197,7 @@
                 <div class="text-center p-1 m-1"
                     :class="{ 'text-sunday' : day.weekNum === 0,
                              'text-saturday' : day.weekNum === 6,
-                             'bg-reservation rounded-lg' : day.date === today}">
+                             'bg-reservation-button rounded-lg' : day.date === today}">
                     <span v-if="day.showYear" class="text-xs">{{ day.year }}/</span>{{ day.monthDay }}
                 </div>
             </div>
