@@ -8,13 +8,14 @@ use Inertia\Inertia;
 
 use App\Models\Staff;
 use App\Http\Requests\LoginRequest;
+use App\Services\AuditLogger;
 
 class AuthController extends Controller
 {
     private const LOCK_MINUTES = 30;
     private const MAX_ATTEMPT_TIMES = 5;
 
-    private function recordFailedLogin($staff){
+    private function recordFailedLogin(?Staff $staff, LoginRequest $request, AuditLogger $auditLogger){
         if($staff){  //該当のスタッフがいる
             $updateStaffArray = [];
             $isLocked = false;
@@ -38,11 +39,16 @@ class AuthController extends Controller
                 $isLocked = true;
             }
 
-            //TODO:ログ出力
+            //ログ出力
+            $logStatus = $isLocked ? 'login_locked' : 'login_failed';
+            $auditLogger->log(action: $logStatus, table: 'staff', targetId: $staff->id, detail: ['login_id' => $request->login_id], ip: $request->ip());
 
             $staff->update($updateStaffArray);
             return $isLocked;
         }
+
+        //ユーザーが見つからなくてもログを残す
+        $auditLogger->log(action: 'login_failed', table: 'staff', detail: ['login_id' => $request->login_id], ip: $request->ip());
         return false;
     }
 
@@ -50,15 +56,19 @@ class AuthController extends Controller
         return Inertia::render('Auth/Login');   //resources/js/Pages/Auth/Login.vueを表示する。
     }
 
-    public function login(LoginRequest $request){
+    public function login(LoginRequest $request, AuditLogger $auditLogger){
         $loginAttemptStaff = Staff::where('login_id', $request->login_id)->first();
 
         if($loginAttemptStaff && $loginAttemptStaff->locked_until?->isFuture()){
+            //ログインユーザーが存在して、ロック状態の場合
+            $auditLogger->log(action: 'login_locked', table: 'staff', targetId: $loginAttemptStaff->id, detail: ['login_id' => $request->login_id], ip: $request->ip());
             return back()->withErrors(['login_id' => 'アカウントがロックされています。しばらくしてから、もう一度お試しください。'])->onlyInput('login_id');
         }
 
         if(Auth::attempt([ 'login_id' => $request->login_id, 'password' => $request->password ])){
             //ログイン成功
+            $auditLogger->log(action: 'login', staffId: $loginAttemptStaff->id, table: 'staff', targetId: $loginAttemptStaff->id, detail: ['login_id' => $request->login_id], ip: $request->ip());
+
             $loginAttemptStaff->update([
                 'failed_login_count' => 0,
                 'last_failed_login_at' => null,
@@ -70,16 +80,22 @@ class AuthController extends Controller
             return redirect()->intended('/');
         }else{
             //ログイン不成功
-            if($this->recordFailedLogin($loginAttemptStaff)){
+
+            //失敗の判定を行う。ログはこの中
+            if($this->recordFailedLogin($loginAttemptStaff, $request, $auditLogger)){
+                //失敗5回でアカウントがロックされた
                 return back()->withErrors(['login_id' => 'アカウントがロックされました。しばらくしてから、もう一度お試しください。'])->onlyInput('login_id');
             }else{
+                //失敗5回未満
                 return back()->withErrors(['login_id' => 'IDまたはパスワードが違います'])->onlyInput('login_id');
             }
         }
     }
 
-    public function logout(Request $request){
+    public function logout(Request $request, AuditLogger $auditLogger){
+        $auditLogger->log(action: 'logout', staffId: Auth::id(), table: 'staff', targetId: Auth::id(), ip: $request->ip());
         Auth::logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         return redirect('/login');

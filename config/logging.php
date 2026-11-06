@@ -135,6 +135,12 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'audit' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/audit/audit.log'),
+            'level' => 'info',
+            'max_files' => 1500,
+            'replace_placeholders' => true,
+        ],
     ],
-
 ];
