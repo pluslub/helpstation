@@ -15,7 +15,7 @@ use Inertia\Inertia;
 //      このページのルートを変更すると全体が修正されコストを減らせる。
 
 Route::get('/login',[AuthController::class, 'index'])->name('login')->middleware('guest');
-Route::post('/login',[AuthController::class, 'login'])->name('login.send')->middleware('guest');
+Route::post('/login',[AuthController::class, 'login'])->name('login.send')->middleware(['guest', 'throttle:login']);
 
 //ログインしてる場合だけ表示
 Route::middleware('auth')->group(function () {
