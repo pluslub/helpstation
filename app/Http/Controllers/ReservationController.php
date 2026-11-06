@@ -19,7 +19,9 @@ use App\Http\Requests\ReservationUpdateRequest;
 use App\Http\Requests\ReservationApproveRequest;
 use App\Http\Requests\ReservationDestroyRequest;
 use App\Services\CurrentStaffService;
+use App\Services\AuditLogger;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * 予約一覧画面のコントローラ
@@ -57,6 +59,28 @@ class ReservationController extends Controller
         //fn(引数) => (戻り値)
         $staffRows = array_map(fn($staffId) => ['staff_id' => $staffId], $staffIds);
         return $staffRows;
+    }
+
+    //ログ出力のためのデータを作成する。
+    private function getReservationDetail(Reservation $reservation){
+        $staffIdArray = $reservation->staffAssignments()->pluck('staff_id')->filter()->values()->all();
+        $staffIds = ['staff_ids' => $staffIdArray];
+
+        $logReservationArray = $reservation->only([ 'date',
+                                                    'start_time',
+                                                    'end_time',
+                                                    'client_id',
+                                                    'support_type_id',
+                                                    'vehicle_type_choice',
+                                                    'vehicle_id',
+                                                    'remarks',
+                                                    'status']);
+
+        //日付2026-11-20 00:00:00　を　2026-11-20に直す
+        $logReservationArray['date'] = $logReservationArray['date']->toDateString();
+
+        $logDetailArray = array_merge($logReservationArray, $staffIds);
+        return $logDetailArray;
     }
 
     //web.phpのRoute::get('/')または('/?week=')から呼び出される。
@@ -122,7 +146,7 @@ class ReservationController extends Controller
 
     // PHP配列について
     // https://www.php.net/manual/ja/function.array-map.php
-    public function store(ReservationStoreRequest $request, CurrentStaffService $service){
+    public function store(ReservationStoreRequest $request, CurrentStaffService $service, AuditLogger $auditLogger){
         //予約担当者データを整形する。予約担当者はreservation_staffテーブルに保存する。
         //[1, 2]を[['staff_id' => 1], ['staff_id' => 2]]に変換する（未選択なら [['staff_id' => null]]）
         $validatedStaffIds = $request->validated()['staff_ids'] ?? [];
@@ -148,8 +172,6 @@ class ReservationController extends Controller
         ];
         $reservation = array_merge($reservation, $createValues);
 
-        //TODO:予約登録のログ出力
-
         /**
          * 予約データと予約担当者データを一緒に登録する。
          * どちらかが失敗すると両方失敗にする。
@@ -157,15 +179,20 @@ class ReservationController extends Controller
          *
          * function内から外部のデータを参照できないので、useで取り込む必要がある。
          */
-        DB::transaction(function() use ($reservation, $staffRows){
+        $storedReservation = DB::transaction(function() use ($reservation, $staffRows){
             $reservationModel = Reservation::create($reservation);
             $reservationModel->staffAssignments()->createMany ($staffRows);
+            return $reservationModel;
         });
+
+        //予約登録のログ出力
+        $logDetailArray = $this->getReservationDetail($storedReservation->fresh());
+        $auditLogger->log(action: 'create', staffId: Auth::id(), table: 'reservation', targetId: $storedReservation->id, detail: $logDetailArray);
 
         return back();
     }
 
-    public function update(ReservationUpdateRequest $request, Reservation $reservation){
+    public function update(ReservationUpdateRequest $request, Reservation $reservation, AuditLogger $auditLogger){
         $validatedStaffIds = $request->validated()['staff_ids'] ?? [];
         $staffIds = $validatedStaffIds ? $validatedStaffIds : [null];
 
@@ -186,34 +213,49 @@ class ReservationController extends Controller
             $updateResArray['vehicle_reassigned_flag'] = false;
         }
 
-        //TODO:予約更新のログ出力
+        //予約更新ログの変更前のデータを取得
+        $beforeLogDetailArray = $this->getReservationDetail($reservation);
 
-        DB::transaction(function() use ($reservation, $updateResArray, $staffRows){
+        $updatedReservation = DB::transaction(function() use ($reservation, $updateResArray, $staffRows){
             $reservation->update($updateResArray);
             $reservation->staffAssignments()->delete();
             $reservation->staffAssignments()->createMany ($staffRows);
+            return $reservation;
         });
+
+        //予約更新のログ出力
+        $afterLogDetailArray = $this->getReservationDetail($updatedReservation->fresh());
+        $auditLogger->log(action: 'update', staffId: Auth::id(), table: 'reservation', targetId: $reservation->id, detail: ['before' => $beforeLogDetailArray, 'after' => $afterLogDetailArray]);
 
         return back();
     }
 
-    public function approve(ReservationApproveRequest $request, Reservation $reservation){
+    public function approve(ReservationApproveRequest $request, Reservation $reservation, AuditLogger $auditLogger){
         //承認画面は管理者しかアクセスできないので承認済みにする。
         $approveValues = [
             'status' => 'approved',
         ];
+        $beforeStatus = $reservation->status;
 
         $reservation->update($approveValues);
+
+        //予約承認のログ出力
+        $auditLogger->log(action: 'approve', staffId: Auth::id(), table: 'reservation', targetId: $reservation->id, detail: ['before' => ['status' => $beforeStatus], 'after' => ['status' => 'approved']]);
+
         return back();
     }
 
-    public function destroy(ReservationDestroyRequest $request, Reservation $reservation){
-        //TODO:予約削除のログ出力
+    public function destroy(ReservationDestroyRequest $request, Reservation $reservation, AuditLogger $auditLogger){
+        //予約削除ログの変更前のデータを取得
+        $logDetailArray = $this->getReservationDetail($reservation);
 
         DB::transaction(function() use ($reservation){
             $reservation->staffAssignments()->delete();
             $reservation->delete();
         });
+
+        //予約削除のログ出力
+        $auditLogger->log(action: 'delete', staffId: Auth::id(), table: 'reservation', targetId: $reservation->id, detail: $logDetailArray);
 
         return back();
     }
