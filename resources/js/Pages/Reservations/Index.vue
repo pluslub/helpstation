@@ -10,6 +10,7 @@
 
     import { useReservationFilter } from "@/Composables/useReservationFilter.js"
     import { useHeaderHeight } from "@/Composables/useHeaderHeight.js"
+    import { useDateInputCommit } from "@/Composables/useDateInputCommit.js"
     import { formatTime } from "@/Utils/formatTime.js"
     import { formatDate } from "@/Utils/formatDate.js"
 
@@ -55,10 +56,6 @@
     });
 
     const { filterId, filterType, filteredReservations, clientOptions, staffOptions } = useReservationFilter(props);
-
-    //日付直接入力欄でキーダウンされたかどうか
-    //入力途中の遷移を防ぐため、keydown中なら無視し、カレンダーの選択・エンターキー押下・フォーカスの移動で遷移する
-    let keydownOnInputDate = false;
 
     //予約入力ポップアップの幅
     //ReservationFormPopupのmd:w-120(480px)に合わせるように
@@ -111,6 +108,7 @@
 
         router.get('/', { week: date }, { preserveState: true, preserveScroll: true });
     }
+    const { onChange, onKeyDown, onEnter, onBlur } = useDateInputCommit(moveWeek);
 
     //予約入力ポップアップの位置を設定する
     const setPopupPosition = (left, top) =>{
@@ -182,39 +180,6 @@
     })
 
     //-----------------------------------------------event----------------------------------------------
-    /**
-     * 日付入力欄でカレンダーで選択されたときのイベント
-     * keydownOnInputDateは日付入力欄で入力を始めるとtrueになるので、
-     * カレンダー以外ではこのメソッドは動かない
-     * @param e
-     */
-    const onDateChange = (e) =>{
-        if(keydownOnInputDate) return;
-        moveWeek(e.target.value, e.target.validity.valid);
-    };
-
-    //日付入力欄でエンターキーが押されたときのイベント
-    const onEnterOnInputDate = (e) =>{
-        keydownOnInputDate = false;
-        moveWeek(e.target.value, e.target.validity.valid);
-    };
-
-    //日付入力欄からフォーカスが離れたときのイベント
-    const onBlurFromInputDate = (e) =>{
-        keydownOnInputDate = false;
-        moveWeek(e.target.value, e.target.validity.valid);
-    };
-
-    /**
-     * 日付入力欄が直接入力されたときのイベント
-     * 入力中1文字ずつOnDateChangeが発生して日付が切り替わってしまうので、
-     * 入力が始まるとkeydownOnInputDateをtrueにして、その間onDateChangeを実行しないようにする。
-     * 入力欄でエンターキーを押すか、フォーカスが離れたときにfalseに変更する。
-     */
-    const onKeyDownOnInputDate = () =>{
-        keydownOnInputDate = true;
-    };
-
     /**
      * 予約入力ポップアップを表示するときの処理
      * 今日が表示中の週に入っていれば今日
@@ -475,10 +440,10 @@
             </Link>
             <Link href="/" preserve-state preserve-scroll class="btn bg-neutral text-ink">今週</Link>
             <input type="date"
-                @change="onDateChange($event)"
-                @keydown="onKeyDownOnInputDate()"
-                @keydown.enter="onEnterOnInputDate($event)"
-                @blur="onBlurFromInputDate($event)"
+                @change="onChange($event)"
+                @keydown="onKeyDown()"
+                @keydown.enter="onEnter($event)"
+                @blur="onBlur($event)"
                 :value="weekStart"
                 class="field"
                 :min="page.props.selectableMinDate"/>
@@ -530,7 +495,8 @@
         @close="onClosePopup"
         @submit="onSubmitPopup"
         @clear="onClearPopup"
-        @destroy="onDestroyPopup">
+        @destroy="onDestroyPopup"
+        @move-week="moveWeek">
     </ReservationFormPopup>
 </template>
 

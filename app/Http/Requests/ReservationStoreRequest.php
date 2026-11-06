@@ -35,12 +35,14 @@ class ReservationStoreRequest extends FormRequest
      */
     public function rules(): array
     {
+        $minDate = config('helpstation_setting.selectable_min_date');
+
         return [
             'client_id' => [
                 'required',
                 Rule::exists('client', 'id')->withoutTrashed(),
             ],
-            'date' => ['required', 'date_format:Y-m-d'],
+            'date' => ['required', 'date_format:Y-m-d', 'after_or_equal:'.$minDate],
             'start_time' => ['required', 'date_format:H:i'],
             'end_time' => ['nullable', 'date_format:H:i', 'after:start_time'],
             'staff_ids' => ['array', 'nullable'],

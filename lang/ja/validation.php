@@ -17,7 +17,7 @@ return [
     'accepted_if' => 'The :attribute field must be accepted when :other is :value.',
     'active_url' => 'The :attribute field must be a valid URL.',
     'after' => ':attributeは:dateよりも後の日付を入力してください。',
-    'after_or_equal' => 'The :attribute field must be a date after or equal to :date.',
+    'after_or_equal' => ':attributeは:date以降の日付を入力してください。',
     'alpha' => 'The :attribute field must only contain letters.',
     'alpha_dash' => 'The :attribute field must only contain letters, numbers, dashes, and underscores.',
     'alpha_num' => 'The :attribute field must only contain letters and numbers.',

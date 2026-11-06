@@ -14,6 +14,7 @@
 <script setup>
     import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
     import { vehicleTypeLabels } from "@/Utils/vehicleTypeLabel.js"
+    import { useDateInputCommit } from "@/Composables/useDateInputCommit.js"
     import { PaperAirplaneIcon, XMarkIcon, TrashIcon } from '@heroicons/vue/24/outline';
 
     //--------------------------------------------変数-------------------------------------------
@@ -37,7 +38,7 @@
     let popupGapLeft = null;
     let isSelectingStaffByKey = false;
 
-    const emit = defineEmits(['close', 'submit', 'clear', 'destroy']);
+    const emit = defineEmits(['close', 'submit', 'clear', 'destroy', 'moveWeek']);
     const onClose = () =>{
         emit('close');
     }
@@ -50,6 +51,10 @@
     const onDestroy = () =>{
         emit('destroy');
     }
+    const emitMoveWeek = (date, isValid) =>{
+        emit('moveWeek', date, isValid);
+    }
+    const { onChange, onKeyDown, onBlur } = useDateInputCommit(emitMoveWeek);
 
     //--------------------------------------------関数-------------------------------------------
     /**
@@ -209,7 +214,12 @@
             <div class="flex flex-col gap-2">
                 <label class="form-row">
                     <span>予約日</span>
-                    <input type="date" v-model="form.date" class="field"/>
+                    <input  type="date"
+                            v-model="form.date"
+                            @change="onChange($event)"
+                            @keydown="onKeyDown()"
+                            @blur="onBlur($event)"
+                            class="field"/>
                 </label>
                 <div v-if="form.errors.date" class="form-danger">{{ form.errors.date }}</div>
 
