@@ -28,6 +28,8 @@
         showYearOnFirstDay: { type: Boolean, default: true},
         clickableShift: { type: Boolean, default: false},
         clickableDate: String,
+        highlightedDate: String,
+        highlightedTime: Object,
         readonly: { type: Boolean, default: false},
     });
 
@@ -68,6 +70,17 @@
 
     const today = formatDate(new Date());
 
+    const isOverlapping = (reservation) => {
+        if(!props.highlightedTime) return false;
+        if(reservation.id === props.openedReservationId) return false;
+        if(reservation.date.slice(0, 10) !== props.highlightedDate) return false;
+
+        const reservationStartTime = reservation.start_time.slice(0, 5);
+        const reservationEndTime = (reservation.end_time || reservation.start_time ).slice(0, 5);
+        const highlightedStartTime = props.highlightedTime.start_time.slice(0, 5);
+        const highlightedEndTime = props.highlightedTime.end_time || highlightedStartTime ;
+        return reservationStartTime === highlightedStartTime || (highlightedStartTime < reservationEndTime && reservationStartTime < highlightedEndTime);
+    }
     //--------------------------------------------computed関数-------------------------------------------
     /**
      * 今週の７日間の日付を入力する。
@@ -192,7 +205,7 @@
         <!-- 日付・シフト・休み情報 -->
         <div class="grid grid-cols-7 gap-2 px-2 py-1  sticky top-(--header-height) z-4 bg-surface shadow-sm font-bold">
             <!-- computedされた日付配列を繰り返す（7回）各DOMを識別するために一意なkeyが必要 -->
-            <div v-for="day in days" :key="day.date" class="min-w-0">
+            <div v-for="day in days" :key="day.date" class="min-w-0 " :class="{ 'bg-highlight-soft rounded-lg' : day.date === highlightedDate }">
             <!-- 日付ラベル 週の先頭と年の切り替わりだけ年を表示する -->
                 <div class="text-center p-1 m-1"
                     :class="{ 'text-sunday' : day.weekNum === 0,
@@ -271,7 +284,7 @@
                         <div class="divide-y divide-line">
                             <!--カードを装飾する。予約が選択されているとき-->
                             <div v-for="(res, index) in card.reservations" :key="res.id"
-                                :class="{ 'bg-reservation-soft': res.id === props.openedReservationId }"
+                                :class="{ 'bg-reservation-soft': res.id === props.openedReservationId, 'bg-highlight-soft': isOverlapping(res) }"
                                 class="p-1 rounded grid grid-cols-[4.5rem_1fr] gap-x-1">
                                 <div class="col-start-1 row-start-1">
                                     <span v-if="index === 0">{{ card.client_last_name }}</span>

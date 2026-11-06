@@ -44,6 +44,10 @@
     /* 日付の色 */
     --color-sunday: var(--color-red-700);
     --color-saturday: var(--color-sky-700);
+
+    /* ハイライト */
+    --color-highlight: var(--color-emerald-700);
+    --color-highlight-soft: var(--color-emerald-200);
 }
 
 /* ---- 共通のクラス（3か所以上で使う形だけ） ---- */

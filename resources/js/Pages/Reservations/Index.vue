@@ -163,6 +163,22 @@
         }
     });
 
+    const highlightedDate = computed(() => {
+        if(showPopup.value && popupMode.value !== 'view' && activeForm.value.date){
+            return activeForm.value?.date;
+        }else{
+            return null;
+        }
+    });
+
+    const highlightedTime = computed(() => {
+        if(showPopup.value && popupMode.value !== 'view' && activeForm.value.start_time){
+            return { start_time:activeForm.value?.start_time, end_time:activeForm.value?.end_time };
+        }else{
+            return null;
+        }
+    });
+
     const clickableShift = computed(() => {
         return showPopup.value && ( popupMode.value === 'create' || popupMode.value === 'update')
     });
@@ -474,6 +490,8 @@
             :clickableShift="clickableShift"
             :clickableDate="clickableDate"
             :openedReservationId="openedReservationId"
+            :highlighted-date="highlightedDate"
+            :highlighted-time="highlightedTime"
             @update="onUpdateReservation"
             @approve="onApproveReservation"
             @view="onViewReservation"
