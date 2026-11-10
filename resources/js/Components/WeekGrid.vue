@@ -52,7 +52,7 @@
     };
 
     const hasShiftInfo = (day) => {
-        return shiftByDay.value.shiftMap[day.date]?.length > 0 || shiftByDay.value.dayOffNameMap[day.date]?.length > 0;
+        return shiftByDay.value.shiftMap[day.date]?.length > 0 || shiftByDay.value.dayOffNameMap[day.date]?.length > 0 || shiftByDay.value.desiredOffNameMap[day.date]?.length > 0;
     }
 
     const clickableShiftByDay = (day) => {
@@ -181,6 +181,7 @@
     //シフト情報を取得して日付毎に格納
     const shiftByDay = computed(() => {
         const shiftMap = {};
+        const desiredOffNameMap = {};
         const dayOffNameMap = {};
         const privateCarMap = {};
 
@@ -189,10 +190,13 @@
         for (const s of props.shiftDetails) {
             const day = s.date.slice(0, 10);
             const eff = effective(s);
+            if(eff.desiredOff){
+                (desiredOffNameMap[day] ??= []).push(eff); //希望休の人の名前を格納
+            }
             if(eff.amOff && eff.pmOff){
-                (dayOffNameMap[day] ??= []).push(eff); //全休の人は名前を格納
+                if(!eff.desiredOff) (dayOffNameMap[day] ??= []).push(eff); //1日休みの人の名前を格納
             }else{
-                (shiftMap[day] ??= []).push(eff);      //それ以外の人は全データ格納
+                (shiftMap[day] ??= []).push(eff);      //それ以外の人の全データ格納
             }
 
             //私用車利用マークをつけるためのマップを作成 {スタッフｰ日付: {start:~, end:~}}
@@ -206,7 +210,7 @@
                 privateCarMap[`${eff.staffId}-${day}`] = map;
             }
         }
-        return {shiftMap, dayOffNameMap, privateCarMap};
+        return {shiftMap, desiredOffNameMap, dayOffNameMap, privateCarMap};
     });
 
     const onClickUpdateButton = (res, e) => {
@@ -290,15 +294,27 @@
                         </template>
                         <div v-if="shiftByDay.dayOffNameMap[day.date]" class="flex items-start col-span-full pt-2">
                             <span class="shrink-0">休：</span>
-                            <div class="flex flex-wrap gap-x-1 gap-y-0.5 flex-1 min-w-0">
+                            <div class="flex flex-wrap gap-x-3 gap-y-0.5 flex-1 min-w-0">
                                 <span v-for="(dayOffStaff, index) in shiftByDay.dayOffNameMap[day.date] ?? []" :key="dayOffStaff.id"
                                         class="flex items-center gap-1">
-                                    <span v-if="index >= 1">･</span>
                                     <span class="whitespace-nowrap">{{ dayOffStaff.name }}</span>
                                     <div v-if="dayOffStaff.changed"
                                         class="badge bg-shift text-white">
                                         <ArrowPathIcon class="w-4 h-4"/>
                                     </div>
+                                </span>
+                            </div>
+                        </div>
+                        <div v-if="shiftByDay.desiredOffNameMap[day.date]" class="flex items-start col-span-full">
+                            <span class="shrink-0">希望休：</span>
+                            <div class="flex flex-wrap gap-x-3 gap-y-0.5 flex-1 min-w-0">
+                                <span v-for="(desiredOffStaff, index) in shiftByDay.desiredOffNameMap[day.date] ?? []" :key="desiredOffStaff.id"
+                                        class="flex items-center gap-1">
+                                    <span class="whitespace-nowrap">{{ desiredOffStaff.name }}</span>
+                                    <span v-if="desiredOffStaff.amOff && !desiredOffStaff.pmOff"
+                                            class="badge bg-rest-soft text-rest text-xs">AM</span>
+                                    <span v-if="!desiredOffStaff.amOff && desiredOffStaff.pmOff"
+                                            class="badge bg-rest-soft text-rest text-xs">PM</span>
                                 </span>
                             </div>
                         </div>
@@ -317,9 +333,9 @@
                                                                                 : 'bg-surface border-l-4 border-reservation'">
                         <!-- カードごとに予約情報を表示する -->
                         <div class="divide-y divide-line">
-                            <!--カードを装飾する。予約が選択されているとき-->
+                            <!--カードを装飾する。選択されている予約：オレンジ、同じ時間帯の予約：ピンク-->
                             <div v-for="(res, index) in card.reservations" :key="res.id"
-                                :class="{ 'bg-reservation-soft': res.id === props.openedReservationId, 'bg-highlight-soft': isOverlapping(res) }"
+                                :class="{ 'bg-reservation-soft': res.id === props.openedReservationId, 'bg-highlight-denger': isOverlapping(res) }"
                                 class="p-1 rounded grid grid-cols-[4.5rem_1fr] gap-x-1">
                                 <div class="col-start-1 row-start-1">
                                     <span v-if="index === 0" class="marker px-1">{{ card.client_last_name }}</span>

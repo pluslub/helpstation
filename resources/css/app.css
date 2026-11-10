@@ -49,6 +49,7 @@
     /* ハイライト */
     --color-highlight: var(--color-emerald-700);
     --color-highlight-soft: var(--color-emerald-200);
+    --color-highlight-denger: var(--color-red-100);
     --color-marker-client: var(--color-amber-100);
 }
 

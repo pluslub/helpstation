@@ -10,5 +10,6 @@ export const effective = (s) => {
         amOff: changed ? s.modified_am_off : s.applied_am_off,
         pmOff: changed ? s.modified_pm_off : s.applied_pm_off,
         changed,
+        desiredOff: s.applied_desired_off,
     }
 };
