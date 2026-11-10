@@ -187,7 +187,7 @@ class ReservationController extends Controller
 
         //予約登録のログ出力
         $logDetailArray = $this->getReservationDetail($storedReservation->fresh());
-        $auditLogger->log(action: 'create', staffId: Auth::id(), table: 'reservation', targetId: $storedReservation->id, detail: $logDetailArray);
+        $auditLogger->log(action: 'create', staffId: Auth::id(), table: 'reservation', targetId: $storedReservation->id, detail: $logDetailArray, ip: $request->ip());
 
         return back();
     }
@@ -225,7 +225,7 @@ class ReservationController extends Controller
 
         //予約更新のログ出力
         $afterLogDetailArray = $this->getReservationDetail($updatedReservation->fresh());
-        $auditLogger->log(action: 'update', staffId: Auth::id(), table: 'reservation', targetId: $reservation->id, detail: ['before' => $beforeLogDetailArray, 'after' => $afterLogDetailArray]);
+        $auditLogger->log(action: 'update', staffId: Auth::id(), table: 'reservation', targetId: $reservation->id, detail: ['before' => $beforeLogDetailArray, 'after' => $afterLogDetailArray], ip: $request->ip());
 
         return back();
     }
@@ -240,7 +240,7 @@ class ReservationController extends Controller
         $reservation->update($approveValues);
 
         //予約承認のログ出力
-        $auditLogger->log(action: 'approve', staffId: Auth::id(), table: 'reservation', targetId: $reservation->id, detail: ['before' => ['status' => $beforeStatus], 'after' => ['status' => 'approved']]);
+        $auditLogger->log(action: 'approve', staffId: Auth::id(), table: 'reservation', targetId: $reservation->id, detail: ['before' => ['status' => $beforeStatus], 'after' => ['status' => 'approved']], ip: $request->ip());
 
         return back();
     }
@@ -255,7 +255,7 @@ class ReservationController extends Controller
         });
 
         //予約削除のログ出力
-        $auditLogger->log(action: 'delete', staffId: Auth::id(), table: 'reservation', targetId: $reservation->id, detail: $logDetailArray);
+        $auditLogger->log(action: 'delete', staffId: Auth::id(), table: 'reservation', targetId: $reservation->id, detail: $logDetailArray, ip: $request->ip());
 
         return back();
     }
