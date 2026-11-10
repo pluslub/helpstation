@@ -1,12 +1,14 @@
 <script setup>
     //データ処理 JavaScript
     import { computed } from 'vue';
+    import { usePage } from '@inertiajs/vue3';
+
     import { effective } from "@/Utils/effective.js"
     import { formatTime } from "@/Utils/formatTime.js"
     import { formatDate } from "@/Utils/formatDate.js"
     import { isProvisional } from "@/Utils/isProvisional.js"
     import { getVehicleTypeShortLabel } from "@/Utils/vehicleTypeLabel.js"
-    import { usePage } from '@inertiajs/vue3';
+    import { sliceTime, overlapTime } from "@/Utils/timeRange.js"
 
     //Heroicons
     import { PencilIcon, EyeIcon, ClockIcon  } from '@heroicons/vue/24/outline';
@@ -70,16 +72,49 @@
 
     const today = formatDate(new Date());
 
+    const hasStaff = (r, staffId) => r.staff_assignments.some(a => a.staff_id === staffId);
+
     const isOverlapping = (reservation) => {
         if(!props.highlightedTime) return false;
         if(reservation.id === props.openedReservationId) return false;
         if(reservation.date.slice(0, 10) !== props.highlightedDate) return false;
 
-        const reservationStartTime = reservation.start_time.slice(0, 5);
-        const reservationEndTime = (reservation.end_time || reservation.start_time ).slice(0, 5);
-        const highlightedStartTime = props.highlightedTime.start_time.slice(0, 5);
-        const highlightedEndTime = props.highlightedTime.end_time || highlightedStartTime ;
-        return reservationStartTime === highlightedStartTime || (highlightedStartTime < reservationEndTime && reservationStartTime < highlightedEndTime);
+        return overlapTime(reservation.start_time, reservation.end_time,
+                            props.highlightedTime.start_time, props.highlightedTime.end_time);
+    }
+
+    //入力中の日付・時間に、このシフトの職員が対応できるか
+    const isAvailableShift = (shift, day) =>{
+        // 目立たせる時間がない・違う日
+        if(!props.highlightedTime) return false;
+        if(day.date !== props.highlightedDate) return false;
+
+        // 実際に働ける時間（AM休・PM休を反映する）
+        let workStartTime = sliceTime(shift.start);
+        let workEndTime = sliceTime(shift.end);
+
+        if(shift.amOff){
+            workStartTime = page.props.amOffWorkStartTime > workStartTime ? page.props.amOffWorkStartTime : workStartTime;
+        }
+        if(shift.pmOff){
+            workEndTime = page.props.pmOffWorkEndTime < workEndTime ? page.props.pmOffWorkEndTime : workEndTime;
+        }
+
+        // 入力の時間（終了が空なら開始と同じ）
+        const inputStartTime = props.highlightedTime.start_time;
+        const inputEndTime = props.highlightedTime.end_time || inputStartTime;
+
+        // 働ける時間に収まらない
+        if(inputStartTime < workStartTime || workEndTime < inputEndTime) return false;
+
+        //その日、同じ時間に担当している予約がある（編集中の予約は除く）
+        const isBusy = props.allReservations.some(r =>
+            r.id !== props.openedReservationId
+            && r.date.slice(0, 10) === day.date
+            && hasStaff(r, shift.staffId)
+            && overlapTime(r.start_time, r.end_time, inputStartTime, inputEndTime)
+        );
+        return !isBusy;
     }
     //--------------------------------------------computed関数-------------------------------------------
     /**
@@ -161,7 +196,6 @@
             }
 
             //私用車利用マークをつけるためのマップを作成 {スタッフｰ日付: {start:~, end:~}}
-            const hasStaff = (r, staffId) => r.staff_assignments.some(a => a.staff_id === staffId);
             const reservationByStaff = props.allReservations.filter(r => r.date.slice(0, 10) === day &&  hasStaff(r, eff.staffId));
 
             if(reservationByStaff.length !== 0){
@@ -229,7 +263,8 @@
                                     type="button"
                                     @click="onClickShift(day.date, shift.staffId)"
                                     :disabled="!clickableShiftByDay(day)"
-                                    :class="{ 'cursor-pointer hover:bg-reservation-soft' : clickableShiftByDay(day) }">
+                                    :class="{   'cursor-pointer hover:bg-reservation-soft' : clickableShiftByDay(day),
+                                                'bg-highlight-soft' : isAvailableShift(shift, day) }">
                                 <span class="truncate min-w-0 pr-2">{{ shift.name }}</span>
                                 <span class="text-xs flex items-center justify-end gap-1 tabular-nums">
                                     <span v-if="checkUsePrivateCar(shift, day)?.start"

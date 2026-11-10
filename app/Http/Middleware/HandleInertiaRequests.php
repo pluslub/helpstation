@@ -46,6 +46,8 @@ class HandleInertiaRequests extends Middleware
                 'name' => $loginStaff?->name,
             ],
             'selectableMinDate' => config('helpstation_setting.selectable_min_date'),
+            'pmOffWorkEndTime' => config('helpstation_setting.pm_off_work_end_time'),
+            'amOffWorkStartTime' => config('helpstation_setting.am_off_work_start_time'),
         ];
     }
 }
