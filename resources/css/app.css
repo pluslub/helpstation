@@ -30,12 +30,13 @@
     --color-provisional-soft: var(--color-yellow-100);
     --color-provisional-line: var(--color-yellow-600);
     --color-reassigned: var(--color-rose-600);          /* 配車変更 */
-    --color-rest-soft: var(--color-yellow-300);        /* 休み */
+    --color-rest-soft: var(--color-yellow-300);         /* 休み */
     --color-rest: var(--color-yellow-800);
-    --color-care-vehicle-soft: var(--color-green-100);  /* 福祉車両バッジ */
+    --color-care-vehicle-soft: var(--color-green-100);  /* 福祉車両 */
     --color-care-vehicle: var(--color-green-900);
-    --color-company-car-soft: var(--color-sky-200);         /* 社用車バッジ */
+    --color-company-car-soft: var(--color-sky-200);     /* 社用車 */
     --color-company-car: var(--color-blue-900);
+    --color-unassigned: var(--color-red-500);           /* 担当者未指定 */
 
     /* ボタン */
     --color-danger: var(--color-red-700);               /* 削除 */

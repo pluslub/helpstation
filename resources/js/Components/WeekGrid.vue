@@ -11,7 +11,7 @@
     import { sliceTime, overlapTime } from "@/Utils/timeRange.js"
 
     //Heroicons
-    import { PencilIcon, EyeIcon, ClockIcon  } from '@heroicons/vue/24/outline';
+    import { PencilIcon, EyeIcon, ClockIcon, ExclamationTriangleIcon  } from '@heroicons/vue/24/outline';
     import { ArrowPathIcon } from '@heroicons/vue/16/solid';
 
     //ReservationControllerからデータを受け取る
@@ -361,8 +361,12 @@
                                 <div class="grid grid-cols-2 gap-x-1 min-w-0 col-start-1 row-start-2 row-span-2 self-end">
                                     <span v-for="assignedStaff in res.staff_assignments"
                                         :key="assignedStaff.staff_id ?? 'none'"
-                                        class="truncate text-sm">
-                                        {{ assignedStaff.staff?.name ?? '未定' }}
+                                        class="flex items-center gap-1 min-w-0"
+                                        :class="{ 'col-span-2': assignedStaff.staff_id === null }">
+                                        <span class="truncate text-sm">{{ assignedStaff.staff?.name ?? '未定' }}</span>
+                                        <span v-if="assignedStaff.staff_id === null" class="shrink-0">
+                                            <ExclamationTriangleIcon class="w-4 h-4 text-unassigned"/>
+                                        </span>
                                     </span>
                                 </div>
                                 <div v-if="res.remarks" class="col-start-2 row-start-2">
