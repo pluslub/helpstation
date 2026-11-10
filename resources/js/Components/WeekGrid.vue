@@ -265,7 +265,7 @@
                                     :disabled="!clickableShiftByDay(day)"
                                     :class="{   'cursor-pointer hover:bg-reservation-soft' : clickableShiftByDay(day),
                                                 'bg-highlight-soft' : isAvailableShift(shift, day) }">
-                                <span class="truncate min-w-0 pr-2">{{ shift.name }}</span>
+                                <span title="shift.name" class="truncate min-w-0 pr-2">{{ shift.name }}</span>
                                 <span class="text-xs flex items-center justify-end gap-1 tabular-nums">
                                     <span v-if="checkUsePrivateCar(shift, day)?.start"
                                         title="私用車(直行)"
@@ -322,13 +322,16 @@
                                 :class="{ 'bg-reservation-soft': res.id === props.openedReservationId, 'bg-highlight-soft': isOverlapping(res) }"
                                 class="p-1 rounded grid grid-cols-[4.5rem_1fr] gap-x-1">
                                 <div class="col-start-1 row-start-1">
-                                    <span v-if="index === 0">{{ card.client_last_name }}</span>
+                                    <span v-if="index === 0" class="marker px-1">{{ card.client_last_name }}</span>
                                 </div>
                                 <!--支援内容-->
                                 <div class="min-w-0 col-start-2 row-start-1">
                                     <div class="flex items-center gap-1">
                                         <span class="flex items-center gap-1 flex-1 min-w-0">
-                                            <span class="truncate min-w-0">{{ res.support_type?.name ?? '削除済'}}</span>
+                                            <span :title="res.support_type?.name ?? '削除済'"
+                                                    class="truncate min-w-0 ">
+                                                    {{ res.support_type?.name ?? '削除済'}}
+                                            </span>
                                             <span v-if="isPrivateCar(res)"
                                                     class="rounded-full bg-ink w-2 h-2 shrink-0"
                                                     title="私用車">
@@ -362,7 +365,8 @@
                                     <span v-for="assignedStaff in res.staff_assignments"
                                         :key="assignedStaff.staff_id ?? 'none'"
                                         class="flex items-center gap-1 min-w-0"
-                                        :class="{ 'col-span-2': assignedStaff.staff_id === null }">
+                                        :class="{ 'col-span-2': assignedStaff.staff_id === null }"
+                                        :title="assignedStaff.staff?.name ?? '未定'">
                                         <span class="truncate text-sm">{{ assignedStaff.staff?.name ?? '未定' }}</span>
                                         <span v-if="assignedStaff.staff_id === null" class="shrink-0">
                                             <ExclamationTriangleIcon class="w-4 h-4 text-unassigned"/>
