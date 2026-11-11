@@ -33,6 +33,10 @@
 
     const popup = ref(null);
     const addStaffId = ref(null);
+    const clientSearchText = ref('');
+    const isClientListOpen = ref(false);
+    const activeClientIndex = ref(-1) ;
+    const clientList = ref(null);
 
     let popupGapTop = null;
     let popupGapLeft = null;
@@ -73,12 +77,26 @@
         popupPositionTop.value = Math.min(Math.max(0, top), maxTop);
     }
 
+    const getClientName = (clientId) =>{
+        return props.formClients.find(c => c.id  === clientId)?.last_name;
+    }
+
     //--------------------------------------------computed, watch関数-------------------------------------------
     //ポップアップを開いたまま、別の予約の変更ボタンを押したときなどに位置を直す
     watch([() => props.selectReservationId, () => props.popupMode, popupPositionLeft, popupPositionTop], () => {
         if(popupPositionTop.value == null) return;
         clampPopupPosition(popupPositionLeft.value, popupPositionTop.value);
-    }, {flush: 'post'})
+    }, {flush: 'post'});
+
+    watch(() => props.form.client_id, () => {
+        clientSearchText.value = getClientName(props.form.client_id) ?? '';
+    }, { immediate: true });
+
+    watch(() => activeClientIndex.value, () => {
+        if(!clientList.value || activeClientIndex.value === -1 ) return;
+        const targetElement = clientList.value.querySelector(`[data-index="${activeClientIndex.value}"]`);
+        targetElement?.scrollIntoView({ block: 'nearest' });
+    }, { flush: 'post' });
 
     const selectedStaffs = computed(() => {
         return props.formStaff.filter((s) => props.form.staff_ids.includes(s.id));
@@ -86,6 +104,17 @@
 
     const unselectedStaffs = computed(() => {
         return props.formStaff.filter((s) => !props.form.staff_ids.includes(s.id));
+    });
+
+    //利用者テキストボックスに入力があったら、利用者名か利用者ふりがなが一致する利用者のみの配列に変換する。
+    const filteredClients = computed(() => {
+        if(!clientSearchText.value) return props.formClients;
+        return props.formClients.filter((c) => c.last_name.includes(clientSearchText.value) || c.last_name_kana.includes(clientSearchText.value));
+    });
+
+    //利用者配列に変更があったら（一覧が開かれるか入力があったら）選択状態を初期化する。
+    watch(filteredClients, () => {
+        activeClientIndex.value = filteredClients.value.length > 0 ? 0 : -1;
     });
     //--------------------------------------------event-------------------------------------------
     //ポップアップのヘッダーをクリックしたらドラッグ開始と判断する
@@ -176,6 +205,57 @@
         nextElement?.focus();
     }
 
+    const onClickSearchedClient = (c) =>{
+        props.form.client_id = c.id;
+        clientSearchText.value = c.last_name;
+        isClientListOpen.value = false;
+    }
+    const onMouseEnterSearchedClient = (index) =>{
+        activeClientIndex.value = index;
+    }
+
+    const onFocusSearchClientName = () =>{
+        isClientListOpen.value = true;
+    }
+
+    const onBlurSearchClientName = () =>{
+        if(getClientName(props.form.client_id) !== clientSearchText.value) props.form.client_id = null;
+        isClientListOpen.value = false;
+    }
+
+    const onESCInSearchClientName = (e) =>{
+        if (isClientListOpen.value) {
+            e.stopPropagation();
+            activeClientIndex.value = -1;
+            isClientListOpen.value = false;
+            clientSearchText.value = "";
+            props.form.client_id = null;
+        }
+    }
+
+    const onArrowDownInSearchClientName = (e) =>{
+        e.preventDefault();
+
+        if (!isClientListOpen.value){
+            isClientListOpen.value = true;
+            return;
+        }
+        if(activeClientIndex.value < filteredClients.value.length - 1) activeClientIndex.value++;
+    }
+
+    const onArrowUpInSearchClientName = (e) =>{
+        e.preventDefault();
+        if(activeClientIndex.value > -1) activeClientIndex.value--;
+    }
+
+    const onEnterInSearchClientName = (e) =>{
+        if(isClientListOpen.value && activeClientIndex.value >= 0 && !e.isComposing){
+            onClickSearchedClient(filteredClients.value[activeClientIndex.value]);
+        }else if(getClientName(props.form.client_id) !== clientSearchText.value){
+            e.stopPropagation();
+        }
+    }
+
     //ポップアップを表示したときに、画面からはみ出していれば位置を直す
     onMounted(() => {
         window.addEventListener("keydown", onKeydownEscape);
@@ -235,17 +315,42 @@
                 </fieldset>
                 <div v-if="form.errors.start_time" class="form-danger">{{ form.errors.start_time }}</div>
                 <div v-if="form.errors.end_time" class="form-danger">{{ form.errors.end_time }}</div>
-
-                <label class="form-row">
-                    <span>利用者氏名</span>
-                    <select v-if="popupMode === 'create'" v-model="form.client_id" class="field">
-                        <option :value="null">利用者を選択</option>
-                        <option v-for="s in formClients" :key="s.id" :value="s.id">{{ s.last_name }}</option>
-                    </select>
-                    <div v-else>{{ selectClientName }}</div>
-                </label>
-                <div v-if="form.errors.client_id" class="form-danger">{{ form.errors.client_id }}</div>
-
+                <div>
+                    <label class="form-row">
+                        <span>利用者氏名</span>
+                        <input type="text"
+                                v-model="clientSearchText"
+                                v-if="popupMode === 'create'"
+                                @focus="onFocusSearchClientName"
+                                @input="onFocusSearchClientName"
+                                @blur="onBlurSearchClientName"
+                                @keydown.esc="onESCInSearchClientName"
+                                @keydown.down="onArrowDownInSearchClientName"
+                                @keydown.up="onArrowUpInSearchClientName"
+                                @keydown.enter="onEnterInSearchClientName"
+                                autocomplete="off"
+                                autocorrect="off"
+                                autocapitalize="off"
+                                spellcheck="false"
+                                class="field"/>
+                        <div v-else>{{ selectClientName }}</div>
+                    </label>
+                    <div v-if="form.errors.client_id" class="form-danger">{{ form.errors.client_id }}</div>
+                    <div v-if="isClientListOpen && popupMode === 'create'"
+                        class="max-h-40 overflow-y-auto border border-line rounded-lg bg-surface ml-[5.5rem]"
+                        @mousedown.prevent
+                        ref="clientList">
+                        <div v-for="(c, index) in filteredClients"
+                            :key="c.id"
+                            :data-index="index"
+                            @click="onClickSearchedClient(c)"
+                            @mouseenter="onMouseEnterSearchedClient(index)"
+                            :class="{ 'bg-reservation-soft': index === activeClientIndex }"
+                            class="cursor-pointer hover:bg-reservation-soft px-2 py-1">
+                            {{ c.last_name }}
+                        </div>
+                    </div>
+                </div>
                 <fieldset>
                     <legend class="sr-only">担当者</legend>
                     <div class="form-row">

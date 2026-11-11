@@ -66,11 +66,11 @@ class DemoDataSeeder extends Seeder
         }
 
         // 利用者
-        $suzuki = Client::create(['last_name' => '鈴木', 'wheelchair_required' => true]);
-        $takahashi = Client::create(['last_name' => '高橋', 'wheelchair_required' => false]);
-        $ito = Client::create(['last_name' => '伊藤', 'wheelchair_required' => false]);
-        $watanabe = Client::create(['last_name' => '渡辺', 'wheelchair_required' => false, 'interval_unit' => 'month', 'interval_value' => 3]);
-        $nakamura = Client::create(['last_name' => '中村', 'wheelchair_required' => true]);
+        $suzuki = Client::create(['last_name' => '鈴木', 'last_name_kana' => 'すずき', 'wheelchair_required' => true]);
+        $takahashi = Client::create(['last_name' => '高橋', 'last_name_kana' => 'たかはし', 'wheelchair_required' => false]);
+        $ito = Client::create(['last_name' => '伊藤', 'last_name_kana' => 'いとう', 'wheelchair_required' => false]);
+        $watanabe = Client::create(['last_name' => '渡辺', 'last_name_kana' => 'わたなべ', 'wheelchair_required' => false, 'interval_unit' => 'month', 'interval_value' => 3]);
+        $nakamura = Client::create(['last_name' => '中村', 'last_name_kana' => 'なかむら', 'wheelchair_required' => true]);
 
         // 利用者デフォルト担当者（中間テーブル、モデルなし）
         DB::table('client_default_staff')->insert([
@@ -230,7 +230,7 @@ class DemoDataSeeder extends Seeder
         $companyCar2 = Vehicle::create(['name' => '普通車2', 'type' => 'company_car']);
 
         // 同じ苗字の利用者（絞り込みの選択肢で「鈴木（ID）」表示の確認用）
-        $suzuki2 = Client::create(['last_name' => '鈴木', 'wheelchair_required' => false]);
+        $suzuki2 = Client::create(['last_name' => '鈴木', 'last_name_kana' => 'すずき', 'wheelchair_required' => false]);
 
         // 予約と担当者をまとめて作成する。担当者未定は staff_id に null を渡す
         $reserve = function (array $attributes, array $staffIds) {

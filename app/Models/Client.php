@@ -13,6 +13,7 @@ class Client extends Model
 
     protected $fillable = [
         'last_name',
+        'last_name_kana',
         'wheelchair_required',
         'interval_unit',
         'interval_value',

@@ -109,7 +109,7 @@ class ReservationController extends Controller
             // 絞り込みの選択肢（論理削除されたものは SoftDeletes により自動で除外される）
             'vehicleOptions' => Vehicle::orderBy('id')->get(['id', 'name']),
 
-            'formClients' => Client::orderBy('id')->get(['id', 'last_name']),
+            'formClients' => Client::orderBy('last_name_kana')->get(['id', 'last_name', 'last_name_kana']),
             'formStaff' => Staff::orderBy('id')->get(['id', 'name']),
             'formSupportTypes' => SupportType::orderBy('dispatch_priority')->get(['id', 'name']),
         ]);

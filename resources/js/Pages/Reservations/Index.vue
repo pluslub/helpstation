@@ -19,7 +19,7 @@
 
     const page = usePage();
 
-    //ReservationControllerからデータを受け取る
+    //ReservationControllerのindexメソッドからデータを受け取る
     const props = defineProps({
         reservations: Array,    //reservations:Array：'client','supportType','vehicle','staffAssignments.staff'
         shiftDetails: Array,
