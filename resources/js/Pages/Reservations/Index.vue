@@ -183,12 +183,16 @@
         return showPopup.value && ( popupMode.value === 'create' || popupMode.value === 'update')
     });
 
-    const clickableDate = computed(() => {
+    const shiftClickableDate = computed(() => {
         if(showPopup.value && popupMode.value === 'update'){
             return 	reservationUpdateForm.date;
         }else{
             return null;
         }
+    });
+
+    const clickableDateHeader = computed(() => {
+        return showPopup.value && popupMode.value !== 'view'
     });
 
     const activeForm = computed(() => {
@@ -394,13 +398,22 @@
 
     const onClickShift = (date, staffId) =>{
         if(!clickableShift.value) return;
-        if(clickableDate.value != null && clickableDate.value !== date) return;
-        activeForm.value.date = date;
-        if(activeForm.value.staff_ids.includes(staffId)){
-            activeForm.value.staff_ids = activeForm.value.staff_ids.filter(id => id !== staffId);
+        if(shiftClickableDate.value != null && shiftClickableDate.value !== date) return;
+
+        if(activeForm.value.date === date){
+            if(activeForm.value.staff_ids.includes(staffId)){
+                activeForm.value.staff_ids = activeForm.value.staff_ids.filter(id => id !== staffId);
+            }else{
+                activeForm.value.staff_ids.push(staffId);
+            }
         }else{
-            activeForm.value.staff_ids.push(staffId);
+            activeForm.value.date = date;
+            activeForm.value.staff_ids = [ staffId ];
         }
+    };
+
+    const onClickDateHeader = (date) =>{
+        activeForm.value.date = date;
     };
 
     //ページ表示時にキーダウンイベントを追加
@@ -488,14 +501,16 @@
             :shiftDetails="shiftDetails"
             :weekStart="weekStart"
             :clickableShift="clickableShift"
-            :clickableDate="clickableDate"
+            :shiftClickableDate="shiftClickableDate"
+            :clickableDateHeader="clickableDateHeader"
             :openedReservationId="openedReservationId"
             :highlighted-date="highlightedDate"
             :highlighted-time="highlightedTime"
             @update="onUpdateReservation"
             @approve="onApproveReservation"
             @view="onViewReservation"
-            @click-shift="onClickShift">
+            @click-shift="onClickShift"
+            @click-date-header="onClickDateHeader">
         </WeekGrid>
 
     <!-- 予約追加ポップアップ画面 -->

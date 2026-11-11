@@ -29,13 +29,14 @@
         openedReservationId: Number,
         showYearOnFirstDay: { type: Boolean, default: true},
         clickableShift: { type: Boolean, default: false},
-        clickableDate: String,
+        shiftClickableDate: String,
+        clickableDateHeader: { type: Boolean, default: false},
         highlightedDate: String,
         highlightedTime: Object,
         readonly: { type: Boolean, default: false},
     });
 
-    const emit = defineEmits(['update', 'approve', 'view', 'click-shift']);
+    const emit = defineEmits(['update', 'approve', 'view', 'click-shift', 'click-date-header']);
 
     const page = usePage();
     //------------------------------------------------関数-----------------------------------------------
@@ -56,7 +57,7 @@
     }
 
     const clickableShiftByDay = (day) => {
-        return props.clickableShift && (props.clickableDate == null || props.clickableDate === day.date);
+        return props.clickableShift && (props.shiftClickableDate  == null || props.shiftClickableDate  === day.date);
     }
 
     /**
@@ -230,6 +231,10 @@
     const onClickShift = (date, staffId) => {
         emit('click-shift', date, staffId);
     }
+
+    const onClickDateHeader = (date) => {
+        emit('click-date-header', date);
+    }
 </script>
 
 <!--
@@ -243,14 +248,17 @@
         <!-- 日付・シフト・休み情報 -->
         <div class="grid grid-cols-7 gap-2 px-2 py-1  sticky top-(--header-height) z-4 bg-surface shadow-sm font-bold">
             <!-- computedされた日付配列を繰り返す（7回）各DOMを識別するために一意なkeyが必要 -->
-            <div v-for="day in days" :key="day.date" class="min-w-0 " :class="{ 'bg-highlight-soft rounded-lg' : day.date === highlightedDate }">
+            <div v-for="day in days" :key="day.date" class="min-w-0 p-1" :class="{ 'bg-highlight-soft rounded-lg' : day.date === highlightedDate }">
             <!-- 日付ラベル 週の先頭と年の切り替わりだけ年を表示する -->
-                <div class="text-center p-1 m-1"
-                    :class="{ 'text-sunday' : day.weekNum === 0,
-                             'text-saturday' : day.weekNum === 6,
-                             'bg-reservation-medium rounded-lg' : day.date === today}">
+                <button type="button" class="w-full text-center p-1 rounded-lg"
+                        :class="{ 'text-sunday' : day.weekNum === 0,
+                                'text-saturday' : day.weekNum === 6,
+                                'bg-reservation-medium' : day.date === today,
+                                'hover:bg-reservation-soft cursor-pointer': clickableDateHeader, }"
+                        :disabled="!clickableDateHeader"
+                        @click="onClickDateHeader(day.date)">
                     <span v-if="day.showYear" class="text-xs">{{ day.year }}/</span>{{ day.monthDay }}
-                </div>
+                </button>
             </div>
         </div>
         <!--
