@@ -343,7 +343,7 @@
                         <div class="divide-y divide-line">
                             <!--カードを装飾する。選択されている予約：オレンジ、同じ時間帯の予約：ピンク-->
                             <div v-for="(res, index) in card.reservations" :key="res.id"
-                                :class="{ 'bg-reservation-soft': res.id === props.openedReservationId, 'bg-highlight-denger': isOverlapping(res) }"
+                                :class="{ 'bg-reservation-soft': res.id === props.openedReservationId, 'bg-highlight-danger': isOverlapping(res) }"
                                 class="p-1 rounded grid grid-cols-[4.5rem_1fr] gap-x-1">
                                 <div class="col-start-1 row-start-1">
                                     <span v-if="index === 0" class="marker px-1">{{ card.client_last_name }}</span>

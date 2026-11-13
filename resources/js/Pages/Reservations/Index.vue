@@ -130,7 +130,7 @@
 
         //ポップアップの位置を調整
         //右側に出してはみ出す場合は左側へ
-        if(rect.right + width + popupDisplayMargin <= window.innerWidth){
+        if(rect.right + width + popupDisplayMargin <= document.documentElement.clientWidth ){
             left = rect.right + popupDisplayMargin;
         }else{
             left = rect.left - width - popupDisplayMargin;

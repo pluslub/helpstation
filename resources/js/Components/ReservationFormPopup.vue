@@ -72,8 +72,8 @@
         const rect = popup.value.getBoundingClientRect();
 
         //画面右、下の限界値（画面サイズからポップアップの大きさを引いた値）
-        const maxLeft = window.innerWidth - rect.width;
-        const maxTop = window.innerHeight - rect.height;
+        const maxLeft = document.documentElement.clientWidth - rect.width;
+        const maxTop = document.documentElement.clientHeight - rect.height;
 
         //最小値は0、最大値は上の限界値
         popupPositionLeft.value = Math.min(Math.max(0, left), maxLeft);
@@ -362,14 +362,18 @@
                         <span>担当者</span>
                         <div class="flex flex-col gap-1">
                             <div v-if="selectedStaffs.length > 0" class="flex flex-wrap gap-1">
-                                <span v-for="s in selectedStaffs" :key="s.id" class="badge bg-reservation-medium text-ink pl-2">
+                                <span v-for="s in selectedStaffs" :key="s.id" class="badge bg-reservation-medium text-ink px-2">
                                     {{ s.name }}
-                                    <button type="button" @click="onUnselectStaff(s.id)" :aria-label="`${s.name}を外す`">
+                                    <button type="button"
+                                        v-if="popupMode!=='view'"
+                                        @click="onUnselectStaff(s.id)"
+                                        :aria-label="`${s.name}を外す`">
                                         <XMarkIcon class="w-4 h-4"/>
                                     </button>
                                 </span>
                             </div>
                             <select v-model="addStaffId"
+                                    v-if="popupMode!=='view'"
                                     @change="onSelectedStaff()"
                                     @keydown="onKeydownStaff"
                                     @keydown.enter="onKeydownEnterStaff"
