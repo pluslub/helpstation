@@ -475,7 +475,8 @@
                 @blur="onBlur($event)"
                 :value="weekStart"
                 class="field"
-                :min="page.props.selectableMinDate"/>
+                :min="page.props.selectableMinDate"
+                :max="page.props.selectableMaxDate"/>
             <Link :href="`/?week=${nextWeek}`" preserve-state preserve-scroll class="btn bg-neutral text-ink">
                 <ChevronRightIcon class="w-5 h-5"/>次週
             </Link>

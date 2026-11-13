@@ -27,7 +27,7 @@ return [
     'ascii' => 'The :attribute field must only contain single-byte alphanumeric characters and symbols.',
     'base64' => 'The :attribute field must be a valid Base64 string.',
     'before' => 'The :attribute field must be a date before :date.',
-    'before_or_equal' => 'The :attribute field must be a date before or equal to :date.',
+    'before_or_equal' => ':attributeは:date以前の日付を入力してください。',
     'between' => [
         'array' => 'The :attribute field must have between :min and :max items.',
         'file' => 'The :attribute field must be between :min and :max kilobytes.',

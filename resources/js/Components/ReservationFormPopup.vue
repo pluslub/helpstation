@@ -12,12 +12,15 @@
     });
 -->
 <script setup>
+    import { usePage } from '@inertiajs/vue3'
     import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
     import { vehicleTypeLabels } from "@/Utils/vehicleTypeLabel.js"
     import { useDateInputCommit } from "@/Composables/useDateInputCommit.js"
     import { PaperAirplaneIcon, XMarkIcon, TrashIcon } from '@heroicons/vue/24/outline';
 
     //--------------------------------------------変数-------------------------------------------
+    const page = usePage();
+
     const props = defineProps({
         form: Object,
         formClients: Array,
@@ -299,7 +302,9 @@
                             @change="onChange($event)"
                             @keydown="onKeyDown()"
                             @blur="onBlur($event)"
-                            class="field"/>
+                            class="field"
+                            :min="page.props.selectableMinDate"
+                            :max="page.props.selectableMaxDate"/>
                 </label>
                 <div v-if="form.errors.date" class="form-danger">{{ form.errors.date }}</div>
 
