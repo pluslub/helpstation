@@ -1,18 +1,16 @@
 <script setup>
     //データ処理 JavaScript
-    import { computed } from 'vue';
-    import { usePage } from '@inertiajs/vue3';
+    import { computed, ref, watch } from 'vue';
 
     import { effective } from "@/Utils/effective.js"
-    import { formatTime } from "@/Utils/formatTime.js"
     import { formatDate } from "@/Utils/formatDate.js"
-    import { isProvisional } from "@/Utils/isProvisional.js"
-    import { getVehicleTypeShortLabel } from "@/Utils/vehicleTypeLabel.js"
-    import { sliceTime, overlapTime } from "@/Utils/timeRange.js"
+    import { hasStaff } from "@/Utils/hasStaff.js"
+    import { isPrivateCar } from "@/Utils/isPrivateCar.js"
 
-    //Heroicons
-    import { PencilIcon, EyeIcon, ClockIcon, ExclamationTriangleIcon  } from '@heroicons/vue/24/outline';
-    import { ArrowPathIcon } from '@heroicons/vue/16/solid';
+    import DayReservationList from './DayReservationList.vue';
+    import DayShiftInfo from './DayShiftInfo.vue';
+
+    import { ChevronDownIcon } from '@heroicons/vue/24/outline';
 
     //ReservationControllerからデータを受け取る
     const props = defineProps({
@@ -38,103 +36,9 @@
 
     const emit = defineEmits(['update', 'approve', 'view', 'click-shift', 'click-date-header']);
 
-    const page = usePage();
     //------------------------------------------------関数-----------------------------------------------
-    const isPrivateCar = (res) => {
-        return res.vehicle_type_choice === 'private_car'
-    };
-
-    const isNotUseCar = (res) => {
-        return res.vehicle_type_choice === 'none'
-    };
-
-    const checkUsePrivateCar = (shift, day) => {
-        return shiftByDay.value.privateCarMap[`${shift.staffId}-${day.date}`];
-    };
-
-    const hasShiftInfo = (day) => {
-        return shiftByDay.value.shiftMap[day.date]?.length > 0 || shiftByDay.value.dayOffNameMap[day.date]?.length > 0 || shiftByDay.value.desiredOffNameMap[day.date]?.length > 0;
-    }
-
-    const clickableShiftByDay = (day) => {
-        return props.clickableShift && (props.shiftClickableDate  == null || props.shiftClickableDate  === day.date);
-    }
-
-    /**
-     * ポップアップを出す位置の基準を作る。左右はその日の列の端（カードにかぶらないように）、上は押したボタンの高さ
-     * @param e
-     */
-    const getPopupTargetRect = (e) => {
-        const dayColumnRect = e.currentTarget.closest('[data-day-column]').getBoundingClientRect();
-        const buttonRect = e.currentTarget.getBoundingClientRect();
-        const rect = { left: dayColumnRect.left, right: dayColumnRect.right, top: buttonRect.top, bottom: buttonRect.bottom };
-        return rect;
-    }
 
     const today = formatDate(new Date());
-
-    const hasStaff = (r, staffId) => r.staff_assignments.some(a => a.staff_id === staffId);
-
-    const isOverlapping = (reservation) => {
-        if(!props.highlightedTime) return false;
-        if(reservation.id === props.openedReservationId) return false;
-        if(reservation.date.slice(0, 10) !== props.highlightedDate) return false;
-
-        return overlapTime(reservation.start_time, reservation.end_time,
-                            props.highlightedTime.start_time, props.highlightedTime.end_time);
-    }
-
-    //入力中の日付・時間に、このシフトの職員が対応できるか
-    const isAvailableShift = (shift, day) =>{
-        // 目立たせる時間がない・違う日
-        if(!props.highlightedTime) return false;
-        if(day.date !== props.highlightedDate) return false;
-
-        // 実際に働ける時間（AM休・PM休を反映する）
-        let workStartTime = sliceTime(shift.start);
-        let workEndTime = sliceTime(shift.end);
-
-        if(shift.amOff){
-            workStartTime = page.props.amOffWorkStartTime > workStartTime ? page.props.amOffWorkStartTime : workStartTime;
-        }
-        if(shift.pmOff){
-            workEndTime = page.props.pmOffWorkEndTime < workEndTime ? page.props.pmOffWorkEndTime : workEndTime;
-        }
-
-        // 入力の時間（終了が空なら開始と同じ）
-        const inputStartTime = props.highlightedTime.start_time;
-        const inputEndTime = props.highlightedTime.end_time || inputStartTime;
-
-        // 働ける時間に収まらない
-        if(inputStartTime < workStartTime || workEndTime < inputEndTime) return false;
-
-        //その日、同じ時間に担当している予約がある（編集中の予約は除く）
-        const isBusy = props.allReservations.some(r =>
-            r.id !== props.openedReservationId
-            && r.date.slice(0, 10) === day.date
-            && hasStaff(r, shift.staffId)
-            && overlapTime(r.start_time, r.end_time, inputStartTime, inputEndTime)
-        );
-        return !isBusy;
-    }
-
-    //予約ごとの表示背景を変える
-    const cardClass = (res) => {
-        const borderClass = isProvisional(res) ? 'border-2 border-dashed border-provisional-line' : 'border-l-4 border-reservation';
-
-        let backgroundClass = null;
-        if(res.id === props.openedReservationId){   //開いている予約
-            backgroundClass = 'bg-reservation-soft';
-        }else if(isOverlapping(res)){   //入力中の時間と重なる予約
-            backgroundClass = 'bg-highlight-danger';
-        }else if(isProvisional(res)){   //仮登録
-            backgroundClass = 'bg-provisional-soft';
-        }else {
-            backgroundClass = 'bg-surface';
-        }
-
-        return [borderClass, backgroundClass];
-    }
 
     //--------------------------------------------computed関数-------------------------------------------
     /**
@@ -165,8 +69,10 @@
                 month: month,
                 day: day,
                 weekNum: d.getDay(),
+                weekName: weekNames[d.getDay()],
                 monthDay: `${month}/${day}(${weekNames[d.getDay()]})`,  //M/d(w)の文字列
                 showYear: i === 0 ? props.showYearOnFirstDay : year !== result[i - 1].year,       //ループの一つ前のオブジェクトresult[i - 1]と比較
+                showMonth: i === 0 || day === 1,
             });
         }
         return result;
@@ -223,27 +129,36 @@
         return {shiftMap, desiredOffNameMap, dayOffNameMap, privateCarMap};
     });
 
-    const onClickUpdateButton = (res, e) => {
-        const rect = getPopupTargetRect(e);
-        emit('update', res, rect);
-    }
-
-    const onClickApproveButton = (res) => {
-        emit('approve', res);
-    }
-
-    const onClickViewButton = (res, e) => {
-        const rect = getPopupTargetRect(e);
-        emit('view', res, rect);
-    }
-
-    const onClickShift = (date, staffId) => {
-        emit('click-shift', date, staffId);
-    }
-
     const onClickDateHeader = (date) => {
         emit('click-date-header', date);
     }
+
+    const onUpdateReservation = (res, rect) => {
+        emit('update', res, rect);
+    }
+
+    const onApproveReservation = (res) => {
+        emit('approve', res);
+    }
+
+    const onViewReservation = (res, rect) => {
+        emit('view', res, rect);
+    }
+
+    const onClickShift  = (date, staffId ) => {
+        emit('click-shift', date, staffId);
+    }
+
+    //---------------------------------------スマホ用---------------------------------------------------------
+    const getDefaultSelectedDate = () =>{
+        if(days.value.some(d => d.date === props.highlightedDate)) return props.highlightedDate;
+        return days.value.some(d => d.date === today) ? today : props.weekStart;
+    }
+
+    const selectedDate = ref(getDefaultSelectedDate());
+    const selectedDay = computed(() => days.value.find(d => d.date === selectedDate.value))
+    watch(() => props.weekStart, () => { selectedDate.value = getDefaultSelectedDate(); });
+    watch(() => props.highlightedDate, () => {if(props.highlightedDate && days.value.some(d => d.date === props.highlightedDate)) selectedDate.value = props.highlightedDate });
 </script>
 
 <!--
@@ -253,179 +168,131 @@
     @：           v-on:の省略形。イベントが起きたときに実行する処理を書く。
  -->
 <template>
-    <div class="flex flex-col gap-2">
-        <!-- 日付・シフト・休み情報 -->
-        <div class="grid grid-cols-7 gap-2 px-2 py-1  sticky top-(--header-height) z-4 bg-surface shadow-sm font-bold">
-            <!-- computedされた日付配列を繰り返す（7回）各DOMを識別するために一意なkeyが必要 -->
-            <div v-for="day in days" :key="day.date" class="min-w-0 p-1" :class="{ 'bg-highlight-soft rounded-lg' : day.date === highlightedDate }">
-            <!-- 日付ラベル 週の先頭と年の切り替わりだけ年を表示する -->
-                <button type="button" class="w-full text-center p-1 rounded-lg"
-                        :class="{ 'text-sunday' : day.weekNum === 0,
-                                'text-saturday' : day.weekNum === 6,
-                                'bg-reservation-medium' : day.date === today,
-                                'hover:bg-reservation-soft cursor-pointer': clickableDateHeader, }"
-                        :disabled="!clickableDateHeader"
-                        @click="onClickDateHeader(day.date)">
-                    <span v-if="day.showYear" class="text-xs">{{ day.year }}/</span>{{ day.monthDay }}
-                </button>
+    <div>
+        <!--PC用画面　768px以上で表示-->
+        <div class="hidden md:flex md:flex-col gap-2">
+            <!-- 日付・シフト・休み情報 -->
+            <div class="grid grid-cols-7 gap-2 px-2 py-1  sticky top-(--header-height) z-4 bg-surface shadow-sm font-bold">
+                <!-- computedされた日付配列を繰り返す（7回）各DOMを識別するために一意なkeyが必要 -->
+                <div v-for="day in days" :key="day.date" class="min-w-0 p-1" :class="{ 'bg-highlight-soft rounded-lg' : day.date === highlightedDate }">
+                <!-- 日付ラベル 週の先頭と年の切り替わりだけ年を表示する -->
+                    <button type="button" class="w-full text-center p-1 rounded-lg"
+                            :class="{ 'text-sunday' : day.weekNum === 0,
+                                    'text-saturday' : day.weekNum === 6,
+                                    'bg-reservation-medium' : day.date === today,
+                                    'hover:bg-reservation-soft cursor-pointer': clickableDateHeader, }"
+                            :disabled="!clickableDateHeader"
+                            @click="onClickDateHeader(day.date)">
+                        <span v-if="day.showYear" class="text-xs">{{ day.year }}/</span>{{ day.monthDay }}
+                    </button>
+                </div>
             </div>
-        </div>
-        <!--
-            シフト・休み情報
-            computedにより日付毎に分別されたシフト情報を取得する。
-        -->
-        <div class="grid grid-cols-7 gap-2 px-2">
-            <div v-for="day in days" :key="day.date" class="min-w-0">
-                <div>
-                    <div v-if="hasShiftInfo(day)"
-                        class="grid grid-cols-[auto_auto_auto_1fr] gap-x-1 rounded-lg bg-shift-soft border-t-4 border-shift p-1 text-sm">
-                        <template v-for="shift in shiftByDay.shiftMap[day.date] ?? []" :key="shift.id">
-                            <button class="grid grid-cols-subgrid col-span-4 text-left rounded items-center"
-                                    type="button"
-                                    @click="onClickShift(day.date, shift.staffId)"
-                                    :disabled="!clickableShiftByDay(day)"
-                                    :class="{   'cursor-pointer hover:bg-reservation-soft' : clickableShiftByDay(day),
-                                                'bg-highlight-soft' : isAvailableShift(shift, day) }">
-                                <span title="shift.name" class="truncate min-w-0 pr-2">{{ shift.name }}</span>
-                                <span class="text-xs flex items-center justify-end gap-1 tabular-nums">
-                                    <span v-if="checkUsePrivateCar(shift, day)?.start"
-                                        title="私用車(直行)"
-                                        class="rounded-full bg-ink w-2 h-2 shrink-0">
-                                    </span>
-                                    {{ formatTime(shift.start) }} 〜
-                                </span>
-                                <span class="text-xs tabular-nums">{{ formatTime(shift.end) }}
-                                </span>
-                                <span class="flex items-center gap-1">
-                                    <span v-if="shift.amOff" class="badge bg-rest-soft text-rest text-xs">AM</span>
-                                    <span v-else-if="shift.pmOff" class="badge bg-rest-soft text-rest text-xs">PM</span>
-                                    <span v-if="checkUsePrivateCar(shift, day)?.end"
-                                        title="私用車(直帰)"
-                                        class="rounded-full bg-ink w-2 h-2 shrink-0"></span>
-                                    <span v-if="shift.changed"
-                                        class="badge bg-shift text-white">
-                                        <ArrowPathIcon class="w-4 h-4"/>
-                                    </span>
-                                </span>
-                            </button>
-                        </template>
-                        <div v-if="shiftByDay.dayOffNameMap[day.date]" class="flex items-start col-span-full pt-2">
-                            <span class="shrink-0">休：</span>
-                            <div class="flex flex-wrap gap-x-3 gap-y-0.5 flex-1 min-w-0">
-                                <span v-for="(dayOffStaff, index) in shiftByDay.dayOffNameMap[day.date] ?? []" :key="dayOffStaff.id"
-                                        class="flex items-center gap-1">
-                                    <span class="whitespace-nowrap">{{ dayOffStaff.name }}</span>
-                                    <div v-if="dayOffStaff.changed"
-                                        class="badge bg-shift text-white">
-                                        <ArrowPathIcon class="w-4 h-4"/>
-                                    </div>
-                                </span>
-                            </div>
-                        </div>
-                        <div v-if="shiftByDay.desiredOffNameMap[day.date]" class="flex items-start col-span-full">
-                            <span class="shrink-0">希望休：</span>
-                            <div class="flex flex-wrap gap-x-3 gap-y-0.5 flex-1 min-w-0">
-                                <span v-for="(desiredOffStaff, index) in shiftByDay.desiredOffNameMap[day.date] ?? []" :key="desiredOffStaff.id"
-                                        class="flex items-center gap-1">
-                                    <span class="whitespace-nowrap">{{ desiredOffStaff.name }}</span>
-                                    <span v-if="desiredOffStaff.amOff && !desiredOffStaff.pmOff"
-                                            class="badge bg-rest-soft text-rest text-xs">AM</span>
-                                    <span v-if="!desiredOffStaff.amOff && desiredOffStaff.pmOff"
-                                            class="badge bg-rest-soft text-rest text-xs">PM</span>
-                                </span>
-                            </div>
-                        </div>
+            <!--
+                シフト・休み情報
+                computedにより日付毎に分別されたシフト情報を取得する。
+            -->
+             <details open class="group">
+                <summary class="list-none cursor-pointer flex items-center gap-1 bg-shift-soft rounded-lg px-2 py-1 mx-2 mb-2">
+                    シフト
+                    <ChevronDownIcon class="group-open:rotate-180 w-4 h-4 ml-auto "/>
+                </summary>
+
+                <div class="grid grid-cols-7 gap-2 px-2">
+                    <div v-for="day in days" :key="day.date" class="min-w-0">
+                        <DayShiftInfo
+                            :shifts="shiftByDay.shiftMap[day.date]??[]"
+                            :desiredOffs ="shiftByDay.desiredOffNameMap[day.date]??[]"
+                            :dayOffs ="shiftByDay.dayOffNameMap[day.date]??[]"
+                            :privateCars = "shiftByDay.privateCarMap"
+                            :allReservations="props.allReservations"
+                            :openedReservationId="openedReservationId"
+                            :day="day"
+                            :clickableShift="clickableShift"
+                            :shiftClickableDate="shiftClickableDate"
+                            :highlighted-date="highlightedDate"
+                            :highlighted-time="highlightedTime"
+                            @click-shift="onClickShift">
+                        </DayShiftInfo>
                     </div>
+                </div>
+            </details>
+
+            <!-- 予約カード -->
+            <div class="grid grid-cols-7 gap-2 px-2">
+                <div v-for="day in days" :key="day.date" class="flex flex-col gap-2 min-w-0" data-day-column>
+                            <!--カードを装飾する。選択されている予約：オレンジ、同じ時間帯の予約：ピンク-->
+                    <DayReservationList
+                        :reservations="reservationsByDay[day.date]??[]"
+                        :openedReservationId="openedReservationId"
+                        :highlighted-date="highlightedDate"
+                        :highlighted-time="highlightedTime"
+                        :readonly="readonly"
+                        @update="onUpdateReservation"
+                        @approve="onApproveReservation"
+                        @view="onViewReservation">
+                    </DayReservationList>
                 </div>
             </div>
         </div>
-
-        <!-- 予約カード -->
-        <div class="grid grid-cols-7 gap-2 px-2">
-            <div v-for="day in days" :key="day.date" class="flex flex-col gap-2 min-w-0" data-day-column>
-                        <!--カードを装飾する。選択されている予約：オレンジ、同じ時間帯の予約：ピンク-->
-                <template v-for="res in reservationsByDay[day.date] ?? []" :key="res.id">
-
-                    <div :class="cardClass(res)"
-                        class="p-1 grid grid-cols-[4.5rem_1fr] gap-x-1 rounded-lg shadow-sm">
-                        <div class="col-start-1 row-start-1">
-                            <span class="marker px-1">{{ res.client.last_name }}</span>
-                        </div>
-                        <!--支援内容-->
-                        <div class="min-w-0 col-start-2 row-start-1">
-                            <div class="flex items-center gap-1">
-                                <span class="flex items-center gap-1 flex-1 min-w-0">
-                                    <span :title="res.support_type?.name ?? '削除済'"
-                                            class="truncate min-w-0 ">
-                                            {{ res.support_type?.name ?? '削除済'}}
-                                    </span>
-                                    <span v-if="isPrivateCar(res)"
-                                            class="rounded-full bg-ink w-2 h-2 shrink-0"
-                                            title="私用車">
-                                    </span>
+        <!--スマホ用画面-->
+        <div class="md:hidden pb-20">
+            <div class="grid grid-cols-7 sticky top-(--header-height) z-4 bg-surface pb-2">
+                <div v-for="day in days"
+                    :key="day.date"
+                    class="rounded-lg p-1">
+                    <button type="button"
+                            @click="selectedDate = day.date"
+                            :class="{   'ring-2 ring-reservation font-bold': day.date === selectedDate,
+                                        'bg-reservation-medium' : day.date === today,
+                                        'text-sunday' : day.weekNum === 0,
+                                        'text-saturday' : day.weekNum === 6,
+                                    }"
+                            class="flex flex-col items-center rounded-lg w-full text-sm">
+                            <span>{{ day.weekName }}</span>
+                            <span v-if="day.showMonth">
+                                <span class="text-xs tracking-tighter whitespace-nowrap">{{ day.month }}
+                                    <span class="-ml-0.5 -mr-1">/</span>
                                 </span>
-
-                                <!-- 予約操作ボタン -->
-                                <div class="flex shrink-0">
-                                    <button title="仮登録"
-                                            v-if="isProvisional(res)"
-                                            :disabled="!page.props.auth.isAdmin || props.readonly"
-                                            @click="onClickApproveButton(res)"
-                                            class="badge text-provisional">
-                                            <ClockIcon class="h-4 w-4 stroke-2"/>
-                                    </button>
-                                    <button
-                                        v-if="page.props.auth.isAdmin && !props.readonly"
-                                        @click="onClickUpdateButton(res, $event)">
-                                        <PencilIcon class="h-4 w-4 stroke-2"/>
-                                    </button>
-                                    <button
-                                        v-if="!page.props.auth.isAdmin && !props.readonly"
-                                        @click="onClickViewButton(res, $event)">
-                                        <EyeIcon class="h-4 w-4 stroke-2"/>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <!--担当者-->
-                        <div class="grid grid-cols-2 gap-x-1 min-w-0 col-start-1 row-start-2 row-span-2 self-end">
-                            <span v-for="assignedStaff in res.staff_assignments"
-                                :key="assignedStaff.staff_id ?? 'none'"
-                                class="flex items-center gap-1 min-w-0"
-                                :class="{ 'col-span-2': assignedStaff.staff_id === null }"
-                                :title="assignedStaff.staff?.name ?? '未定'">
-                                <span class="truncate text-sm">{{ assignedStaff.staff?.name ?? '未定' }}</span>
-                                <span v-if="assignedStaff.staff_id === null" class="shrink-0">
-                                    <ExclamationTriangleIcon class="w-4 h-4 text-unassigned"/>
-                                </span>
+                                {{ day.day }}
                             </span>
-                        </div>
-                        <div v-if="res.remarks" class="col-start-2 row-start-2">
-                            <span :title="res.remarks"
-                                class="text-ink-muted break-words line-clamp-2 text-xs">
-                                {{ res.remarks }}
-                            </span>
-                        </div>
-                        <!--時刻と車両-->
-                        <div class="flex items-center gap-1 col-start-2 row-start-3">
-                            <span class="shrink-0 text-sm">{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
-                            <!--車両ラベル-->
-                            <span class="flex items-center gap-0.5">
-                                <div v-if="!isPrivateCar(res) && !isNotUseCar(res)"
-                                    class="badge font-bold"
-                                    :title="res.vehicle?.name"
-                                    :class="res.vehicle_type_choice === 'care_vehicle' ? 'bg-care-vehicle-soft text-care-vehicle' : 'bg-company-car-soft text-company-car'">
-                                    {{ getVehicleTypeShortLabel(res.vehicle_type_choice) }}
-                                </div>
-                                <div v-if="res.vehicle_reassigned_flag"
-                                    class="badge bg-reassigned text-white"
-                                    title="配車変更">
-                                    <ArrowPathIcon class="w-4 h-4"/>
-                                </div>
-                            </span>
-                        </div>
-                    </div>
-                </template>
+                            <span v-else>{{ day.day }}</span>
+                    </button>
+                </div>
+            </div>
+            <div v-if="selectedDay"
+                class="flex flex-col gap-2 px-2">
+                <details class="group">
+                    <summary class="list-none cursor-pointer flex items-center gap-1 bg-shift-soft rounded-lg border-t-4 border-shift px-2 py-1 group-open:rounded-b-none">
+                        シフト
+                        <ChevronDownIcon class="group-open:rotate-180 w-4 h-4 ml-auto "/></summary>
+                    <DayShiftInfo
+                        :shifts="shiftByDay.shiftMap[selectedDay?.date]??[]"
+                        :desiredOffs ="shiftByDay.desiredOffNameMap[selectedDay?.date]??[]"
+                        :dayOffs ="shiftByDay.dayOffNameMap[selectedDay?.date]??[]"
+                        :privateCars = "shiftByDay.privateCarMap"
+                        :allReservations="props.allReservations"
+                        :openedReservationId="openedReservationId"
+                        :day="selectedDay"
+                        :clickableShift="clickableShift"
+                        :shiftClickableDate="shiftClickableDate"
+                        :highlighted-date="highlightedDate"
+                        :highlighted-time="highlightedTime"
+                        @click-shift="onClickShift"
+                        attached >
+                    </DayShiftInfo>
+                </details>
+                <div data-day-column>
+                    <DayReservationList
+                        :reservations="reservationsByDay[selectedDay?.date]??[]"
+                        :openedReservationId="openedReservationId"
+                        :highlighted-date="highlightedDate"
+                        :highlighted-time="highlightedTime"
+                        :readonly="readonly"
+                        @update="onUpdateReservation"
+                        @approve="onApproveReservation"
+                        @view="onViewReservation">
+                    </DayReservationList>
+                </div>
             </div>
         </div>
     </div>

@@ -19,12 +19,16 @@
 
 <template>
     <div class="flex items-center gap-2">
-        <div class="flex items-center gap-1">
-            <UserCircleIcon class="w-5 h-5"/>
-            {{ page.props.auth.name }}
+        <div class="flex items-center gap-1 hidden md:flex">
+            <UserCircleIcon class="w-5 h-5"/>{{ page.props.auth.name }}
         </div>
-        <Link href="/logout" method="post" as="button" @before="onBefore" class="btn btn-outline border-line text-ink">
-            <ArrowRightStartOnRectangleIcon class="w-5 h-5"/>ログアウト
+        <Link href="/logout" method="post"
+            as="button"
+            @before="onBefore"
+            class="btn md:btn-outline md:border-line text-ink shadow-none md:shadow-sm"
+             aria-label="ログアウト">
+            <ArrowRightStartOnRectangleIcon class="w-5 h-5"/>
+            <span class="hidden md:inline">ログアウト</span>
         </Link>
     </div>
 </template>

@@ -461,34 +461,68 @@
             :clientOptions="clientOptions"
             v-model:filterType="filterType"
             v-model:filterId="filterId"
-            class="lg:justify-self-start">
+            class="lg:justify-self-start order-1 lg:order-none">
         </ReservationFilter>
-        <div class="flex items-center gap-2">
-            <Link :href="`/?week=${prevWeek}`" preserve-state preserve-scroll class="btn bg-neutral text-ink">
-                <ChevronLeftIcon class="w-5 h-5"/>前週
+        <div class="flex items-center gap-2 order-3 w-full justify-center lg:order-none lg:w-auto">
+            <Link :href="`/?week=${prevWeek}`"
+                    preserve-state preserve-scroll
+                    class="btn bg-neutral text-ink"
+                     aria-label="前週">
+                <ChevronLeftIcon class="w-5 h-5"/>
+                <span class="hidden md:inline">前週</span>
             </Link>
-            <Link href="/" preserve-state preserve-scroll class="btn bg-neutral text-ink">今週</Link>
+            <Link href="/" preserve-state preserve-scroll class="btn bg-neutral text-ink">
+                <span>今週</span>
+            </Link>
+            <!--PC用日付選択-->
             <input type="date"
                 @change="onChange($event)"
                 @keydown="onKeyDown()"
                 @keydown.enter="onEnter($event)"
                 @blur="onBlur($event)"
                 :value="weekStart"
-                class="field"
+                class="field hidden md:block"
                 :min="page.props.selectableMinDate"
                 :max="page.props.selectableMaxDate"/>
-            <Link :href="`/?week=${nextWeek}`" preserve-state preserve-scroll class="btn bg-neutral text-ink">
-                <ChevronRightIcon class="w-5 h-5"/>次週
+            <!--スマホ用日付選択-->
+            <div class="relative md:hidden btn bg-neutral text-ink">
+                <CalendarDaysIcon class="w-5 h-5"/>
+                <input type="date"
+                        @change="onChange($event)"
+                        @keydown="onKeyDown()"
+                        @keydown.enter="onEnter($event)"
+                        @blur="onBlur($event)"
+                        class="absolute inset-0 w-full h-full opacity-0"
+                        aria-label="日付を指定"
+                        :value="weekStart"
+                        :min="page.props.selectableMinDate"
+                        :max="page.props.selectableMaxDate"/>
+            </div>
+            <Link :href="`/?week=${nextWeek}`"
+                    preserve-state preserve-scroll
+                    class="btn bg-neutral text-ink"
+                    aria-label="次週">
+                <ChevronRightIcon class="w-5 h-5"/>
+                <span class="hidden md:inline">次週</span>
             </Link>
         </div>
-        <div class="flex items-center gap-2 lg:justify-self-end">
-            <button @click="onClickEntryButton($event)" class="btn bg-reservation-medium text-ink relative">
+        <div class="flex items-center gap-2 lg:justify-self-end ml-auto order-2 lg:order-none">
+            <button @click="onClickEntryButton($event)"
+                    class="btn bg-reservation-medium text-ink relative hidden md:inline-flex">
                 <PlusIcon class="w-5 h-5"/>予約追加
                 <span v-if="isDirtyPopup"
                     title="入力中の予約があります"
                     class="absolute rounded-full bg-danger ring-2 ring-surface top-0 -right-0.5 w-2.5 h-2.5"></span>
             </button>
-            <Link href="/reservations/monthly" class="btn btn-outline border-line text-ink">
+            <button @click="onClickEntryButton($event)"
+                    class="btn bg-reservation-medium text-ink md:hidden fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 rounded-full w-14 h-14 shadow-lg flex items-center justify-center z-6 "
+                    aria-label="予約追加">
+                <PlusIcon class="w-5 h-5"/>
+                <span v-if="isDirtyPopup"
+                    title="入力中の予約があります"
+                    class="absolute rounded-full bg-danger ring-2 ring-surface top-0 -right-0.5 w-2.5 h-2.5"></span>
+            </button>
+            <Link href="/reservations/monthly" class="btn btn-outline border-line text-ink hidden md:inline-flex">
                 <CalendarDaysIcon class="w-5 h-5"/>月表示
             </Link>
             <UserMenu class="pl-4" :hasDraft="isDirtyPopup"/>
