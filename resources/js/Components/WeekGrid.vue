@@ -117,6 +117,25 @@
         );
         return !isBusy;
     }
+
+    //予約ごとの表示背景を変える
+    const cardClass = (res) => {
+        const borderClass = isProvisional(res) ? 'border-2 border-dashed border-provisional-line' : 'border-l-4 border-reservation';
+
+        let backgroundClass = null;
+        if(res.id === props.openedReservationId){   //開いている予約
+            backgroundClass = 'bg-reservation-soft';
+        }else if(isOverlapping(res)){   //入力中の時間と重なる予約
+            backgroundClass = 'bg-highlight-danger';
+        }else if(isProvisional(res)){   //仮登録
+            backgroundClass = 'bg-provisional-soft';
+        }else {
+            backgroundClass = 'bg-surface';
+        }
+
+        return [borderClass, backgroundClass];
+    }
+
     //--------------------------------------------computed関数-------------------------------------------
     /**
      * 今週の７日間の日付を入力する。
@@ -155,28 +174,18 @@
 
     //予約情報を日付毎に格納
     const reservationsByDay = computed(() => {
-        const cardMap = {};
+        const reservationsByDay = {};
 
         //予約内容を日付毎のMapオブジェクトに格納する。
         for (const r of props.reservations) {
             const day = r.date.slice(0, 10);    //yyyy-MM-ddに変換
 
              //??=について：map[day]がnullか空なら配列を作成する。
-            cardMap[day] ??= [];
-            let card = {};
+            reservationsByDay[day] ??= [];
 
-            let cardFilteredByClient = cardMap[day].find(c => r.client_id === c.client_id);
-            if (cardFilteredByClient == null){
-                card.client_id = r.client_id;
-                card.client_last_name = r.client.last_name;
-                card.reservations = [];
-                cardMap[day].push(card);
-            }else{
-                card = cardFilteredByClient;
-            }
-            card.reservations.push(r);
+            reservationsByDay[day].push(r);
         }
-        return cardMap;
+        return reservationsByDay;
     });
 
     //シフト情報を取得して日付毎に格納
@@ -334,94 +343,86 @@
         <!-- 予約カード -->
         <div class="grid grid-cols-7 gap-2 px-2">
             <div v-for="day in days" :key="day.date" class="flex flex-col gap-2 min-w-0" data-day-column>
-                <template v-for="card in reservationsByDay[day.date] ?? []" :key="card.client_id">
-                    <!-- 利用者ごとにカードを表示する -->
-                    <div class="rounded-lg shadow-sm p-1"
-                        :class="card.reservations.some(r => isProvisional(r))   ? 'bg-provisional-soft border-2 border-dashed border-provisional-line'
-                                                                                : 'bg-surface border-l-4 border-reservation'">
-                        <!-- カードごとに予約情報を表示する -->
-                        <div class="divide-y divide-line">
-                            <!--カードを装飾する。選択されている予約：オレンジ、同じ時間帯の予約：ピンク-->
-                            <div v-for="(res, index) in card.reservations" :key="res.id"
-                                :class="{ 'bg-reservation-soft': res.id === props.openedReservationId, 'bg-highlight-danger': isOverlapping(res) }"
-                                class="p-1 rounded grid grid-cols-[4.5rem_1fr] gap-x-1">
-                                <div class="col-start-1 row-start-1">
-                                    <span v-if="index === 0" class="marker px-1">{{ card.client_last_name }}</span>
-                                </div>
-                                <!--支援内容-->
-                                <div class="min-w-0 col-start-2 row-start-1">
-                                    <div class="flex items-center gap-1">
-                                        <span class="flex items-center gap-1 flex-1 min-w-0">
-                                            <span :title="res.support_type?.name ?? '削除済'"
-                                                    class="truncate min-w-0 ">
-                                                    {{ res.support_type?.name ?? '削除済'}}
-                                            </span>
-                                            <span v-if="isPrivateCar(res)"
-                                                    class="rounded-full bg-ink w-2 h-2 shrink-0"
-                                                    title="私用車">
-                                            </span>
-                                        </span>
+                        <!--カードを装飾する。選択されている予約：オレンジ、同じ時間帯の予約：ピンク-->
+                <template v-for="res in reservationsByDay[day.date] ?? []" :key="res.id">
 
-                                        <!-- 予約操作ボタン -->
-                                        <div class="flex shrink-0">
-                                            <button title="仮登録"
-                                                    v-if="isProvisional(res)"
-                                                    :disabled="!page.props.auth.isAdmin || props.readonly"
-                                                    @click="onClickApproveButton(res)"
-                                                    class="badge text-provisional">
-                                                    <ClockIcon class="h-4 w-4 stroke-2"/>
-                                            </button>
-                                            <button
-                                                v-if="page.props.auth.isAdmin && !props.readonly"
-                                                @click="onClickUpdateButton(res, $event)">
-                                                <PencilIcon class="h-4 w-4 stroke-2"/>
-                                            </button>
-                                            <button
-                                                v-if="!page.props.auth.isAdmin && !props.readonly"
-                                                @click="onClickViewButton(res, $event)">
-                                                <EyeIcon class="h-4 w-4 stroke-2"/>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <!--担当者-->
-                                <div class="grid grid-cols-2 gap-x-1 min-w-0 col-start-1 row-start-2 row-span-2 self-end">
-                                    <span v-for="assignedStaff in res.staff_assignments"
-                                        :key="assignedStaff.staff_id ?? 'none'"
-                                        class="flex items-center gap-1 min-w-0"
-                                        :class="{ 'col-span-2': assignedStaff.staff_id === null }"
-                                        :title="assignedStaff.staff?.name ?? '未定'">
-                                        <span class="truncate text-sm">{{ assignedStaff.staff?.name ?? '未定' }}</span>
-                                        <span v-if="assignedStaff.staff_id === null" class="shrink-0">
-                                            <ExclamationTriangleIcon class="w-4 h-4 text-unassigned"/>
-                                        </span>
+                    <div :class="cardClass(res)"
+                        class="p-1 grid grid-cols-[4.5rem_1fr] gap-x-1 rounded-lg shadow-sm">
+                        <div class="col-start-1 row-start-1">
+                            <span class="marker px-1">{{ res.client.last_name }}</span>
+                        </div>
+                        <!--支援内容-->
+                        <div class="min-w-0 col-start-2 row-start-1">
+                            <div class="flex items-center gap-1">
+                                <span class="flex items-center gap-1 flex-1 min-w-0">
+                                    <span :title="res.support_type?.name ?? '削除済'"
+                                            class="truncate min-w-0 ">
+                                            {{ res.support_type?.name ?? '削除済'}}
                                     </span>
-                                </div>
-                                <div v-if="res.remarks" class="col-start-2 row-start-2">
-                                    <span :title="res.remarks"
-                                        class="text-ink-muted break-words line-clamp-2 text-xs">
-                                        {{ res.remarks }}
+                                    <span v-if="isPrivateCar(res)"
+                                            class="rounded-full bg-ink w-2 h-2 shrink-0"
+                                            title="私用車">
                                     </span>
-                                </div>
-                                <!--時刻と車両-->
-                                <div class="flex items-center gap-1 col-start-2 row-start-3">
-                                    <span class="shrink-0 text-sm">{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
-                                    <!--車両ラベル-->
-                                    <span class="flex items-center gap-0.5">
-                                        <div v-if="!isPrivateCar(res) && !isNotUseCar(res)"
-                                            class="badge font-bold"
-                                            :title="res.vehicle?.name"
-                                            :class="res.vehicle_type_choice === 'care_vehicle' ? 'bg-care-vehicle-soft text-care-vehicle' : 'bg-company-car-soft text-company-car'">
-                                            {{ getVehicleTypeShortLabel(res.vehicle_type_choice) }}
-                                        </div>
-                                        <div v-if="res.vehicle_reassigned_flag"
-                                            class="badge bg-reassigned text-white"
-                                            title="配車変更">
-                                            <ArrowPathIcon class="w-4 h-4"/>
-                                        </div>
-                                    </span>
+                                </span>
+
+                                <!-- 予約操作ボタン -->
+                                <div class="flex shrink-0">
+                                    <button title="仮登録"
+                                            v-if="isProvisional(res)"
+                                            :disabled="!page.props.auth.isAdmin || props.readonly"
+                                            @click="onClickApproveButton(res)"
+                                            class="badge text-provisional">
+                                            <ClockIcon class="h-4 w-4 stroke-2"/>
+                                    </button>
+                                    <button
+                                        v-if="page.props.auth.isAdmin && !props.readonly"
+                                        @click="onClickUpdateButton(res, $event)">
+                                        <PencilIcon class="h-4 w-4 stroke-2"/>
+                                    </button>
+                                    <button
+                                        v-if="!page.props.auth.isAdmin && !props.readonly"
+                                        @click="onClickViewButton(res, $event)">
+                                        <EyeIcon class="h-4 w-4 stroke-2"/>
+                                    </button>
                                 </div>
                             </div>
+                        </div>
+                        <!--担当者-->
+                        <div class="grid grid-cols-2 gap-x-1 min-w-0 col-start-1 row-start-2 row-span-2 self-end">
+                            <span v-for="assignedStaff in res.staff_assignments"
+                                :key="assignedStaff.staff_id ?? 'none'"
+                                class="flex items-center gap-1 min-w-0"
+                                :class="{ 'col-span-2': assignedStaff.staff_id === null }"
+                                :title="assignedStaff.staff?.name ?? '未定'">
+                                <span class="truncate text-sm">{{ assignedStaff.staff?.name ?? '未定' }}</span>
+                                <span v-if="assignedStaff.staff_id === null" class="shrink-0">
+                                    <ExclamationTriangleIcon class="w-4 h-4 text-unassigned"/>
+                                </span>
+                            </span>
+                        </div>
+                        <div v-if="res.remarks" class="col-start-2 row-start-2">
+                            <span :title="res.remarks"
+                                class="text-ink-muted break-words line-clamp-2 text-xs">
+                                {{ res.remarks }}
+                            </span>
+                        </div>
+                        <!--時刻と車両-->
+                        <div class="flex items-center gap-1 col-start-2 row-start-3">
+                            <span class="shrink-0 text-sm">{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
+                            <!--車両ラベル-->
+                            <span class="flex items-center gap-0.5">
+                                <div v-if="!isPrivateCar(res) && !isNotUseCar(res)"
+                                    class="badge font-bold"
+                                    :title="res.vehicle?.name"
+                                    :class="res.vehicle_type_choice === 'care_vehicle' ? 'bg-care-vehicle-soft text-care-vehicle' : 'bg-company-car-soft text-company-car'">
+                                    {{ getVehicleTypeShortLabel(res.vehicle_type_choice) }}
+                                </div>
+                                <div v-if="res.vehicle_reassigned_flag"
+                                    class="badge bg-reassigned text-white"
+                                    title="配車変更">
+                                    <ArrowPathIcon class="w-4 h-4"/>
+                                </div>
+                            </span>
                         </div>
                     </div>
                 </template>
