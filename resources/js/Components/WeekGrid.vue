@@ -159,6 +159,22 @@
     const selectedDay = computed(() => days.value.find(d => d.date === selectedDate.value))
     watch(() => props.weekStart, () => { selectedDate.value = getDefaultSelectedDate(); });
     watch(() => props.highlightedDate, () => {if(props.highlightedDate && days.value.some(d => d.date === props.highlightedDate)) selectedDate.value = props.highlightedDate });
+
+    //シフトの要約を作る　勤務〇・休〇・希望休〇
+    const shiftCountByDay = computed(() => {
+        const countByDay ={};
+        for(const day of days.value){
+            const selectedDate = day.date;
+
+            const shiftCount = (shiftByDay.value.shiftMap[selectedDate] ?? []).length;
+            const dayoffCount = (shiftByDay.value.dayOffNameMap[selectedDate] ?? []).length;
+            const desiredOffCount = (shiftByDay.value.desiredOffNameMap[selectedDate] ?? []).length;
+            const total = shiftCount + dayoffCount + desiredOffCount;
+
+            countByDay[selectedDate] = {work: shiftCount, dayOff: dayoffCount, desiredOff: desiredOffCount, total: total};
+        }
+        return countByDay;
+    });
 </script>
 
 <!--
@@ -192,9 +208,18 @@
                 computedにより日付毎に分別されたシフト情報を取得する。
             -->
              <details open class="group">
-                <summary class="list-none cursor-pointer flex items-center gap-1 bg-shift-soft rounded-lg px-2 py-1 mx-2 mb-2">
-                    シフト
-                    <ChevronDownIcon class="group-open:rotate-180 w-4 h-4 ml-auto "/>
+                <summary class="list-none cursor-pointer grid grid-cols-7 gap-2 px-2">
+                    <div v-for="day in days"
+                        :key="day.date"
+                        class="bg-shift-soft rounded-lg border-t-4 border-shift px-2 py-1 flex items-center gap-1 group-open:rounded-b-none"
+                        :class="{ invisible: shiftCountByDay[day.date].total === 0 }">
+                        <span class="text-xs text-ink-muted">
+                            出{{ shiftCountByDay[day.date].work }}・
+                            休{{ shiftCountByDay[day.date].dayOff }}・
+                            希休{{ shiftCountByDay[day.date].desiredOff }}
+                        </span>
+                        <ChevronDownIcon class="group-open:rotate-180 w-4 h-4 ml-auto "/>
+                </div>
                 </summary>
 
                 <div class="grid grid-cols-7 gap-2 px-2">
@@ -211,7 +236,8 @@
                             :shiftClickableDate="shiftClickableDate"
                             :highlighted-date="highlightedDate"
                             :highlighted-time="highlightedTime"
-                            @click-shift="onClickShift">
+                            @click-shift="onClickShift"
+                            attached>
                         </DayShiftInfo>
                     </div>
                 </div>
@@ -263,7 +289,11 @@
                 class="flex flex-col gap-2 px-2">
                 <details class="group">
                     <summary class="list-none cursor-pointer flex items-center gap-1 bg-shift-soft rounded-lg border-t-4 border-shift px-2 py-1 group-open:rounded-b-none">
-                        シフト
+                        <span class="text-xs text-ink-muted">
+                            出{{ shiftCountByDay[selectedDay.date].work }}・
+                            休{{ shiftCountByDay[selectedDay.date].dayOff }}・
+                            希休{{ shiftCountByDay[selectedDay.date].desiredOff }}
+                        </span>
                         <ChevronDownIcon class="group-open:rotate-180 w-4 h-4 ml-auto "/></summary>
                     <DayShiftInfo
                         :shifts="shiftByDay.shiftMap[selectedDay?.date]??[]"
