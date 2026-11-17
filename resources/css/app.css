@@ -22,8 +22,8 @@
     --color-reservation-soft: var(--color-amber-200);
 
     /* シフト */
-    --color-shift: var(--color-sky-500);
-    --color-shift-soft: var(--color-sky-50);
+    --color-shift: var(--color-sky-50);
+    --color-shift-soft: var(--color-sky-500);
 
     /* バッジ */
     --color-provisional: var(--color-yellow-900);         /* 仮登録 */
