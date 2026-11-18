@@ -211,7 +211,7 @@
                 <summary class="list-none cursor-pointer grid grid-cols-7 gap-2 px-2">
                     <div v-for="day in days"
                         :key="day.date"
-                        class="bg-shift rounded-lg border-t-4 border-shift-soft px-2 py-1 flex items-center gap-1 group-open:rounded-b-none"
+                        class="bg-shift-soft rounded-lg border-t-4 border-shift px-2 py-1 flex items-center gap-1 group-open:rounded-b-none"
                         :class="{ invisible: shiftCountByDay[day.date].total === 0 }">
                         <span class="text-xs text-ink-muted">
                             出{{ shiftCountByDay[day.date].work }}・
@@ -300,7 +300,7 @@
             <div v-if="selectedDay"
                 class="flex flex-col gap-2 px-2">
                 <details class="group">
-                    <summary class="list-none cursor-pointer flex items-center gap-1 bg-shift rounded-lg border-t-4 border-shift-soft px-2 py-1 group-open:rounded-b-none">
+                    <summary class="list-none cursor-pointer flex items-center gap-1 bg-shift-soft rounded-lg border-t-4 border-shift px-2 py-1 group-open:rounded-b-none">
                         <span class="text-xs text-ink-muted">
                             出{{ shiftCountByDay[selectedDay.date].work }}・
                             休{{ shiftCountByDay[selectedDay.date].dayOff }}・

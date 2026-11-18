@@ -80,8 +80,8 @@
 
 <template>
     <div v-if="hasShiftInfo(day)"
-        class="grid grid-cols-[auto_auto_auto_1fr] gap-x-1 bg-shift p-1 text-sm"
-        :class="attached ? 'rounded-b-lg' : 'border-t-4 border-shift-soft rounded-lg'">
+        class="grid grid-cols-[auto_auto_auto_1fr] gap-x-1 bg-shift-soft p-1 text-sm"
+        :class="attached ? 'rounded-b-lg' : 'border-t-4 border-shift rounded-lg'">
         <template v-for="shift in props.shifts ?? []" :key="shift.id">
             <button class="grid grid-cols-subgrid col-span-4 text-left rounded items-center"
                     type="button"
@@ -100,13 +100,13 @@
                 <span class="text-xs tabular-nums">{{ formatTime(shift.end) }}
                 </span>
                 <span class="flex items-center gap-1">
-                    <span v-if="shift.amOff" class="badge bg-rest-soft text-rest text-xs">AM</span>
-                    <span v-else-if="shift.pmOff" class="badge bg-rest-soft text-rest text-xs">PM</span>
+                    <span v-if="shift.amOff" class="badge bg-rest text-rest-soft text-xs">AM</span>
+                    <span v-else-if="shift.pmOff" class="badge bg-rest text-rest-soft text-xs">PM</span>
                     <span v-if="checkUsePrivateCar(shift, day)?.end"
                         title="私用車(直帰)"
                         class="rounded-full bg-ink w-2 h-2 shrink-0"></span>
                     <span v-if="shift.changed"
-                        class="badge bg-shift-soft text-white">
+                        class="badge bg-rest text-rest-soft">
                         <ArrowPathIcon class="w-4 h-4"/>
                     </span>
                 </span>
@@ -119,7 +119,7 @@
                         class="flex items-center gap-1">
                     <span class="whitespace-nowrap">{{ dayOffStaff.name }}</span>
                     <div v-if="dayOffStaff.changed"
-                        class="badge bg-shift-soft text-white">
+                        class="badge bg-rest text-rest-soft">
                         <ArrowPathIcon class="w-4 h-4"/>
                     </div>
                 </span>
@@ -132,9 +132,9 @@
                         class="flex items-center gap-1">
                     <span class="whitespace-nowrap">{{ desiredOffStaff.name }}</span>
                     <span v-if="desiredOffStaff.amOff && !desiredOffStaff.pmOff"
-                            class="badge bg-rest-soft text-rest text-xs">AM</span>
+                            class="badge bg-rest text-rest-soft text-xs">AM</span>
                     <span v-if="!desiredOffStaff.amOff && desiredOffStaff.pmOff"
-                            class="badge bg-rest-soft text-rest text-xs">PM</span>
+                            class="badge bg-rest text-rest-soft text-xs">PM</span>
                 </span>
             </div>
         </div>
