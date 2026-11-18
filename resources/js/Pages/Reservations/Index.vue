@@ -516,7 +516,7 @@
                 <Link href="/" preserve-state preserve-scroll class="btn bg-neutral text-ink">
                     <span>今週</span>
                 </Link>
-                <div class="relative md:hidden btn bg-neutral text-ink">
+                <div class="relative md:hidden btn-base bg-surface text-ink py-2">
                     <CalendarDaysIcon class="w-5 h-5"/>
                     <input type="date"
                             @change="onChange($event)"

@@ -151,7 +151,7 @@
     </div>
 
     <!-- 月一覧画面 -->
-    <div class="flex flex-col gap-6">
+    <div class="flex flex-col gap-6 hidden md:flex">
         <div v-for="(day, index) in props.sundayList" :key="day">
             <WeekGrid
                 :allReservations="props.reservations"
@@ -162,6 +162,10 @@
                 readonly>
             </WeekGrid>
         </div>
+    </div>
+    <div class="md:hidden flex flex-col items-center p-10 gap-3">
+        月表示はパソコンの画面でご覧ください
+        <Link :href="`/?week=${month}-01`" class=" btn bg-neutral text-ink">週表示へ</Link>
     </div>
 </template>
 
