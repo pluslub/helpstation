@@ -57,8 +57,14 @@
 
 /* ボタンの形（色は使う側で bg-reservation text-ink などを付ける） */
 @utility btn {
-    @apply inline-flex items-center gap-1 rounded-lg px-3 py-1.5 font-bold shadow-sm;
+    @apply btn-base;
+    @apply shadow-sm;
+}
+
+@utility btn-base {
+    @apply inline-flex items-center gap-1 rounded-lg px-3 py-1.5 font-bold cursor-pointer;
     @apply disabled:opacity-50 disabled:cursor-not-allowed;
+    @apply not-disabled:hover:brightness-95;
 }
 
 /* 枠線だけのボタン 色は使う側でつける */

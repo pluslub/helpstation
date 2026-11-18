@@ -445,7 +445,7 @@
         flex-col        並べる向きを縦にする
     -->
     <div ref="headerRef"
-        class="bg-surface sticky top-0 z-5 p-2 flex flex-wrap gap-2 lg:grid lg:grid-cols-[1fr_auto_1fr]">
+        class="bg-surface md:sticky md:top-0 z-5 p-2 flex flex-wrap gap-2 lg:grid lg:grid-cols-[1fr_auto_1fr]">
         <!-- 週操作ボタン -->
         <!--
             preserve-state
@@ -463,7 +463,8 @@
             v-model:filterId="filterId"
             class="lg:justify-self-start order-1 lg:order-none">
         </ReservationFilter>
-        <div class="flex items-center gap-2 order-3 w-full justify-center lg:order-none lg:w-auto">
+        <!--週の操作　PC版のみ表示-->
+        <div class="hidden md:flex items-center gap-2 justify-center lg:order-none lg:w-auto">
             <Link :href="`/?week=${prevWeek}`"
                     preserve-state preserve-scroll
                     class="btn bg-neutral text-ink"
@@ -474,7 +475,6 @@
             <Link href="/" preserve-state preserve-scroll class="btn bg-neutral text-ink">
                 <span>今週</span>
             </Link>
-            <!--PC用日付選択-->
             <input type="date"
                 @change="onChange($event)"
                 @keydown="onKeyDown()"
@@ -484,20 +484,6 @@
                 class="field hidden md:block"
                 :min="page.props.selectableMinDate"
                 :max="page.props.selectableMaxDate"/>
-            <!--スマホ用日付選択-->
-            <div class="relative md:hidden btn bg-neutral text-ink">
-                <CalendarDaysIcon class="w-5 h-5"/>
-                <input type="date"
-                        @change="onChange($event)"
-                        @keydown="onKeyDown()"
-                        @keydown.enter="onEnter($event)"
-                        @blur="onBlur($event)"
-                        class="absolute inset-0 w-full h-full opacity-0"
-                        aria-label="日付を指定"
-                        :value="weekStart"
-                        :min="page.props.selectableMinDate"
-                        :max="page.props.selectableMaxDate"/>
-            </div>
             <Link :href="`/?week=${nextWeek}`"
                     preserve-state preserve-scroll
                     class="btn bg-neutral text-ink"
@@ -525,6 +511,25 @@
             <Link href="/reservations/monthly" class="btn btn-outline border-line text-ink hidden md:inline-flex">
                 <CalendarDaysIcon class="w-5 h-5"/>月表示
             </Link>
+            <!--スマホ用週操作-->
+            <div class="flex items-center gap-2 md:hidden">
+                <Link href="/" preserve-state preserve-scroll class="btn bg-neutral text-ink">
+                    <span>今週</span>
+                </Link>
+                <div class="relative md:hidden btn bg-neutral text-ink">
+                    <CalendarDaysIcon class="w-5 h-5"/>
+                    <input type="date"
+                            @change="onChange($event)"
+                            @keydown="onKeyDown()"
+                            @keydown.enter="onEnter($event)"
+                            @blur="onBlur($event)"
+                            class="absolute inset-0 w-full h-full opacity-0"
+                            aria-label="日付を指定"
+                            :value="weekStart"
+                            :min="page.props.selectableMinDate"
+                            :max="page.props.selectableMaxDate"/>
+                </div>
+            </div>
             <UserMenu class="pl-4" :hasDraft="isDirtyPopup"/>
         </div>
     </div>
@@ -541,6 +546,8 @@
             :openedReservationId="openedReservationId"
             :highlighted-date="highlightedDate"
             :highlighted-time="highlightedTime"
+            :prevWeek="prevWeek"
+            :nextWeek="nextWeek"
             @update="onUpdateReservation"
             @approve="onApproveReservation"
             @view="onViewReservation"

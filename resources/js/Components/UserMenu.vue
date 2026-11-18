@@ -25,7 +25,7 @@
         <Link href="/logout" method="post"
             as="button"
             @before="onBefore"
-            class="btn md:btn-outline md:border-line text-ink shadow-none md:shadow-sm"
+            class="btn-base bg-surface text-ink md:btn-outline md:border-line md:shadow-sm"
              aria-label="ログアウト">
             <ArrowRightStartOnRectangleIcon class="w-5 h-5"/>
             <span class="hidden md:inline">ログアウト</span>

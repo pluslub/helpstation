@@ -1,6 +1,7 @@
 <script setup>
     //データ処理 JavaScript
     import { computed, ref, watch } from 'vue';
+    import { Link } from "@inertiajs/vue3";
 
     import { effective } from "@/Utils/effective.js"
     import { formatDate } from "@/Utils/formatDate.js"
@@ -10,7 +11,7 @@
     import DayReservationList from './DayReservationList.vue';
     import DayShiftInfo from './DayShiftInfo.vue';
 
-    import { ChevronDownIcon } from '@heroicons/vue/24/outline';
+    import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from '@heroicons/vue/24/outline';
 
     //ReservationControllerからデータを受け取る
     const props = defineProps({
@@ -18,19 +19,18 @@
         //reservationsの構造
         // reservations:Array：'client','supportType','vehicle','staffAssignments.staff'
         allReservations: Array,
-
-        //絞り込み後の予約配列
-        reservations: Array,
-
+        reservations: Array,    //絞り込み後の予約配列
         shiftDetails: Array,
         weekStart: String,
         openedReservationId: Number,
-        showYearOnFirstDay: { type: Boolean, default: true},
-        clickableShift: { type: Boolean, default: false},
         shiftClickableDate: String,
-        clickableDateHeader: { type: Boolean, default: false},
         highlightedDate: String,
         highlightedTime: Object,
+        prevWeek: String,
+        nextWeek: String,
+        showYearOnFirstDay: { type: Boolean, default: true},
+        clickableShift: { type: Boolean, default: false},
+        clickableDateHeader: { type: Boolean, default: false},
         readonly: { type: Boolean, default: false},
     });
 
@@ -262,7 +262,14 @@
         </div>
         <!--スマホ用画面-->
         <div class="md:hidden pb-20">
-            <div class="grid grid-cols-7 sticky top-(--header-height) z-4 bg-surface pb-2">
+            <div class="grid grid-cols-[auto_repeat(7,1fr)_auto] sticky top-0 z-4 bg-surface pb-2">
+                <Link :href="`/?week=${prevWeek}`"
+                    preserve-state preserve-scroll
+                    class="btn-base px-2 text-ink h-full bg-surface"
+                    :class="{ invisible: !prevWeek }"
+                    aria-label="前週">
+                    <ChevronLeftIcon class="w-5 h-5"/>
+                </Link>
                 <div v-for="day in days"
                     :key="day.date"
                     class="rounded-lg p-1">
@@ -270,20 +277,25 @@
                             @click="selectedDate = day.date"
                             :class="{   'ring-2 ring-reservation font-bold': day.date === selectedDate,
                                         'bg-reservation-medium' : day.date === today,
+                                        'bg-surface' : day.date !== today,
                                         'text-sunday' : day.weekNum === 0,
                                         'text-saturday' : day.weekNum === 6,
                                     }"
-                            class="flex flex-col items-center rounded-lg w-full text-sm">
+                            class="btn-base px-0 flex flex-col items-center rounded-lg w-full text-sm">
                             <span>{{ day.weekName }}</span>
                             <span v-if="day.showMonth">
-                                <span class="text-xs tracking-tighter whitespace-nowrap">{{ day.month }}
-                                    <span class="-ml-0.5 -mr-1">/</span>
-                                </span>
-                                {{ day.day }}
+                                <span class="text-xs whitespace-nowrap tracking-tighter">{{ day.month }}/</span>{{ day.day }}
                             </span>
                             <span v-else>{{ day.day }}</span>
                     </button>
                 </div>
+                <Link :href="`/?week=${nextWeek}`"
+                    preserve-state preserve-scroll
+                    class="btn-base px-2 text-ink h-full bg-surface"
+                    :class="{ invisible: !nextWeek }"
+                    aria-label="次週">
+                    <ChevronRightIcon class="w-5 h-5"/>
+            </Link>
             </div>
             <div v-if="selectedDay"
                 class="flex flex-col gap-2 px-2">
