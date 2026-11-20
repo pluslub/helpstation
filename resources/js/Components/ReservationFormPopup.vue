@@ -279,9 +279,7 @@
     <div
         ref="popup"
         :style="popupPositionTop != null ? {top:`${popupPositionTop}px`, left:`${popupPositionLeft}px`, right:'auto'} : {}"
-        class="
-        fixed z-10 bg-surface
-        inset-0 max-h-screen overflow-y-auto
+        class="fixed z-10 bg-surface inset-0 max-h-screen overflow-y-auto
         md:rounded md:border md:shadow-lg md:top-0 md:bottom-auto md:left-auto md:right-0 md:w-120">   <!-- md:大きい画面用設定 -->
         <div @pointerdown="onDragStart" class="bg-reservation-medium p-2 cursor-move select-none touch-none flex justify-between">
             <div>
@@ -289,7 +287,7 @@
                 <h1 v-else-if="popupMode === 'update'">予約変更</h1>
                 <h1 v-else>予約内容</h1>
             </div>
-            <button @click="onClose()" @pointerdown.stop class="">
+            <button @click="onClose()" @pointerdown.stop>
                 <XMarkIcon class="w-5 h-5"/>
             </button>
         </div>

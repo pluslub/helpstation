@@ -186,7 +186,7 @@ class ReservationController extends Controller
         });
 
         //予約登録のログ出力
-        $logDetailArray = $this->getReservationDetail($storedReservation->fresh());
+        $logDetailArray = $this->getReservationDetailLog($storedReservation->fresh());
         $auditLogger->log(action: 'create', staffId: Auth::id(), table: 'reservation', targetId: $storedReservation->id, detail: $logDetailArray, ip: $request->ip());
 
         return back();
@@ -214,7 +214,7 @@ class ReservationController extends Controller
         }
 
         //予約更新ログの変更前のデータを取得
-        $beforeLogDetailArray = $this->getReservationDetail($reservation);
+        $beforeLogDetailArray = $this->getReservationDetailLog($reservation);
 
         $updatedReservation = DB::transaction(function() use ($reservation, $updateResArray, $staffRows){
             $reservation->update($updateResArray);
@@ -224,7 +224,7 @@ class ReservationController extends Controller
         });
 
         //予約更新のログ出力
-        $afterLogDetailArray = $this->getReservationDetail($updatedReservation->fresh());
+        $afterLogDetailArray = $this->getReservationDetailLog($updatedReservation->fresh());
         $auditLogger->log(action: 'update', staffId: Auth::id(), table: 'reservation', targetId: $reservation->id, detail: ['before' => $beforeLogDetailArray, 'after' => $afterLogDetailArray], ip: $request->ip());
 
         return back();
@@ -247,7 +247,7 @@ class ReservationController extends Controller
 
     public function destroy(ReservationDestroyRequest $request, Reservation $reservation, AuditLogger $auditLogger){
         //予約削除ログの変更前のデータを取得
-        $logDetailArray = $this->getReservationDetail($reservation);
+        $logDetailArray = $this->getReservationDetailLog($reservation);
 
         DB::transaction(function() use ($reservation){
             $reservation->staffAssignments()->delete();
