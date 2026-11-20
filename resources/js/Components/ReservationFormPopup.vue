@@ -280,9 +280,9 @@
         ref="popup"
         :style="popupPositionTop != null ? {top:`${popupPositionTop}px`, left:`${popupPositionLeft}px`, right:'auto'} : {}"
         class="
-        fixed rounded border z-10 bg-surface shadow-lg
+        fixed z-10 bg-surface
         inset-0 max-h-screen overflow-y-auto
-        md:top-0 md:bottom-auto md:left-auto md:right-0 md:w-120">   <!-- md:大きい画面用設定 -->
+        md:rounded md:border md:shadow-lg md:top-0 md:bottom-auto md:left-auto md:right-0 md:w-120">   <!-- md:大きい画面用設定 -->
         <div @pointerdown="onDragStart" class="bg-reservation-medium p-2 cursor-move select-none touch-none flex justify-between">
             <div>
                 <h1 v-if="popupMode === 'create'">予約申請</h1>

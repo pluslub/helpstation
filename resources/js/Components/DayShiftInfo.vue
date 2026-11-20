@@ -101,7 +101,7 @@
                         title="私用車(直行)"
                         class="rounded-full bg-ink w-2 h-2 shrink-0">
                     </span>
-                    {{ formatTime(shift.start) }} 〜
+                    {{ formatTime(shift.start) }} -
                 </span>
                 <span class="text-xs tabular-nums">{{ formatTime(shift.end) }}
                 </span>
