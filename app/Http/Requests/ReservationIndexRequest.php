@@ -12,8 +12,7 @@ class ReservationIndexRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;    // 権限チェックは、ログイン画面を作るときに見直す
-                        //falseだと403エラー
+        return true;    //ログインしている職員は全員見られる。ログインの確認は auth ミドルウェアで行う
     }
 
     /**
