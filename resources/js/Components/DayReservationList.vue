@@ -82,48 +82,54 @@
     <div class="flex flex-col gap-2">
         <div v-for="res in props.reservations ?? []" :key="res.id">
             <div :class="cardClass(res)"
-                class="p-1 grid grid-cols-[4.5rem_1fr] gap-x-1 rounded-lg shadow-sm">
+                class="p-1 grid grid-cols-[4.5rem_1fr] gap-x-1 rounded-lg shadow-sm  max-md:grid-cols-[7rem_1fr_5rem]">
                 <div class="col-start-1 row-start-1">
                     <span class="marker px-1">{{ res.client.last_name }}</span>
                 </div>
                 <!--支援内容-->
-                <div class="min-w-0 col-start-2 row-start-1">
-                    <div class="flex items-center gap-1">
+                <div class="min-w-0 col-start-2 row-start-1 max-md:contents">
+                    <div class="flex items-center gap-1 max-md:contents">
                         <span class="flex items-center gap-1 flex-1 min-w-0">
                             <span :title="res.support_type?.name ?? '削除済'"
-                                    class="truncate min-w-0 ">
+                                    class="truncate min-w-0 max-md:shrink-0">
                                     {{ res.support_type?.name ?? '削除済'}}
                             </span>
                             <span v-if="isPrivateCar(res)"
                                     class="rounded-full bg-ink w-2 h-2 shrink-0"
                                     title="私用車">
                             </span>
+                            <!--スマホ専用の備考-->
+                            <span v-if="res.remarks" class="md:hidden truncate text-xs text-ink-muted" :title="res.remarks">
+                                {{ res.remarks }}
+                            </span>
                         </span>
 
                         <!-- 予約操作ボタン -->
-                        <div class="flex shrink-0">
+                        <div class="flex shrink-0 max-md:gap-3 max-md:col-start-3 max-md:row-start-1 max-md:row-span-2 max-md:justify-self-end">
                             <button title="仮登録"
                                     v-if="isProvisional(res)"
                                     :disabled="!page.props.auth.isAdmin || props.readonly"
                                     @click="onClickApproveButton(res)"
-                                    class="badge text-provisional">
-                                    <ClockIcon class="h-4 w-4 stroke-2"/>
+                                    class="btn-base text-provisional max-md:p-2">
+                                    <ClockIcon class="h-4 w-4 stroke-2 max-md:w-5 max-md:h-5"/>
                             </button>
-                            <button
+                            <button title="編集"
                                 v-if="page.props.auth.isAdmin && !props.readonly"
-                                @click="onClickUpdateButton(res, $event)">
-                                <PencilIcon class="h-4 w-4 stroke-2"/>
+                                @click="onClickUpdateButton(res, $event)"
+                                class="btn-base max-md:p-2">
+                                <PencilIcon class="h-4 w-4 stroke-2 max-md:w-5 max-md:h-5"/>
                             </button>
-                            <button
+                            <button title="閲覧"
                                 v-if="!page.props.auth.isAdmin && !props.readonly"
-                                @click="onClickViewButton(res, $event)">
-                                <EyeIcon class="h-4 w-4 stroke-2"/>
+                                @click="onClickViewButton(res, $event)"
+                                class="btn-base max-md:p-2">
+                                <EyeIcon class="h-4 w-4 stroke-2 max-md:w-5 max-md:h-5"/>
                             </button>
                         </div>
                     </div>
                 </div>
                 <!--担当者-->
-                <div class="grid grid-cols-2 gap-x-1 min-w-0 col-start-1 row-start-2 row-span-2 self-end">
+                <div class="grid grid-cols-2 gap-x-1 min-w-0 col-start-1 row-start-2 row-span-2 self-end max-md:row-span-1">
                     <span v-for="assignedStaff in res.staff_assignments"
                         :key="assignedStaff.staff_id ?? 'none'"
                         class="flex items-center gap-1 min-w-0"
@@ -135,14 +141,14 @@
                         </span>
                     </span>
                 </div>
-                <div v-if="res.remarks" class="col-start-2 row-start-2">
+                <div v-if="res.remarks" class="col-start-2 row-start-2 max-md:hidden">
                     <span :title="res.remarks"
                         class="text-ink-muted break-words line-clamp-2 text-xs">
                         {{ res.remarks }}
                     </span>
                 </div>
                 <!--時刻と車両-->
-                <div class="flex items-center gap-1 col-start-2 row-start-3">
+                <div class="flex items-center gap-1 max-md:gap-4 col-start-2 row-start-3 max-md:row-start-2">
                     <span class="shrink-0 text-sm">{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
                     <!--車両ラベル-->
                     <span class="flex items-center gap-0.5">

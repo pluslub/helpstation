@@ -1,6 +1,7 @@
 <script setup>
-    import { hasStaff } from '@/Utils/hasStaff.js'
+    import { computed } from 'vue'
     import { usePage } from '@inertiajs/vue3';
+    import { hasStaff } from '@/Utils/hasStaff.js'
     import { sliceTime, overlapTime } from '@/Utils/timeRange.js'
     import { formatTime } from '@/Utils/formatTime.js'
     import { ArrowPathIcon } from '@heroicons/vue/16/solid';
@@ -26,6 +27,8 @@
     const page = usePage();
 
     const emit = defineEmits(['click-shift']);
+
+    const shiftRowCount = computed(() => Math.ceil((props.shifts?.length ?? 0) / 2))
 
     const hasShiftInfo = () => {
         return props.shifts?.length > 0 || props.dayOffs?.length > 0 || props.desiredOffs?.length > 0;
@@ -80,10 +83,13 @@
 
 <template>
     <div v-if="hasShiftInfo(day)"
-        class="grid grid-cols-[auto_auto_auto_1fr] gap-x-1 bg-shift-soft p-1 text-sm"
+        class="bg-shift-soft p-1 text-sm"
         :class="attached ? 'rounded-b-lg' : 'border-t-4 border-shift rounded-lg'">
-        <template v-for="shift in props.shifts ?? []" :key="shift.id">
-            <button class="grid grid-cols-subgrid col-span-4 text-left rounded items-center"
+        <div class="gap-x-1 grid grid-cols-[auto_auto_auto_1fr] max-md:grid-cols-[auto_auto_auto_1fr_auto_auto_auto_1fr] max-md:grid-flow-col max-md:grid-rows-[repeat(var(--shift-rows),auto)]"
+            :style="{ '--shift-rows': shiftRowCount }">
+            <button v-for="shift in props.shifts ?? []"
+                    :key="shift.id"
+                    class="grid grid-cols-subgrid col-span-4 text-left rounded items-center"
                     type="button"
                     @click="onClickShift(day.date, shift.staffId)"
                     :disabled="!clickableShiftByDay(day)"
@@ -111,31 +117,33 @@
                     </span>
                 </span>
             </button>
-        </template>
-        <div v-if="props.dayOffs?.length > 0" class="flex items-start col-span-full pt-2">
-            <span class="shrink-0">休：</span>
-            <div class="flex flex-wrap gap-x-3 gap-y-0.5 flex-1 min-w-0">
-                <span v-for="(dayOffStaff, index) in props.dayOffs ?? []" :key="dayOffStaff.id"
-                        class="flex items-center gap-1">
-                    <span class="whitespace-nowrap">{{ dayOffStaff.name }}</span>
-                    <div v-if="dayOffStaff.changed"
-                        class="badge bg-rest text-rest-soft">
-                        <ArrowPathIcon class="w-4 h-4"/>
-                    </div>
-                </span>
-            </div>
         </div>
-        <div v-if="props.desiredOffs?.length > 0" class="flex items-start col-span-full">
-            <span class="shrink-0">希望休：</span>
-            <div class="flex flex-wrap gap-x-3 gap-y-0.5 flex-1 min-w-0">
-                <span v-for="(desiredOffStaff, index) in props.desiredOffs ?? []" :key="desiredOffStaff.id"
-                        class="flex items-center gap-1">
-                    <span class="whitespace-nowrap">{{ desiredOffStaff.name }}</span>
-                    <span v-if="desiredOffStaff.amOff && !desiredOffStaff.pmOff"
-                            class="badge bg-rest text-rest-soft text-xs">AM</span>
-                    <span v-if="!desiredOffStaff.amOff && desiredOffStaff.pmOff"
-                            class="badge bg-rest text-rest-soft text-xs">PM</span>
-                </span>
+        <div v-if="props.dayOffs?.length > 0 || props.desiredOffs?.length > 0" class= "pt-2">
+            <div v-if="props.dayOffs?.length > 0" class="flex items-start">
+                <span class="shrink-0">休：</span>
+                <div class="flex flex-wrap gap-x-3 gap-y-0.5 flex-1 min-w-0">
+                    <span v-for="(dayOffStaff, index) in props.dayOffs ?? []" :key="dayOffStaff.id"
+                            class="flex items-center gap-1">
+                        <span class="whitespace-nowrap">{{ dayOffStaff.name }}</span>
+                        <div v-if="dayOffStaff.changed"
+                            class="badge bg-rest text-rest-soft">
+                            <ArrowPathIcon class="w-4 h-4"/>
+                        </div>
+                    </span>
+                </div>
+            </div>
+            <div v-if="props.desiredOffs?.length > 0" class="flex items-start">
+                <span class="shrink-0">希望休：</span>
+                <div class="flex flex-wrap gap-x-3 gap-y-0.5 flex-1 min-w-0">
+                    <span v-for="(desiredOffStaff, index) in props.desiredOffs ?? []" :key="desiredOffStaff.id"
+                            class="flex items-center gap-1">
+                        <span class="whitespace-nowrap">{{ desiredOffStaff.name }}</span>
+                        <span v-if="desiredOffStaff.amOff && !desiredOffStaff.pmOff"
+                                class="badge bg-rest text-rest-soft text-xs">AM</span>
+                        <span v-if="!desiredOffStaff.amOff && desiredOffStaff.pmOff"
+                                class="badge bg-rest text-rest-soft text-xs">PM</span>
+                    </span>
+                </div>
             </div>
         </div>
     </div>

@@ -300,13 +300,13 @@
             <div v-if="selectedDay"
                 class="flex flex-col gap-2 px-2">
                 <details class="group">
-                    <summary class="list-none cursor-pointer flex items-center gap-1 bg-shift-soft rounded-lg border-t-4 border-shift px-2 py-1 group-open:rounded-b-none">
+                    <summary class="list-none cursor-pointer flex items-center relative justify-center  gap-1 bg-shift-soft rounded-lg border-t-4 border-shift px-2 py-1 group-open:rounded-b-none">
                         <span class="text-xs text-ink-muted">
-                            出{{ shiftCountByDay[selectedDay.date].work }}・
-                            休{{ shiftCountByDay[selectedDay.date].dayOff }}・
-                            希休{{ shiftCountByDay[selectedDay.date].desiredOff }}
+                            出勤{{ shiftCountByDay[selectedDay.date].work }}・
+                            休暇{{ shiftCountByDay[selectedDay.date].dayOff }}・
+                            希望休{{ shiftCountByDay[selectedDay.date].desiredOff }}
                         </span>
-                        <ChevronDownIcon class="group-open:rotate-180 w-4 h-4 ml-auto "/></summary>
+                        <ChevronDownIcon class="group-open:rotate-180 w-4 h-4 absolute right-2"/></summary>
                     <DayShiftInfo
                         :shifts="shiftByDay.shiftMap[selectedDay?.date]??[]"
                         :desiredOffs ="shiftByDay.desiredOffNameMap[selectedDay?.date]??[]"
