@@ -39,6 +39,7 @@
                 <option value="staff">職員</option>
                 <option value="vehicle">車両</option>
                 <option value="client">利用者</option>
+                <option value="provisional">未承認</option>
             </select>
         </div>
 

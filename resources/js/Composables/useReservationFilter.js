@@ -1,6 +1,7 @@
 import { computed, ref, watch } from 'vue';
 import { usePage } from '@inertiajs/vue3';
 import { effective } from "@/Utils/effective.js"
+import { isProvisional } from "@/Utils/isProvisional.js"
 
 export const useReservationFilter = (props) => {
     //--------------------------------------------ref-------------------------------------------
@@ -130,6 +131,8 @@ export const useReservationFilter = (props) => {
                 return id === null ? props.reservations : props.reservations.filter(r => r.vehicle_id === id);
             case 'client':
                 return id === null ? props.reservations : props.reservations.filter(r => r.client_id === id);
+            case 'provisional':
+                return props.reservations.filter(r => isProvisional(r));
             default:
                 return props.reservations;    // 'all'
         }
