@@ -30,6 +30,7 @@
         nextWeek: String,
         showYearOnFirstDay: { type: Boolean, default: true},
         clickableShift: { type: Boolean, default: false},
+        clickableDayOff: { type: Boolean, default: false},
         clickableDateHeader: { type: Boolean, default: false},
         readonly: { type: Boolean, default: false},
     });
@@ -233,6 +234,7 @@
                             :openedReservationId="openedReservationId"
                             :day="day"
                             :clickableShift="clickableShift"
+                            :clickableDayOff="clickableDayOff"
                             :shiftClickableDate="shiftClickableDate"
                             :highlighted-date="highlightedDate"
                             :highlighted-time="highlightedTime"
@@ -316,6 +318,7 @@
                         :openedReservationId="openedReservationId"
                         :day="selectedDay"
                         :clickableShift="clickableShift"
+                        :clickableDayOff="clickableDayOff"
                         :shiftClickableDate="shiftClickableDate"
                         :highlighted-date="highlightedDate"
                         :highlighted-time="highlightedTime"

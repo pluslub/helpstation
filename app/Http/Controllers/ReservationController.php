@@ -64,7 +64,7 @@ class ReservationController extends Controller
     }
 
     //ログ出力のためのデータを作成する。
-    private function getReservationDetail(Reservation $reservation){
+    private function getReservationDetailLog(Reservation $reservation){
         $staffIdArray = $reservation->staffAssignments()->pluck('staff_id')->filter()->values()->all();
         $staffIds = ['staff_ids' => $staffIdArray];
 

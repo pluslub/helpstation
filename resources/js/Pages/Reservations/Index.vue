@@ -203,6 +203,10 @@
                 || (!showPopup.value && page.props.auth.isAdmin)
     });
 
+    const clickableDayOff = computed(() => {
+        return !showPopup.value && page.props.auth.isAdmin;
+    });
+
     const shiftClickableDate = computed(() => {
         if(showPopup.value && popupMode.value === 'update'){
             return 	reservationUpdateForm.date;
@@ -431,6 +435,9 @@
             showShiftPopup.value = true;
             return;
         }
+        //終日休みの人をクリックしても予約申請に入力されない。
+        if(shift.amOff && shift.pmOff) return;
+
         //シフトがクリックできる日付かチェックする。
         if(shiftClickableDate.value != null && shiftClickableDate.value !== date) return;
 
@@ -565,14 +572,14 @@
                 <Link href="/" preserve-state preserve-scroll class="btn bg-neutral text-ink">
                     <span>今週</span>
                 </Link>
-                <div class="relative md:hidden btn-base bg-surface text-ink py-2">
+                <div class="relative overflow-hidden md:hidden btn-base bg-surface text-ink py-2">
                     <CalendarDaysIcon class="w-5 h-5"/>
                     <input type="date"
                             @change="onChange($event)"
                             @keydown="onKeyDown()"
                             @keydown.enter="onEnter($event)"
                             @blur="onBlur($event)"
-                            class="absolute inset-0 w-full h-full opacity-0"
+                            class="absolute inset-0 w-full h-full min-w-0 appearance-none opacity-0"
                             aria-label="日付を指定"
                             :value="weekStart"
                             :min="page.props.selectableMinDate"
@@ -590,6 +597,7 @@
             :shiftDetails="shiftDetails"
             :weekStart="weekStart"
             :clickableShift="clickableShift"
+            :clickableDayOff="clickableDayOff"
             :shiftClickableDate="shiftClickableDate"
             :clickableDateHeader="clickableDateHeader"
             :openedReservationId="openedReservationId"

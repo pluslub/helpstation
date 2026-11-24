@@ -313,7 +313,7 @@
                         <span  class="flex items-center gap-1">
                             <input type="time" v-model="form.start_time" class="field"/>
                             ～<input type="time" v-model="form.end_time" class="field"/>
-                        </span >
+                        </span>
                     </label>
                 </fieldset>
                 <div v-if="form.errors.start_time" class="form-danger">{{ form.errors.start_time }}</div>

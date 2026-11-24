@@ -89,17 +89,17 @@
                 <!--支援内容-->
                 <div class="min-w-0 col-start-2 row-start-1 max-md:contents">
                     <div class="flex items-center gap-1 max-md:contents">
-                        <span class="flex items-center gap-1 flex-1 min-w-0">
+                        <span class="flex-1 min-w-0 md:flex md:items-center md:gap-1 break-words">
                             <span :title="res.support_type?.name ?? '削除済'"
-                                    class="truncate min-w-0 max-md:shrink-0">
+                                    class="min-w-0 md:truncate">
                                     {{ res.support_type?.name ?? '削除済'}}
                             </span>
                             <span v-if="isPrivateCar(res)"
-                                    class="rounded-full bg-ink w-2 h-2 shrink-0"
+                                    class="inline-block align-middle rounded-full bg-ink w-2 h-2 shrink-0 max-md:mx-1"
                                     title="私用車">
                             </span>
                             <!--スマホ専用の備考-->
-                            <span v-if="res.remarks" class="md:hidden truncate text-xs text-ink-muted" :title="res.remarks">
+                            <span v-if="res.remarks" class="ml-1 text-xs text-ink-muted md:hidden" :title="res.remarks">
                                 {{ res.remarks }}
                             </span>
                         </span>

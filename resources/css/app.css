@@ -23,6 +23,7 @@
 
     /* シフト */
     --color-shift: var(--color-sky-500);
+    --color-shift-medium: var(--color-sky-300);
     --color-shift-soft: var(--color-sky-50);
 
     /* バッジ */

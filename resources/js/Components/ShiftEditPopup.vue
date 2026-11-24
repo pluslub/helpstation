@@ -52,7 +52,7 @@
     <div class="fixed z-10 bg-surface inset-0 max-h-screen overflow-y-auto
         md:rounded md:border md:shadow-lg md:top-0 md:bottom-auto md:left-auto md:right-0 md:w-120">
         <!--ヘッダー-->
-        <div class="flex justify-between items-center p-2 border-b border-line">
+        <div class="bg-shift-medium p-2 flex justify-between">
             <h1>シフト変更</h1>
             <button @click="onClose()">
                 <XMarkIcon class="w-5 h-5"/>
@@ -69,51 +69,54 @@
                 <div>{{ props.date }}</div>
             </div>
             <!--休暇選択ボタン-->
-            <div class="form-row">
-                <span>休み</span>
-                <div class="flex flex-wrap gap-2">
-                    <label class="mark">
-                        <input type="radio" v-model="offType" value="none" name="off_type" />出勤
-                    </label>
-                    <label class="mark">
-                        <input type="radio" v-model="offType" value="am" name="off_type" />午前休
-                    </label>
-                    <label class="mark">
-                        <input type="radio" v-model="offType" value="pm" name="off_type" />午後休
-                    </label>
-                    <label class="mark">
-                        <input type="radio" v-model="offType" value="all" name="off_type" />終日休み
-                    </label>
+            <fieldset>
+                <legend class="sr-only">休み</legend>
+                <div class="form-row">
+                    <span>休み</span>
+                    <div class="flex flex-wrap gap-2">
+                        <label class="mark">
+                            <input type="radio" v-model="offType" value="none" name="off_type" />出勤
+                        </label>
+                        <label class="mark">
+                            <input type="radio" v-model="offType" value="am" name="off_type" />午前休
+                        </label>
+                        <label class="mark">
+                            <input type="radio" v-model="offType" value="pm" name="off_type" />午後休
+                        </label>
+                        <label class="mark">
+                            <input type="radio" v-model="offType" value="all" name="off_type" />終日休み
+                        </label>
+                    </div>
                 </div>
-            </div>
+            </fieldset>
             <div v-if="form.errors.am_off" class="form-danger">{{ form.errors.am_off }}</div>
-            <div v-if="form.errors.am_off" class="form-danger">{{ form.errors.pm_off }}</div>
+            <div v-if="form.errors.pm_off" class="form-danger">{{ form.errors.pm_off }}</div>
             <!--シフト時間入力欄-->
-            <!--終日休みなら時刻を入力できないようにする。-->
-            <div class="flex flex-col gap-2">
+            <!--終日休みなら時刻を入力できないようにする。
+                午前休・午後休なら時刻を空にできる-->
+            <fieldset>
+                <legend class="sr-only">シフト時間</legend>
                 <label class="form-row">
-                    <span>始業時刻</span>
-                    <input type="time" v-model="form.start_time" :disabled="offType === 'all'" class="field"/>
+                    <span>シフト時刻</span>
+                    <span class="flex items-center gap-1">
+                        <input type="time" v-model="form.start_time" :disabled="offType === 'all'" class="field"/>
+                        ～<input type="time" v-model="form.end_time" :disabled="offType === 'all'" class="field"/>
+                    </span>
                 </label>
-                <div v-if="form.errors.start_time" class="form-danger">{{ form.errors.start_time }}</div>
-
-                <label class="form-row">
-                    <span>終業時刻</span>
-                    <input type="time" v-model="form.end_time" :disabled="offType === 'all'" class="field"/>
-                </label>
-                <div v-if="form.errors.end_time" class="form-danger">{{ form.errors.end_time }}</div>
-            </div>
+            </fieldset>
+            <div v-if="form.errors.start_time" class="form-danger">{{ form.errors.start_time }}</div>
+            <div v-if="form.errors.end_time" class="form-danger">{{ form.errors.end_time }}</div>
         </div>
         <!--ボタン群-->
-        <div class="flex gap-2 p-2">
+        <div class="pb-2 flex justify-center gap-20">
             <button @click="onSubmit()"
                     :disabled="form.processing"
-                    class="btn bg-reservation text-ink">
+                    class="btn bg-shift text-white">
                 <PaperAirplaneIcon class="w-5 h-5"/>変更
             </button>
             <button @click="onClose()"
-                    class="btn bg-neutral text-ink">
-                閉じる
+                    aria-label="閉じる"
+                    class="btn bg-neutral text-ink">閉じる
             </button>
         </div>
     </div>

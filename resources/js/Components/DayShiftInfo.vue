@@ -18,10 +18,11 @@
         allReservations: Array,
         day: Object,
         openedReservationId: Number,
-        clickableShift: { type: Boolean, default: false},
         shiftClickableDate: String,
         highlightedDate: String,
         highlightedTime: Object,
+        clickableShift: { type: Boolean, default: false},
+        clickableDayOff: { type: Boolean, default: false},
         attached: { type: Boolean, default: false }
     });
 
@@ -163,15 +164,19 @@
             <div v-if="props.dayOffs?.length > 0" class="flex items-start">
                 <span class="shrink-0">休：</span>
                 <div class="flex flex-wrap gap-x-3 gap-y-0.5 flex-1 min-w-0">
-                    <span v-for="(dayOffStaff, index) in props.dayOffs ?? []" :key="dayOffStaff.id"
-                            class="flex items-center gap-1">
+                    <button type="button"
+                            v-for="(dayOffStaff, index) in props.dayOffs ?? []" :key="dayOffStaff.id"
+                            class="flex items-center gap-1 rounded"
+                            :disabled="!clickableDayOff"
+                            :class="{ 'cursor-pointer hover:bg-reservation-soft' : clickableDayOff }"
+                            @click="onClickShift(day.date, dayOffStaff)">
                         <span class="whitespace-nowrap">{{ dayOffStaff.name }}</span>
-                        <div v-if="dayOffStaff.changed"
+                        <span v-if="dayOffStaff.changed"
                             class="badge bg-rest text-rest-soft"
                             :title="displayAppliedTime(dayOffStaff)">
                             <ArrowPathIcon class="w-3 h-3"/>
-                        </div>
-                    </span>
+                        </span>
+                    </button>
                 </div>
             </div>
             <div v-if="props.desiredOffs?.length > 0" class="flex items-start">
