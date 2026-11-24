@@ -5,6 +5,11 @@ export const effective = (s) => {
         staffId : s.shift.staff_id,
         id : s.id,
         name: s.shift.staff.name,
+        applied: {  start:s.applied_start_time,
+                    end:s.applied_end_time,
+                    amOff:s.applied_am_off,
+                    pmOff:s.applied_pm_off
+                },
         start: changed ? s.modified_start_time : s.applied_start_time,
         end: changed ? s.modified_end_time : s.applied_end_time,
         amOff: changed ? s.modified_am_off : s.applied_am_off,

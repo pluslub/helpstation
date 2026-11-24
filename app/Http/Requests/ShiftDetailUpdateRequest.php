@@ -26,8 +26,16 @@ class ShiftDetailUpdateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'start_time' => ['nullable', Rule::requiredIf(fn() => !($this->boolean('am_off') && $this->boolean('pm_off'))), 'date_format:H:i',  ],
-            'end_time' => ['nullable', Rule::requiredIf(fn() => !($this->boolean('am_off') && $this->boolean('pm_off'))), 'date_format:H:i', 'after:start_time'],
+            'start_time' => ['nullable', Rule::requiredIf(fn() => !($this->boolean('am_off'))), 'date_format:H:i',  ],
+            'end_time' => ['nullable',
+                            Rule::requiredIf(
+                                fn() => !($this->boolean('pm_off'))),
+                                'date_format:H:i',
+                            Rule::when(
+                                fn() =>
+                                    !(($this->boolean('am_off')) && $this->boolean('pm_off'))
+                                    &&  $this->filled('start_time') &&  $this->filled('end_time'),
+                                'after:start_time')],
             'am_off' => ['required', 'boolean'],
             'pm_off' => ['required', 'boolean']
         ];

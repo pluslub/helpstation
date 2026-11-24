@@ -61,11 +61,6 @@ class ShiftController extends Controller
         $shiftDetail['modified_pm_off'] = $validated['pm_off'];
         $shiftDetail['admin_modified_flag'] = true;
 
-        if($shiftDetail['modified_am_off'] && $shiftDetail['modified_pm_off']){
-            $shiftDetail['modified_start_time'] = null;
-            $shiftDetail['modified_end_time'] = null;
-        }
-
         $shiftDetail->save();
 
         $afterLogDetailArray = $this->getShiftDetailLog($shiftDetail->fresh()); //変更後ログ用文章取得

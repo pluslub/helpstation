@@ -2,7 +2,8 @@
     import { computed } from 'vue'
     import { usePage } from '@inertiajs/vue3';
     import { hasStaff } from '@/Utils/hasStaff.js'
-    import { sliceTime, overlapTime } from '@/Utils/timeRange.js'
+    import { overlapTime } from '@/Utils/timeRange.js'
+    import { getWorkTime } from '@/Utils/workTime.js'
     import { formatTime } from '@/Utils/formatTime.js'
     import { ArrowPathIcon } from '@heroicons/vue/16/solid';
 
@@ -48,16 +49,9 @@
         if(!props.highlightedTime) return false;
         if(day.date !== props.highlightedDate) return false;
 
-        // 実際に働ける時間（AM休・PM休を反映する）
-        let workStartTime = sliceTime(shift.start);
-        let workEndTime = sliceTime(shift.end);
-
-        if(shift.amOff){
-            workStartTime = page.props.amOffWorkStartTime > workStartTime ? page.props.amOffWorkStartTime : workStartTime;
-        }
-        if(shift.pmOff){
-            workEndTime = page.props.pmOffWorkEndTime < workEndTime ? page.props.pmOffWorkEndTime : workEndTime;
-        }
+        const workTime = getWorkTime(shift, page.props.amOffWorkStartTime, page.props.pmOffWorkEndTime)
+        const workStartTime = workTime.start;
+        const workEndTime = workTime.end;
 
         // 入力の時間（終了が空なら開始と同じ）
         const inputStartTime = props.highlightedTime.start_time;
@@ -76,6 +70,32 @@
         return !isBusy;
     }
 
+    const showWorkTime = (shift) => {
+        const workTime = getWorkTime(shift, page.props.amOffWorkStartTime, page.props.pmOffWorkEndTime);
+        return {start: formatTime(workTime.start), end: formatTime(workTime.end)};
+    }
+
+    const shiftWorkTime = computed(() => {
+        return (props.shifts ?? []).map((shift) => {
+            return { ...shift,
+                    displayTime: showWorkTime(shift),
+                    appliedTime: showWorkTime(shift.applied),
+            };
+        })
+    });
+
+    const displayAppliedTime = (shift) => {
+        const appliedWorkTime = showWorkTime(shift.applied)
+
+        if(shift.applied.amOff && shift.applied.pmOff) return  "申請：休み";
+
+        let displayString =  "申請：" + appliedWorkTime.start + " - " + appliedWorkTime.end;
+
+        if(shift.applied.amOff) return displayString + "(AM休)";
+        if(shift.applied.pmOff) return displayString + "(PM休)";
+        return displayString;
+    };
+
     const onClickShift = (date, shift) => {
         emit('click-shift', date, shift);
     }
@@ -87,7 +107,7 @@
         :class="attached ? 'rounded-b-lg' : 'border-t-4 border-shift rounded-lg'">
         <div class="gap-x-1 grid grid-cols-[auto_auto_auto_1fr] max-md:grid-cols-[auto_auto_auto_1fr_auto_auto_auto_1fr] max-md:grid-flow-col max-md:grid-rows-[repeat(var(--shift-rows),auto)]"
             :style="{ '--shift-rows': shiftRowCount }">
-            <button v-for="shift in props.shifts ?? []"
+            <button v-for="shift in shiftWorkTime"
                     :key="shift.id"
                     class="grid grid-cols-subgrid col-span-4 text-left rounded items-center"
                     type="button"
@@ -101,9 +121,9 @@
                         title="私用車(直行)"
                         class="rounded-full bg-ink w-2 h-2 shrink-0">
                     </span>
-                    {{ formatTime(shift.start) }} -
+                    {{ shift.displayTime.start }} -
                 </span>
-                <span class="text-xs tabular-nums">{{ formatTime(shift.end) }}
+                <span class="text-xs tabular-nums">{{ shift.displayTime.end }}
                 </span>
                 <span class="flex items-center gap-1">
                     <span v-if="shift.amOff" class="badge bg-rest text-rest-soft text-xs">AM</span>
@@ -112,10 +132,31 @@
                         title="私用車(直帰)"
                         class="rounded-full bg-ink w-2 h-2 shrink-0"></span>
                     <span v-if="shift.changed"
-                        class="badge bg-rest text-rest-soft">
-                        <ArrowPathIcon class="w-4 h-4"/>
+                        class="badge bg-rest text-rest-soft"
+                        :title="displayAppliedTime(shift)">
+                        <ArrowPathIcon class="w-3 h-3"/>
                     </span>
                 </span>
+                <template v-if="shift.changed">
+                    <span class="text-xs text-ink-muted md:hidden text-right">申請：</span>
+                    <template v-if="!shift.applied.amOff || !shift.applied.pmOff">
+                        <span class="text-xs text-ink-muted md:hidden text-right">
+                            {{shift.appliedTime.start}} -
+                        </span>
+                        <span class="col-span-2 text-xs text-ink-muted md:hidden">
+                            {{shift.appliedTime.end}}
+                            <span   v-if="shift.applied.amOff"
+                                    class="text-xs text-ink-muted md:hidden">
+                                (AM休)
+                            </span>
+                            <span   v-else-if="shift.applied.pmOff"
+                                    class="text-xs text-ink-muted md:hidden">
+                                (PM休)
+                            </span>
+                        </span>
+                    </template>
+                    <span v-else class="col-span-3 text-xs text-ink-muted md:hidden">申請：休み</span>
+                </template>
             </button>
         </div>
         <div v-if="props.dayOffs?.length > 0 || props.desiredOffs?.length > 0" class= "pt-2">
@@ -126,8 +167,9 @@
                             class="flex items-center gap-1">
                         <span class="whitespace-nowrap">{{ dayOffStaff.name }}</span>
                         <div v-if="dayOffStaff.changed"
-                            class="badge bg-rest text-rest-soft">
-                            <ArrowPathIcon class="w-4 h-4"/>
+                            class="badge bg-rest text-rest-soft"
+                            :title="displayAppliedTime(dayOffStaff)">
+                            <ArrowPathIcon class="w-3 h-3"/>
                         </div>
                     </span>
                 </div>

@@ -1,6 +1,5 @@
 <script setup>
     import { computed, onMounted, onUnmounted } from 'vue';
-    import { usePage } from '@inertiajs/vue3'
     import { PaperAirplaneIcon, XMarkIcon } from '@heroicons/vue/24/outline';
 
     const props = defineProps({
@@ -8,8 +7,6 @@
         staffName: String,
         date: String,
     })
-
-    const page = usePage();
 
     const emit = defineEmits(['close', 'submit'])
     const onClose = () =>{
@@ -30,13 +27,6 @@
         set(input) {
             props.form.am_off = input === 'all' || input === 'am';
             props.form.pm_off = input === 'all' || input === 'pm';
-
-            if(input === 'all') {
-                props.form.start_time = '';
-                props.form.end_time = '';
-            }
-            if(input === 'am') props.form.start_time = page.props.amOffWorkStartTime;
-            if(input === 'pm') props.form.end_time = page.props.pmOffWorkEndTime;
         },
     })
 
