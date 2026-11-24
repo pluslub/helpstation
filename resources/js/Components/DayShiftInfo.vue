@@ -76,8 +76,8 @@
         return !isBusy;
     }
 
-    const onClickShift = (date, staffId) => {
-        emit('click-shift', date, staffId);
+    const onClickShift = (date, shift) => {
+        emit('click-shift', date, shift);
     }
 </script>
 
@@ -91,7 +91,7 @@
                     :key="shift.id"
                     class="grid grid-cols-subgrid col-span-4 text-left rounded items-center"
                     type="button"
-                    @click="onClickShift(day.date, shift.staffId)"
+                    @click="onClickShift(day.date, shift)"
                     :disabled="!clickableShiftByDay(day)"
                     :class="{   'cursor-pointer hover:bg-reservation-soft' : clickableShiftByDay(day),
                                 'bg-highlight-soft' : isAvailableShift(shift, day) }">

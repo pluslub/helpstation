@@ -18,6 +18,10 @@ class ShiftController extends Controller
     //ログ出力のためのデータを作成する。
     private function getShiftDetailLog(ShiftDetail $shiftDetail){
         $logShiftDetailArray = $shiftDetail->only([ 'date',
+                                                    'applied_start_time',
+                                                    'applied_end_time',
+                                                    'applied_am_off',
+                                                    'applied_pm_off',
                                                     'modified_start_time',
                                                     'modified_end_time',
                                                     'modified_am_off',

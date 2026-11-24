@@ -6,6 +6,7 @@
     import WeekGrid from "@/Components/WeekGrid.vue";
     import ReservationFilter from '@/Components/ReservationFilter.vue';
     import ReservationFormPopup from "@/Components/ReservationFormPopup.vue";    //@はresources/jsを指す
+    import ShiftEditPopup from '@/Components/ShiftEditPopup.vue'
     import UserMenu from "@/Components/UserMenu.vue";
 
     import { useReservationFilter } from "@/Composables/useReservationFilter.js"
@@ -13,6 +14,7 @@
     import { useDateInputCommit } from "@/Composables/useDateInputCommit.js"
     import { formatTime } from "@/Utils/formatTime.js"
     import { formatDate } from "@/Utils/formatDate.js"
+    import { sliceTime } from "@/Utils/timeRange.js"
 
     //Heroicons
     import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, CalendarDaysIcon } from '@heroicons/vue/24/outline';
@@ -55,6 +57,14 @@
         remarks: '',
     });
 
+    //シフト変更画面
+    const shiftEditForm = useForm({
+        start_time: '',
+        end_time: '',
+        am_off: false,
+        pm_off: false,
+    });
+
     const { filterId, filterType, filteredReservations, clientOptions, staffOptions } = useReservationFilter(props);
 
     //予約入力ポップアップの幅
@@ -72,8 +82,10 @@
     //変更すると<ReservationFormPopup>のv-ifによりポップアップが表示される。
     const showPopup = ref(false);
     const popupMode = ref(null)
+    const showShiftPopup = ref(false);
 
     const selectReservation = ref(null);
+    const selectedShift = ref(null);
 
     const popupPositionLeft = ref(null);
     const popupPositionTop = ref(null);
@@ -140,6 +152,13 @@
         setPopupPosition(left, top);
     }
 
+    const setValueToShiftEditForm = (shift) =>{
+        shiftEditForm.start_time = shift.start ? sliceTime(shift.start) : "";
+        shiftEditForm.end_time = shift.end ? sliceTime(shift.end) : "";
+        shiftEditForm.am_off = shift.amOff;
+        shiftEditForm.pm_off = shift.pmOff;
+    }
+
     //--------------------------------------------computed関数-------------------------------------------
     const isDirtyPopup = computed(() => {
         const checkArray = [
@@ -180,7 +199,8 @@
     });
 
     const clickableShift = computed(() => {
-        return showPopup.value && ( popupMode.value === 'create' || popupMode.value === 'update')
+        return (showPopup.value && ( popupMode.value === 'create' || popupMode.value === 'update'))
+                || (!showPopup.value && page.props.auth.isAdmin)
     });
 
     const shiftClickableDate = computed(() => {
@@ -218,6 +238,7 @@
         setPopupPosition(rect.left, rect.bottom + popupDisplayMargin);
 
         popupMode.value = 'create';
+        showShiftPopup.value = false;
         showPopup.value = true;
     };
 
@@ -357,6 +378,7 @@
         setSidePopupPosition(rect, popupWidth);
 
         popupMode.value = 'update';
+        showShiftPopup.value = false;
         showPopup.value = true;
     };
 
@@ -372,6 +394,7 @@
         setSidePopupPosition(rect, popupWidth);
 
         popupMode.value = 'view';
+        showShiftPopup.value = false;
         showPopup.value = true;
     };
 
@@ -396,20 +419,46 @@
         router.get('/', { week: displayWeekOnKeyDown }, { preserveState: true, preserveScroll: true });
     };
 
-    const onClickShift = (date, staffId) =>{
+    const onClickShift = (date, shift) =>{
+        //シフト部分を押せないならなにもしない。
         if(!clickableShift.value) return;
+        //予約のポップアップが閉じていて管理者ならシフト編集画面を開く
+        if(!showPopup.value && page.props.auth.isAdmin){
+            selectedShift.value = { id: shift.id, date: date, name: shift.name };
+
+            setValueToShiftEditForm(shift);
+            shiftEditForm.clearErrors();
+            showShiftPopup.value = true;
+            return;
+        }
+        //シフトがクリックできる日付かチェックする。
         if(shiftClickableDate.value != null && shiftClickableDate.value !== date) return;
 
+        //予約フォームにシフト情報を渡す。
         if(activeForm.value.date === date){
-            if(activeForm.value.staff_ids.includes(staffId)){
-                activeForm.value.staff_ids = activeForm.value.staff_ids.filter(id => id !== staffId);
+            if(activeForm.value.staff_ids.includes(shift.staffId)){
+                activeForm.value.staff_ids = activeForm.value.staff_ids.filter(id => id !== shift.staffId);
             }else{
-                activeForm.value.staff_ids.push(staffId);
+                activeForm.value.staff_ids.push(shift.staffId);
             }
         }else{
             activeForm.value.date = date;
-            activeForm.value.staff_ids = [ staffId ];
+            activeForm.value.staff_ids = [ shift.staffId ];
         }
+    };
+
+    const onCloseShiftEditPopup = () =>{
+        showShiftPopup.value = false;
+    };
+
+    const onSubmitShiftEditPopup = () =>{
+        shiftEditForm.put(`/shift-details/${selectedShift.value.id}`, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () =>{
+                showShiftPopup.value = false;
+            },
+        });
     };
 
     const onClickDateHeader = (date) =>{
@@ -573,6 +622,15 @@
         @destroy="onDestroyPopup"
         @move-week="moveWeek">
     </ReservationFormPopup>
+
+    <ShiftEditPopup
+        v-if="showShiftPopup"
+        :form="shiftEditForm"
+        :staffName="selectedShift.name"
+        :date="selectedShift.date"
+        @close="onCloseShiftEditPopup"
+        @submit="onSubmitShiftEditPopup">
+    </ShiftEditPopup>
 </template>
 
 <style>

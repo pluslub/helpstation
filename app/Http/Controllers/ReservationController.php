@@ -29,7 +29,7 @@ use Illuminate\Support\Facades\Auth;
 class ReservationController extends Controller
 {
     private function getReservations(Carbon $start, Carbon $end){
-        return Reservation::with([             //この列のデータを取得
+        return Reservation::with([
                     'client','supportType','vehicle','staffAssignments.staff'
                 ])
                 ->whereBetween('date', [$start, $end])      //date列で日曜日から土曜日だけに絞る
@@ -38,7 +38,9 @@ class ReservationController extends Controller
     }
 
     private function getShifts(Carbon $start, Carbon $end){
-        return ShiftDetail::with('shift.staff')
+        //shift_detail → shift → staffとたどってレコードを読み込む。
+        //staffテーブルはidとnameしか使わないので絞る
+        return ShiftDetail::with('shift.staff:id,name')
                 ->whereBetween('date', [$start, $end])
                 ->get();                               //データベースに問い合わせる
     }

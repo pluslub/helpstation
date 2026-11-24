@@ -145,8 +145,8 @@
         emit('view', res, rect);
     }
 
-    const onClickShift  = (date, staffId ) => {
-        emit('click-shift', date, staffId);
+    const onClickShift  = (date, shift ) => {
+        emit('click-shift', date, shift);
     }
 
     //---------------------------------------スマホ用---------------------------------------------------------
