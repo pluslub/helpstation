@@ -130,6 +130,14 @@
     }
     const { onChange, onKeyDown, onEnter, onBlur } = useDateInputCommit(moveWeek);
 
+    const openDatePicker = (e) => {
+        try{
+            e.target.showPicker();
+        }catch{
+            //何もしない
+        }
+    }
+
     //予約入力ポップアップの位置を設定する
     const setPopupPosition = (left, top) =>{
         if(isPcWidth()){
@@ -531,12 +539,12 @@
         <div class="hidden md:flex items-center gap-2 justify-center lg:order-none lg:w-auto">
             <Link :href="`/?week=${prevWeek}`"
                     preserve-state preserve-scroll
-                    class="btn bg-neutral text-ink"
+                    class="btn btn-outline border-line text-ink"
                      aria-label="前週">
                 <ChevronLeftIcon class="w-5 h-5"/>
                 <span class="hidden md:inline">前週</span>
             </Link>
-            <Link href="/" preserve-state preserve-scroll class="btn bg-neutral text-ink">
+            <Link href="/" preserve-state preserve-scroll class="btn btn-outline border-line text-ink">
                 <span>今週</span>
             </Link>
             <input type="date"
@@ -550,7 +558,7 @@
                 :max="page.props.selectableMaxDate"/>
             <Link :href="`/?week=${nextWeek}`"
                     preserve-state preserve-scroll
-                    class="btn bg-neutral text-ink"
+                    class="btn btn-outline border-line text-ink"
                     aria-label="次週">
                 <ChevronRightIcon class="w-5 h-5"/>
                 <span class="hidden md:inline">次週</span>
@@ -577,16 +585,17 @@
             </Link>
             <!--スマホ用週操作-->
             <div class="flex items-center gap-2 md:hidden">
-                <Link href="/" preserve-state preserve-scroll class="btn bg-neutral text-ink">
+                <Link href="/" preserve-state preserve-scroll class="btn btn-outline border-line text-ink">
                     <span>今週</span>
                 </Link>
-                <div class="relative overflow-hidden md:hidden btn-base bg-surface text-ink py-2">
+                <div class="relative overflow-hidden md:hidden btn btn-outline border-line text-ink py-2">
                     <CalendarDaysIcon class="w-5 h-5"/>
                     <input type="date"
                             @change="onChange($event)"
                             @keydown="onKeyDown()"
                             @keydown.enter="onEnter($event)"
                             @blur="onBlur($event)"
+                            @click="openDatePicker($event)"
                             class="absolute inset-0 w-full h-full min-w-0 appearance-none opacity-0"
                             aria-label="日付を指定"
                             :value="weekStart"

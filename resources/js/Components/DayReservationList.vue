@@ -105,24 +105,24 @@
                         </span>
 
                         <!-- 予約操作ボタン -->
-                        <div class="flex shrink-0 max-md:gap-3 max-md:col-start-3 max-md:row-start-1 max-md:row-span-2 max-md:justify-self-end">
+                        <div class="flex shrink-0 gap-1 max-md:gap-3 max-md:col-start-3 max-md:row-start-1 max-md:row-span-2 max-md:justify-self-end">
                             <button title="仮登録"
                                     v-if="isProvisional(res)"
                                     :disabled="!page.props.auth.isAdmin || props.readonly"
                                     @click="onClickApproveButton(res)"
-                                    class="btn-base text-provisional max-md:p-2">
+                                    class="btn btn-outline border-line bg-reservation-soft text-provisional p-1.5 max-md:p-2">
                                     <ClockIcon class="h-4 w-4 stroke-2 max-md:w-5 max-md:h-5"/>
                             </button>
                             <button title="編集"
                                 v-if="page.props.auth.isAdmin && !props.readonly"
                                 @click="onClickUpdateButton(res, $event)"
-                                class="btn-base max-md:p-2">
+                                class="btn btn-outline border-line p-1.5 max-md:p-2">
                                 <PencilIcon class="h-4 w-4 stroke-2 max-md:w-5 max-md:h-5"/>
                             </button>
                             <button title="閲覧"
                                 v-if="!page.props.auth.isAdmin && !props.readonly"
                                 @click="onClickViewButton(res, $event)"
-                                class="btn-base max-md:p-2">
+                                class="btn btn-outline border-line p-1.5 max-md:p-2">
                                 <EyeIcon class="h-4 w-4 stroke-2 max-md:w-5 max-md:h-5"/>
                             </button>
                         </div>
