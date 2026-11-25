@@ -15,6 +15,8 @@
     import { formatTime } from "@/Utils/formatTime.js"
     import { formatDate } from "@/Utils/formatDate.js"
     import { sliceTime } from "@/Utils/timeRange.js"
+    import { isPcWidth } from "@/Utils/isPcWidth.js"
+
 
     //Heroicons
     import { PlusIcon, ChevronLeftIcon, ChevronRightIcon, CalendarDaysIcon } from '@heroicons/vue/24/outline';
@@ -124,7 +126,7 @@
 
     //予約入力ポップアップの位置を設定する
     const setPopupPosition = (left, top) =>{
-        if(window.matchMedia('(min-width: 768px)').matches){
+        if(isPcWidth()){
             //ポップアップの位置を調整
             popupPositionLeft.value = left;
             popupPositionTop.value = top;

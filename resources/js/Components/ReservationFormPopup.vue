@@ -14,8 +14,9 @@
 <script setup>
     import { usePage } from '@inertiajs/vue3'
     import { ref, onMounted, onUnmounted, watch, computed } from 'vue';
-    import { vehicleTypeLabels } from "@/Utils/vehicleTypeLabel.js"
     import { useDateInputCommit } from "@/Composables/useDateInputCommit.js"
+    import { vehicleTypeLabels } from "@/Utils/vehicleTypeLabel.js"
+    import { isPcWidth } from "@/Utils/isPcWidth.js"
     import { PaperAirplaneIcon, XMarkIcon, TrashIcon } from '@heroicons/vue/24/outline';
 
     //--------------------------------------------変数-------------------------------------------
@@ -122,9 +123,7 @@
     //--------------------------------------------event-------------------------------------------
     //ポップアップのヘッダーをクリックしたらドラッグ開始と判断する
     const onDragStart = (e) =>{
-        if(!window.matchMedia('(min-width: 768px)').matches){
-            return; //スマホは移動できない
-        }
+        if(!isPcWidth()) return; //スマホは移動できない
 
         //ポップアップをクリックしたときに位置を取得してずれないようにする
         const popupRect = popup.value.getBoundingClientRect();

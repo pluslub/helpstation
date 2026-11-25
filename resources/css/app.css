@@ -7,6 +7,9 @@
     /* 書体：BIZ UDPゴシック（app.blade.php で読み込み）。読み込めない場合は端末の書体 */
     --font-sans: 'BIZ UDPGothic', 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Noto Sans JP', 'Meiryo', ui-sans-serif, system-ui, sans-serif;
 
+    /* PC版とスマホ版の切り替え。標準の768pxから1024pxに変更 */
+    --breakpoint-md: 64rem;
+
     /* ---- 色：意味ごとの名前（ここを変えると全画面に反映される） ---- */
     /* 画面全体 */
     --color-base: var(--color-stone-400);       /* 背景 */

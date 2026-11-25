@@ -186,7 +186,7 @@
  -->
 <template>
     <div>
-        <!--PC用画面　768px以上で表示-->
+        <!--PC用画面　1024px以上で表示-->
         <div class="hidden md:flex md:flex-col gap-2">
             <!-- 日付・シフト・休み情報 -->
             <div class="grid grid-cols-7 gap-2 px-2 py-1  sticky top-(--header-height) z-4 bg-surface shadow-sm font-bold">
