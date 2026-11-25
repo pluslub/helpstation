@@ -83,7 +83,7 @@
         <div v-for="res in props.reservations ?? []" :key="res.id">
             <div :class="cardClass(res)"
                 class="p-1 grid grid-cols-[4.5rem_1fr] md:max-2xl:grid-cols-[minmax(0,1fr)_auto] gap-x-1 rounded-lg shadow-sm  max-md:grid-cols-[7rem_1fr_5rem]">
-                <div class="col-start-1 row-start-1">
+                <div class="col-start-1 row-start-1 self-center">
                     <span class="marker px-1">{{ res.client.last_name }}</span>
                 </div>
                 <!--支援内容-->
@@ -148,7 +148,7 @@
                     </span>
                 </div>
                 <!--時刻と車両-->
-                <div class="flex items-center gap-1 max-md:gap-4 col-start-2 row-start-3 max-md:row-start-2 md:max-2xl:contents">
+                <div class="flex items-end gap-1 max-md:gap-4 col-start-2 row-start-3 max-md:row-start-2 md:max-2xl:contents">
                     <span class="shrink-0 text-sm md:max-2xl:row-start-2 md:max-2xl:col-start-1 md:max-2xl:col-span-2">{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
                     <!--車両ラベル-->
                     <span class="flex items-center gap-0.5 md:max-2xl:col-start-2 md:max-2xl:row-start-2 md:max-2xl:justify-self-end">
