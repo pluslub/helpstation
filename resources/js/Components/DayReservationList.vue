@@ -82,30 +82,30 @@
     <div class="flex flex-col gap-2">
         <div v-for="res in props.reservations ?? []" :key="res.id">
             <div :class="cardClass(res)"
-                class="p-1 grid grid-cols-[4.5rem_1fr] gap-x-1 rounded-lg shadow-sm  max-md:grid-cols-[7rem_1fr_5rem]">
+                class="p-1 grid grid-cols-[4.5rem_1fr] md:max-2xl:grid-cols-[minmax(0,1fr)_auto] gap-x-1 rounded-lg shadow-sm  max-md:grid-cols-[7rem_1fr_5rem]">
                 <div class="col-start-1 row-start-1">
                     <span class="marker px-1">{{ res.client.last_name }}</span>
                 </div>
                 <!--支援内容-->
-                <div class="min-w-0 col-start-2 row-start-1 max-md:contents">
-                    <div class="flex items-center gap-1 max-md:contents">
-                        <span class="flex-1 min-w-0 md:flex md:items-center md:gap-1 break-words">
+                <div class="min-w-0 col-start-2 row-start-1 md:max-2xl:col-start-1 max-2xl:contents">
+                    <div class="flex items-center gap-1 max-2xl:contents">
+                        <span class="flex-1 min-w-0 2xl:flex 2xl:items-center 2xl:gap-1 break-words md:max-2xl:col-span-2 md:max-2xl:row-start-3 md:max-2xl:line-clamp-3">
                             <span :title="res.support_type?.name ?? '削除済'"
-                                    class="min-w-0 md:truncate">
+                                    class="min-w-0 2xl:truncate">
                                     {{ res.support_type?.name ?? '削除済'}}
                             </span>
                             <span v-if="isPrivateCar(res)"
-                                    class="inline-block align-middle rounded-full bg-ink w-2 h-2 shrink-0 max-md:mx-1"
+                                    class="inline-block align-middle rounded-full bg-ink w-2 h-2 shrink-0 max-2xl:mx-1"
                                     title="私用車">
                             </span>
                             <!--スマホ専用の備考-->
-                            <span v-if="res.remarks" class="ml-1 text-xs text-ink-muted md:hidden" :title="res.remarks">
+                            <span v-if="res.remarks" class="ml-1 text-xs text-ink-muted 2xl:hidden" :title="res.remarks">
                                 {{ res.remarks }}
                             </span>
                         </span>
 
                         <!-- 予約操作ボタン -->
-                        <div class="flex shrink-0 gap-1 max-md:gap-3 max-md:col-start-3 max-md:row-start-1 max-md:row-span-2 max-md:justify-self-end">
+                        <div class="flex shrink-0 gap-1 max-md:gap-3 max-md:col-start-3 max-md:row-start-1 max-md:row-span-2 max-md:justify-self-end md:max-2xl:col-start-2 md:max-2xl:row-start-1 md:max-2xl:justify-self-end">
                             <button title="仮登録"
                                     v-if="isProvisional(res)"
                                     :disabled="!page.props.auth.isAdmin || props.readonly"
@@ -129,7 +129,7 @@
                     </div>
                 </div>
                 <!--担当者-->
-                <div class="grid grid-cols-2 gap-x-1 min-w-0 col-start-1 row-start-2 row-span-2 self-end max-md:row-span-1">
+                <div class="grid grid-cols-2 gap-x-1 min-w-0 col-start-1 row-start-2 row-span-2 self-end md:max-2xl:row-start-4 max-2xl:row-span-1 md:max-2xl:flex md:max-2xl:flex-wrap md:max-2xl:col-span-2">
                     <span v-for="assignedStaff in res.staff_assignments"
                         :key="assignedStaff.staff_id ?? 'none'"
                         class="flex items-center gap-1 min-w-0"
@@ -141,17 +141,17 @@
                         </span>
                     </span>
                 </div>
-                <div v-if="res.remarks" class="col-start-2 row-start-2 max-md:hidden">
+                <div v-if="res.remarks" class="col-start-2 row-start-2 max-2xl:hidden">
                     <span :title="res.remarks"
                         class="text-ink-muted break-words line-clamp-2 text-xs">
                         {{ res.remarks }}
                     </span>
                 </div>
                 <!--時刻と車両-->
-                <div class="flex items-center gap-1 max-md:gap-4 col-start-2 row-start-3 max-md:row-start-2">
-                    <span class="shrink-0 text-sm">{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
+                <div class="flex items-center gap-1 max-md:gap-4 col-start-2 row-start-3 max-md:row-start-2 md:max-2xl:contents">
+                    <span class="shrink-0 text-sm md:max-2xl:row-start-2 md:max-2xl:col-start-1 md:max-2xl:col-span-2">{{ formatTime(res.start_time) }}〜{{ formatTime(res.end_time) }}</span>
                     <!--車両ラベル-->
-                    <span class="flex items-center gap-0.5">
+                    <span class="flex items-center gap-0.5 md:max-2xl:col-start-2 md:max-2xl:row-start-2 md:max-2xl:justify-self-end">
                         <div v-if="!isPrivateCar(res) && !isNotUseCar(res)"
                             class="badge font-bold"
                             :title="res.vehicle?.name"

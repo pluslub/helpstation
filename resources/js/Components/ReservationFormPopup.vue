@@ -418,14 +418,14 @@
                 v-if="popupMode !=='view'"
                 @click="onSubmit()"
                 :disabled="form.processing"
-                class="btn bg-reservation text-ink">
+                class="btn btn-outline border-line bg-reservation-medium text-ink">
                 <PaperAirplaneIcon class="w-5 h-5"/>申請
             </button>
             <button
                 v-if="popupMode ==='create'"
                 @click="onClear()"
                 :disabled="form.processing"
-                class="btn bg-neutral text-ink">
+                class="btn btn-outline border-line bg-surface text-ink">
                 <TrashIcon class="w-5 h-5"/>クリア
             </button>
             <button

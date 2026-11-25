@@ -111,12 +111,12 @@
         <div class="pb-2 flex justify-center gap-20">
             <button @click="onSubmit()"
                     :disabled="form.processing"
-                    class="btn bg-shift text-white">
+                    class="btn btn-outline border-line bg-shift-medium text-ink">
                 <PaperAirplaneIcon class="w-5 h-5"/>変更
             </button>
             <button @click="onClose()"
                     aria-label="閉じる"
-                    class="btn bg-neutral text-ink">閉じる
+                    class="btn btn-outline border-line bg-surface text-ink">閉じる
             </button>
         </div>
     </div>
