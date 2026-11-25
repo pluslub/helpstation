@@ -218,10 +218,10 @@
                         :key="day.date"
                         class="bg-shift-soft rounded-lg border-t-4 border-shift px-2 py-1 flex items-center gap-1 group-open:rounded-b-none"
                         :class="{ invisible: shiftCountByDay[day.date].total === 0 }">
-                        <span class="text-xs text-ink-muted">
+                        <span class="text-xs text-ink-muted whitespace-nowrap">
                             出{{ shiftCountByDay[day.date].work }}・
                             休{{ shiftCountByDay[day.date].dayOff }}・
-                            希休{{ shiftCountByDay[day.date].desiredOff }}
+                            希{{ shiftCountByDay[day.date].desiredOff }}
                         </span>
                         <ChevronDownIcon class="group-open:rotate-180 w-4 h-4 ml-auto "/>
                 </div>

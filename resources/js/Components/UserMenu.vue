@@ -19,7 +19,7 @@
 
 <template>
     <div class="flex items-center gap-2">
-        <div class="flex items-center gap-1 hidden md:flex">
+        <div class="flex items-center gap-1 hidden whitespace-nowrap md:flex">
             <UserCircleIcon class="w-5 h-5"/>{{ page.props.auth.name }}
         </div>
         <Link href="/logout" method="post"

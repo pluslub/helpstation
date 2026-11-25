@@ -517,7 +517,7 @@
         flex-col        並べる向きを縦にする
     -->
     <div ref="headerRef"
-        class="bg-surface md:sticky md:top-0 z-5 p-2 flex flex-wrap gap-2 lg:grid lg:grid-cols-[1fr_auto_1fr]">
+        class="bg-surface md:sticky md:top-0 z-5 p-2 flex flex-wrap gap-2 md:grid md:grid-cols-[auto_1fr_auto]">
         <!-- 週操作ボタン -->
         <!--
             preserve-state
@@ -533,10 +533,10 @@
             :clientOptions="clientOptions"
             v-model:filterType="filterType"
             v-model:filterId="filterId"
-            class="lg:justify-self-start order-1 lg:order-none">
+            class="md:justify-self-start order-1 md:order-none">
         </ReservationFilter>
         <!--週の操作　PC版のみ表示-->
-        <div class="hidden md:flex items-center gap-2 justify-center lg:order-none lg:w-auto">
+        <div class="hidden gap-2 items-center justify-self-center md:flex md:order-none md:w-auto">
             <Link :href="`/?week=${prevWeek}`"
                     preserve-state preserve-scroll
                     class="btn btn-outline border-line text-ink"
@@ -564,7 +564,7 @@
                 <span class="hidden md:inline">次週</span>
             </Link>
         </div>
-        <div class="flex items-center gap-2 lg:justify-self-end ml-auto order-2 lg:order-none">
+        <div class="flex items-center gap-2 md:justify-self-end ml-auto order-2 md:order-none">
             <button @click="onClickEntryButton($event)"
                     class="btn bg-reservation-medium text-ink relative hidden md:inline-flex">
                 <PlusIcon class="w-5 h-5"/>予約追加

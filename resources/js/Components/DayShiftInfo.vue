@@ -106,32 +106,36 @@
     <div v-if="hasShiftInfo(day)"
         class="bg-shift-soft p-1 text-sm"
         :class="attached ? 'rounded-b-lg' : 'border-t-4 border-shift rounded-lg'">
-        <div class="gap-x-1 grid grid-cols-[auto_auto_auto_1fr] max-md:grid-cols-[auto_auto_auto_1fr_auto_auto_auto_1fr] max-md:grid-flow-col max-md:grid-rows-[repeat(var(--shift-rows),auto)]"
+        <div class="md:max-xl:gap-y-1 grid grid-cols-[minmax(2rem,1fr)_auto_auto_1fr] md:max-xl:grid-cols-[minmax(0,1fr)_auto] max-md:grid-cols-[minmax(2rem,1fr)_auto_auto_1fr_minmax(2rem,1fr)_auto_auto_1fr] max-md:grid-flow-col max-md:grid-rows-[repeat(var(--shift-rows),auto)]"
             :style="{ '--shift-rows': shiftRowCount }">
             <button v-for="shift in shiftWorkTime"
                     :key="shift.id"
-                    class="grid grid-cols-subgrid col-span-4 text-left rounded items-center"
+                    class="grid grid-cols-subgrid col-span-4 md:max-xl:col-span-2 text-left rounded items-center"
                     type="button"
                     @click="onClickShift(day.date, shift)"
                     :disabled="!clickableShiftByDay(day)"
                     :class="{   'cursor-pointer hover:bg-reservation-soft' : clickableShiftByDay(day),
                                 'bg-highlight-soft' : isAvailableShift(shift, day) }">
-                <span :title="shift.name" class="truncate min-w-0 pr-2">{{ shift.name }}</span>
-                <span class="text-xs flex items-center justify-end gap-1 tabular-nums">
-                    <span v-if="checkUsePrivateCar(shift, day)?.start"
-                        title="私用車(直行)"
-                        class="rounded-full bg-ink w-2 h-2 shrink-0">
+                <span :title="shift.name" class="truncate min-w-0 pr-0.5">{{ shift.name }}</span>
+                <span class="contents md:max-xl:flex md:max-xl:col-span-2 md:max-xl:row-start-2 justify-center">
+                    <span class="text-xs flex items-center justify-end gap-1 tabular-nums whitespace-nowrap">
+                        <span v-if="checkUsePrivateCar(shift, day)?.start"
+                            title="私用車(直行)"
+                            class="rounded-full bg-ink w-2 h-2 shrink-0">
+                        </span>
+                        <span class="text-xs tabular-nums">{{ shift.displayTime.start }}-</span>
                     </span>
-                    {{ shift.displayTime.start }} -
+                    <span class="flex items-center gap-1">
+                        <span class="text-xs tabular-nums">{{ shift.displayTime.end }}</span>
+                        <span v-if="checkUsePrivateCar(shift, day)?.end"
+                            title="私用車(直帰)"
+                            class="rounded-full bg-ink w-2 h-2 shrink-0">
+                        </span>
+                    </span>
                 </span>
-                <span class="text-xs tabular-nums">{{ shift.displayTime.end }}
-                </span>
-                <span class="flex items-center gap-1">
+                <span class="flex flex-wrap items-center pl-0.5 gap-0.5 md:max-xl:col-start-2 md:max-xl:row-start-1 md:max-xl:justify-end">
                     <span v-if="shift.amOff" class="badge bg-rest text-rest-soft text-xs">AM</span>
                     <span v-else-if="shift.pmOff" class="badge bg-rest text-rest-soft text-xs">PM</span>
-                    <span v-if="checkUsePrivateCar(shift, day)?.end"
-                        title="私用車(直帰)"
-                        class="rounded-full bg-ink w-2 h-2 shrink-0"></span>
                     <span v-if="shift.changed"
                         class="badge bg-rest text-rest-soft"
                         :title="displayAppliedTime(shift)">
