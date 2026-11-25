@@ -28,6 +28,7 @@
         highlightedTime: Object,
         prevWeek: String,
         nextWeek: String,
+        pickedDate: String,
         showYearOnFirstDay: { type: Boolean, default: true},
         clickableShift: { type: Boolean, default: false},
         clickableDayOff: { type: Boolean, default: false},
@@ -152,6 +153,8 @@
 
     //---------------------------------------スマホ用---------------------------------------------------------
     const getDefaultSelectedDate = () =>{
+        //選択した日付が表示している週の範囲にあればそれを返す。
+        if(days.value.some(d => d.date === props.pickedDate)) return props.pickedDate;
         if(days.value.some(d => d.date === props.highlightedDate)) return props.highlightedDate;
         return days.value.some(d => d.date === today) ? today : props.weekStart;
     }
@@ -160,6 +163,7 @@
     const selectedDay = computed(() => days.value.find(d => d.date === selectedDate.value))
     watch(() => props.weekStart, () => { selectedDate.value = getDefaultSelectedDate(); });
     watch(() => props.highlightedDate, () => {if(props.highlightedDate && days.value.some(d => d.date === props.highlightedDate)) selectedDate.value = props.highlightedDate });
+    watch(() => props.pickedDate, () => {if(props.pickedDate && days.value.some(d => d.date === props.pickedDate)) selectedDate.value = props.pickedDate });
 
     //シフトの要約を作る　勤務〇・休〇・希望休〇
     const shiftCountByDay = computed(() => {

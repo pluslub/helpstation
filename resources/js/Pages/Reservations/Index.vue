@@ -95,6 +95,9 @@
     //自動で入れた日付を覚えておく
     const autofillDate = ref(null);
 
+    //カレンダー等で選んだ日付を入力する
+    const pickedDate = ref(null);
+
     //--------------------------------------------関数-------------------------------------------
     const setValue = (res) =>{
         reservationUpdateForm.date = res.date;
@@ -118,6 +121,9 @@
 
     const moveWeek = (date, isValid) => {
         if(!date || !isValid) return;
+        pickedDate.value = date;
+
+        //表示されてる週の日付の場合何もしない。
         if(props.weekStart <= date && date < props.nextWeek) return;
 
         router.get('/', { week: date }, { preserveState: true, preserveScroll: true });
@@ -607,6 +613,7 @@
             :highlighted-time="highlightedTime"
             :prevWeek="prevWeek"
             :nextWeek="nextWeek"
+            :pickedDate="pickedDate"
             @update="onUpdateReservation"
             @approve="onApproveReservation"
             @view="onViewReservation"
