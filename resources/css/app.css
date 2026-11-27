@@ -54,7 +54,7 @@
     --color-highlight: var(--color-emerald-700);
     --color-highlight-soft: var(--color-emerald-200);
     --color-highlight-danger: var(--color-red-100);
-    --color-marker-client: var(--color-amber-100);
+    --color-marker-client: var(--color-amber-300);
 }
 
 /* ---- 共通のクラス（3か所以上で使う形だけ） ---- */

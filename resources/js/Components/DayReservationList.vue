@@ -83,6 +83,7 @@
         <div v-for="res in props.reservations ?? []" :key="res.id">
             <div :class="cardClass(res)"
                 class="p-1 grid grid-cols-[4.5rem_1fr] md:max-2xl:grid-cols-[minmax(0,1fr)_auto] gap-x-1 rounded-lg shadow-sm  max-md:grid-cols-[7rem_1fr_5rem]">
+                <!--利用者名-->
                 <div class="col-start-1 row-start-1 self-center">
                     <span class="marker px-1">{{ res.client.last_name }}</span>
                 </div>
