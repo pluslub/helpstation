@@ -98,7 +98,7 @@
 
 /* 入力フォームの1行。左に項目名（5rem）、右に入力欄 */
 @utility form-row {
-    @apply grid grid-cols-[5rem_1fr] items-center gap-2 *:justify-self-start;
+    @apply grid grid-cols-[5rem_minmax(0,1fr)] items-center gap-2 *:justify-self-start;
 }
 
 /* 入力フォームのエラーメッセージ 上の5rem + gap-2(0.5rem)*/

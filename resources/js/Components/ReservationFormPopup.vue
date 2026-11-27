@@ -319,7 +319,7 @@
                 <div v-if="form.errors.end_time" class="form-danger">{{ form.errors.end_time }}</div>
                 <div>
                     <label class="form-row">
-                        <span>利用者氏名</span>
+                        <span>利用者</span>
                         <input type="text"
                                 v-model="clientSearchText"
                                 v-if="popupMode === 'create'"
