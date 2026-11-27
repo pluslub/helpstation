@@ -290,7 +290,7 @@
                 <XMarkIcon class="w-5 h-5"/>
             </button>
         </div>
-        <fieldset :disabled="popupMode==='view'" class="p-2" @keydown.enter="onEnter">
+        <fieldset :disabled="popupMode==='view'" class="p-2 min-w-0" @keydown.enter="onEnter">
             <div class="flex flex-col gap-2">
                 <label class="form-row">
                     <span>予約日</span>
@@ -299,19 +299,19 @@
                             @change="onChange($event)"
                             @keydown="onKeyDown()"
                             @blur="onBlur($event)"
-                            class="field"
+                            class="field w-full"
                             :min="page.props.selectableMinDate"
                             :max="page.props.selectableMaxDate"/>
                 </label>
                 <div v-if="form.errors.date" class="form-danger">{{ form.errors.date }}</div>
 
-                <fieldset>
+                <fieldset class="min-w-0">
                     <legend class="sr-only">予約時間</legend>
                     <label class="form-row">
                         <span>予約時間</span>
-                        <span  class="flex items-center gap-1">
-                            <input type="time" v-model="form.start_time" class="field"/>
-                            ～<input type="time" v-model="form.end_time" class="field"/>
+                        <span  class="flex items-center gap-1 w-full min-w-0 ">
+                            <input type="time" v-model="form.start_time" class="field flex-1 min-w-0"/>
+                            ～<input type="time" v-model="form.end_time" class="field flex-1 min-w-0"/>
                         </span>
                     </label>
                 </fieldset>
@@ -334,7 +334,7 @@
                                 autocorrect="off"
                                 autocapitalize="off"
                                 spellcheck="false"
-                                class="field"/>
+                                class="field w-full"/>
                         <div v-else>{{ selectClientName }}</div>
                     </label>
                     <div v-if="form.errors.client_id" class="form-danger">{{ form.errors.client_id }}</div>
@@ -353,7 +353,7 @@
                         </div>
                     </div>
                 </div>
-                <fieldset>
+                <fieldset class="min-w-0">
                     <legend class="sr-only">担当者</legend>
                     <div class="form-row">
                         <span>担当者</span>
@@ -374,7 +374,8 @@
                                     @change="onSelectedStaff()"
                                     @keydown="onKeydownStaff"
                                     @keydown.enter="onKeydownEnterStaff"
-                                    @blur="onBlurStaff" class="field">
+                                    @blur="onBlurStaff"
+                                    class="field w-full">
                                 <option :value="null">担当者を選択</option>
                                 <option v-for="s in unselectedStaffs" :key="s.id" :value="s.id">{{ s.name }}</option>
                             </select>
@@ -384,14 +385,14 @@
 
                 <label class="form-row">
                     <span>支援内容</span>
-                    <select v-model="form.support_type_id" class="field">
+                    <select v-model="form.support_type_id" class="field w-full">
                         <option :value="null">支援内容を選択</option>
                         <option v-for="s in formSupportTypes" :key="s.id" :value="s.id">{{ s.name }}</option>
                     </select>
                 </label>
                 <div v-if="form.errors.support_type_id" class="form-danger">{{ form.errors.support_type_id }}</div>
 
-                <fieldset>
+                <fieldset class="min-w-0">
                     <legend class="sr-only">車両</legend>
                     <div class="form-row">
                         <span>車両</span>
