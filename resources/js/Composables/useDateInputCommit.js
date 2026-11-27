@@ -22,8 +22,10 @@ export const useDateInputCommit = (onCommit) => {
 
     //日付入力欄からフォーカスが離れたときのイベント
     const onBlur = (e) =>{
+        if(keydownOnInputDate){
+            onCommit(e.target.value, e.target.validity.valid);
+        }
         keydownOnInputDate = false;
-        onCommit(e.target.value, e.target.validity.valid);
     };
 
     /**

@@ -603,7 +603,7 @@
                 <div class="relative overflow-hidden md:hidden btn btn-outline border-line text-ink py-2">
                     <CalendarDaysIcon class="w-5 h-5"/>
                     <input type="date"
-                            @change="onChange($event)"
+                            @change="onChange($event);$event.target.blur()"
                             @keydown="onKeyDown()"
                             @keydown.enter="onEnter($event)"
                             @blur="onBlur($event)"

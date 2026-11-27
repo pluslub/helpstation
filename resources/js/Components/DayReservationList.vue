@@ -90,7 +90,7 @@
                 <!--支援内容-->
                 <div class="min-w-0 col-start-2 row-start-1 md:max-2xl:col-start-1 max-2xl:contents">
                     <div class="flex items-center gap-1 max-2xl:contents">
-                        <span class="flex-1 min-w-0 2xl:flex 2xl:items-center 2xl:gap-1 break-words md:max-2xl:col-span-2 md:max-2xl:row-start-2 md:max-2xl:line-clamp-3">
+                        <span class="flex-1 min-w-0 2xl:flex 2xl:items-center 2xl:gap-1 break-words md:max-2xl:col-span-2 md:max-2xl:row-start-2 md:max-2xl:line-clamp-3 max-2xl:leading-tight">
                             <span :title="res.support_type?.name ?? '削除済'"
                                     class="min-w-0 2xl:truncate">
                                     {{ res.support_type?.name ?? '削除済'}}
