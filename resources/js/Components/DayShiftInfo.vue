@@ -119,7 +119,7 @@
                 <span :title="shift.name" class="truncate min-w-0 pr-0.5">{{ shift.name }}</span>
                 <span class="contents md:max-xl:flex md:max-xl:col-span-2 md:max-xl:row-start-2 justify-center">
                     <span class="text-xs flex items-center justify-end gap-1 tabular-nums whitespace-nowrap">
-                        <span v-if="checkUsePrivateCar(shift, day)?.start"
+                        <span :class="{ 'invisible' : !checkUsePrivateCar(shift, day)?.start }"
                             title="私用車(直行)"
                             class="rounded-full bg-ink w-2 h-2 shrink-0">
                         </span>
@@ -127,13 +127,20 @@
                     </span>
                     <span class="flex items-center gap-1">
                         <span class="text-xs tabular-nums">{{ shift.displayTime.end }}</span>
-                        <span v-if="checkUsePrivateCar(shift, day)?.end"
+                        <!--小サイズモニタ用の直帰マーク-->
+                        <span :class="{ 'invisible' : !checkUsePrivateCar(shift, day)?.end }"
                             title="私用車(直帰)"
-                            class="rounded-full bg-ink w-2 h-2 shrink-0">
+                            class="rounded-full bg-ink w-2 h-2 shrink-0 hidden md:max-xl:block">
                         </span>
                     </span>
                 </span>
+                <!--バッジ-->
                 <span class="flex flex-wrap items-center pl-0.5 gap-0.5 md:max-xl:col-start-2 md:max-xl:row-start-1 md:max-xl:justify-end">
+                    <!--スマホ、大サイズモニタ用の直帰マーク-->
+                    <span v-if="checkUsePrivateCar(shift, day)?.end"
+                        title="私用車(直帰)"
+                        class="rounded-full bg-ink w-2 h-2 shrink-0 md:max-xl:hidden">
+                    </span>
                     <span v-if="shift.amOff" class="badge bg-rest text-rest-soft text-xs">AM</span>
                     <span v-else-if="shift.pmOff" class="badge bg-rest text-rest-soft text-xs">PM</span>
                     <span v-if="shift.changed"
