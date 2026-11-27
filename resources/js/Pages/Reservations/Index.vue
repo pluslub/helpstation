@@ -529,7 +529,7 @@
         flex-col        並べる向きを縦にする
     -->
     <div ref="headerRef"
-        class="bg-surface md:sticky md:top-0 z-5 p-2 flex flex-wrap gap-2 md:grid md:grid-cols-[auto_1fr_auto]">
+        class="bg-surface md:sticky md:top-0 z-5 p-2 flex flex-wrap gap-2 md:grid md:grid-cols-[minmax(max-content,1fr)_auto_minmax(max-content,1fr)]">
         <!-- 週操作ボタン -->
         <!--
             preserve-state
@@ -554,7 +554,7 @@
                     class="btn btn-outline border-line text-ink"
                      aria-label="前週">
                 <ChevronLeftIcon class="w-5 h-5"/>
-                <span class="hidden md:inline">前週</span>
+                <span class="hidden xl:inline">前週</span>
             </Link>
             <Link href="/" preserve-state preserve-scroll class="btn btn-outline border-line text-ink">
                 <span>今週</span>
@@ -573,7 +573,7 @@
                     class="btn btn-outline border-line text-ink"
                     aria-label="次週">
                 <ChevronRightIcon class="w-5 h-5"/>
-                <span class="hidden md:inline">次週</span>
+                <span class="hidden xl:inline">次週</span>
             </Link>
         </div>
         <div class="flex items-center gap-2 md:justify-self-end ml-auto order-2 md:order-none">
@@ -593,7 +593,8 @@
                     class="absolute rounded-full bg-danger ring-2 ring-surface top-0 -right-0.5 w-2.5 h-2.5"></span>
             </button>
             <Link href="/reservations/monthly" class="btn btn-outline border-line text-ink hidden md:inline-flex">
-                <CalendarDaysIcon class="w-5 h-5"/>月表示
+                <CalendarDaysIcon class="w-5 h-5"/>
+                <span class="hidden xl:inline">月表示</span>
             </Link>
             <!--スマホ用週操作-->
             <div class="flex items-center gap-2 md:hidden">
