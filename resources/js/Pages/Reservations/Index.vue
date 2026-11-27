@@ -12,6 +12,7 @@
     import { useReservationFilter } from "@/Composables/useReservationFilter.js"
     import { useHeaderHeight } from "@/Composables/useHeaderHeight.js"
     import { useDateInputCommit } from "@/Composables/useDateInputCommit.js"
+    import { usePopupHistory } from "@/Composables/usePopupHistory.js"
     import { formatTime } from "@/Utils/formatTime.js"
     import { formatDate } from "@/Utils/formatDate.js"
     import { sliceTime } from "@/Utils/timeRange.js"
@@ -119,6 +120,17 @@
         return props.weekStart <= today && today < props.nextWeek ? today : props.weekStart;
     }
 
+    const isAnyPopupOpen = computed (() => {
+        return showPopup.value || showShiftPopup.value
+    })
+
+    const hideAllPopups = () => {
+        showPopup.value = false;
+        showShiftPopup.value = false;
+        return;
+    }
+
+    const { closePopup, beforeNavigate } = usePopupHistory(isAnyPopupOpen, hideAllPopups);
     const moveWeek = (date, isValid) => {
         if(!date || !isValid) return;
         pickedDate.value = date;
@@ -126,7 +138,8 @@
         //表示されてる週の日付の場合何もしない。
         if(props.weekStart <= date && date < props.nextWeek) return;
 
-        router.get('/', { week: date }, { preserveState: true, preserveScroll: true });
+        router.get('/', { week: date }, { preserveState: true, preserveScroll: true, replace: beforeNavigate() });
+
     }
     const { onChange, onKeyDown, onEnter, onBlur } = useDateInputCommit(moveWeek);
 
@@ -273,13 +286,13 @@
                 if(reservationUpdateForm.isDirty && !confirm("変更を破棄して閉じますか？")){
                     return;
                 }
-                showPopup.value = false;
+                closePopup();
                 return;
 
             case 'create':
             case 'view':
             default:
-                showPopup.value = false;
+                closePopup();
                 return;
         }
     };
@@ -299,8 +312,7 @@
                     preserveState: true,
                     preserveScroll: true,
                     onSuccess: () =>{
-                        reservationForm.reset();
-                        showPopup.value = false;
+                        closePopup();
                     },
                 });
                 return;
@@ -310,7 +322,7 @@
                     preserveState: true,
                     preserveScroll: true,
                     onSuccess: () =>{
-                        showPopup.value = false;
+                        closePopup();
                     },
                 });
                 return;
@@ -357,7 +369,7 @@
             preserveState: true,
             preserveScroll: true,
             onSuccess: () =>{
-                showPopup.value = false;
+                closePopup();
             },
         });
         return;
@@ -471,7 +483,7 @@
     };
 
     const onCloseShiftEditPopup = () =>{
-        showShiftPopup.value = false;
+        closePopup();
     };
 
     const onSubmitShiftEditPopup = () =>{
@@ -479,7 +491,7 @@
             preserveState: true,
             preserveScroll: true,
             onSuccess: () =>{
-                showShiftPopup.value = false;
+                closePopup();
             },
         });
     };

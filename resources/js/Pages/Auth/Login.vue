@@ -13,7 +13,7 @@
     })
 
     const onSubmit = () =>{
-        loginForm.post('/login');
+        loginForm.post('/login', { "replace": true });
     }
     const onInput = () =>{
         loginForm.clearErrors('login_id');
