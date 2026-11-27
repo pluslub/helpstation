@@ -21,8 +21,8 @@
 </script>
 
 <template>
-    <div class="bg-base min-h-screen flex items-center justify-center">
-        <div class="bg-surface rounded-lg shadow-sm p-6 flex flex-col gap-6">
+    <div class="bg-base min-h-dvh flex items-center justify-center px-4">
+        <div class="flex flex-col bg-surface rounded-lg shadow-sm p-4 md:p-6 gap-4 md:gap-6 w-full max-w-sm">
             <h1>ログイン</h1>
             <form @submit.prevent="onSubmit" class="flex flex-col gap-3">
                 <label class="form-row">
@@ -30,7 +30,7 @@
                     <input type="text"
                             autocomplete="username"
                             v-model="loginForm.login_id"
-                            class="field"
+                            class="field w-full"
                             autocapitalize="off"
                             autocorrect="off"
                             spellcheck="false"
@@ -41,7 +41,7 @@
                 <div v-else-if="hasNonHalfWidthChar" class="form-danger">半角英数字で入力してください。</div>
                 <label class="form-row">
                     <span>パスワード</span>
-                    <input type="password" autocomplete="current-password" v-model="loginForm.password" class="field">
+                    <input type="password" autocomplete="current-password" v-model="loginForm.password" class="field w-full">
                 </label>
                 <div v-if="loginForm.errors.password" class="form-danger">{{ loginForm.errors.password }}</div>
                 <button type="submit" class="btn bg-reservation-medium text-ink self-center p-2 pl-8 pr-8" :disabled="loginForm.processing">
