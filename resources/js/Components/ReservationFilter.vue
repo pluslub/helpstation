@@ -40,6 +40,7 @@
                 <option value="vehicle">車両</option>
                 <option value="client">利用者</option>
                 <option value="provisional">未承認</option>
+                <option value="unassigned">担当未定</option>
             </select>
         </div>
 

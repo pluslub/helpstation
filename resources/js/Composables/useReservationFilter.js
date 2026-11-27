@@ -6,7 +6,7 @@ import { isProvisional } from "@/Utils/isProvisional.js"
 export const useReservationFilter = (props) => {
     //--------------------------------------------ref-------------------------------------------
     // ref：画面の操作で書き換わる値を入れる箱。変わったらこれを使っているcomputedが再計算される。
-    const filterType = ref('all');   // 'all' | 'self' | 'staff' | 'vehicle' | 'client'
+    const filterType = ref('all');   // 'all' | 'self' | 'staff' | 'vehicle' | 'client' | 'provisional' | 'unassigned'
     const filterId   = ref(null);    // 職員・車両・利用者を選んだときの対象の id
 
     /**
@@ -133,6 +133,8 @@ export const useReservationFilter = (props) => {
                 return id === null ? props.reservations : props.reservations.filter(r => r.client_id === id);
             case 'provisional':
                 return props.reservations.filter(r => isProvisional(r));
+            case 'unassigned':
+                return props.reservations.filter(r => hasStaff(r, null));
             default:
                 return props.reservations;    // 'all'
         }
