@@ -92,7 +92,8 @@
                     <div class="flex items-center gap-1 max-2xl:contents">
                         <span class="flex-1 min-w-0 2xl:flex 2xl:items-center 2xl:gap-1 break-words md:max-2xl:col-span-2 md:max-2xl:row-start-2 md:max-2xl:line-clamp-3 max-2xl:leading-tight">
                             <span :title="res.support_type?.name ?? '削除済'"
-                                    class="min-w-0 2xl:truncate">
+                                    class="min-w-0 2xl:truncate"
+                                    :class="{'truncate max-2xl:inline-block max-2xl:max-w-[calc(100%-1rem)] max-2xl:align-bottom':isPrivateCar(res)}">
                                     {{ res.support_type?.name ?? '削除済'}}
                             </span>
                             <span v-if="isPrivateCar(res)"
@@ -155,13 +156,13 @@
                     <!--車両ラベル-->
                     <span class="flex items-center gap-0.5 md:max-2xl:row-start-3 md:max-2xl:col-start-2 md:max-2xl:justify-self-end">
                         <div v-if="!isPrivateCar(res) && !isNotUseCar(res)"
-                            class="badge font-bold"
+                            class="badge font-bold -my-0.5"
                             :title="res.vehicle?.name"
                             :class="res.vehicle_type_choice === 'care_vehicle' ? 'bg-care-vehicle-soft text-care-vehicle' : 'bg-company-car-soft text-company-car'">
                             {{ getVehicleTypeShortLabel(res.vehicle_type_choice) }}
                         </div>
                         <div v-if="res.vehicle_reassigned_flag"
-                            class="badge bg-reassigned text-white"
+                            class="badge bg-reassigned text-white -my-0.5"
                             title="配車変更">
                             <ArrowPathIcon class="w-4 h-4"/>
                         </div>
