@@ -9,8 +9,8 @@
     import { getVehicleTypeShortLabel } from "@/Utils/vehicleTypeLabel.js"
 
     //Heroicons
-    import { PencilIcon, EyeIcon, ClockIcon, ExclamationTriangleIcon  } from '@heroicons/vue/24/outline';
-    import { ArrowPathIcon } from '@heroicons/vue/16/solid';
+    import { PencilIcon, EyeIcon, ClockIcon } from '@heroicons/vue/24/outline';
+    import { ArrowPathIcon, ExclamationTriangleIcon } from '@heroicons/vue/16/solid';
 
 
     const props = defineProps({
@@ -133,7 +133,7 @@
                 <div class="grid grid-cols-2 gap-x-1 min-w-0 col-start-1 row-start-2 row-span-2 self-end md:max-2xl:row-start-4 max-2xl:row-span-1 md:max-2xl:flex md:max-2xl:flex-wrap md:max-2xl:col-span-2">
                     <span v-for="assignedStaff in res.staff_assignments"
                         :key="assignedStaff.staff_id ?? 'none'"
-                        class="flex items-center gap-1 min-w-0"
+                        class="flex items-center min-w-0"
                         :class="{ 'col-span-2': assignedStaff.staff_id === null }"
                         :title="assignedStaff.staff?.name ?? '未定'">
                         <span class="truncate text-sm">{{ assignedStaff.staff?.name ?? '未定' }}</span>
