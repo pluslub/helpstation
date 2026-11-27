@@ -186,6 +186,7 @@
         shiftEditForm.end_time = shift.end ? sliceTime(shift.end) : "";
         shiftEditForm.am_off = shift.amOff;
         shiftEditForm.pm_off = shift.pmOff;
+        shiftEditForm.defaults();
     }
 
     //--------------------------------------------computed関数-------------------------------------------

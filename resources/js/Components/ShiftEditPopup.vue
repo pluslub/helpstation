@@ -111,7 +111,7 @@
         <!--ボタン群-->
         <div class="pb-2 flex justify-center gap-20">
             <button @click="onSubmit()"
-                    :disabled="form.processing"
+                    :disabled="form.processing || !form.isDirty"
                     class="btn btn-outline border-line bg-shift-medium text-ink">
                 <PaperAirplaneIcon class="w-5 h-5"/>変更
             </button>
