@@ -117,7 +117,7 @@
                     :disabled="!clickableShiftByDay(day)"
                     :class="{   'cursor-pointer hover:bg-reservation-soft' : clickableShiftByDay(day),
                                 'bg-highlight-soft' : isAvailableShift(shift, day),
-                                'bg-provisional' : isProvisionalShift(shift)}">
+                                'bg-provisional-soft' : isProvisionalShift(shift)}">
                 <span :title="shift.name" class="truncate min-w-0 pr-0.5">{{ shift.name }}</span>
                 <span class="contents md:max-xl:flex md:max-xl:col-span-2 md:max-xl:row-start-2 justify-center">
                     <span class="text-xs flex items-center justify-end gap-1 tabular-nums whitespace-nowrap">

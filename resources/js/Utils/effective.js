@@ -16,5 +16,6 @@ export const effective = (s) => {
         pmOff: changed ? s.modified_pm_off : s.applied_pm_off,
         changed,
         desiredOff: s.applied_desired_off,
+        approved: s.approval_flag,
     }
 };
