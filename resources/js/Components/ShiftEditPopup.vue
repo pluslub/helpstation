@@ -54,7 +54,8 @@
         <!--ヘッダー-->
         <div class="bg-shift-medium p-2 flex justify-between">
             <h1>シフト変更</h1>
-            <button @click="onClose()">
+            <button @click="onClose()"
+                    aria-label="閉じる">
                 <XMarkIcon class="w-5 h-5"/>
             </button>
         </div>
@@ -69,7 +70,7 @@
                 <div>{{ props.date }}</div>
             </div>
             <!--休暇選択ボタン-->
-            <fieldset>
+            <fieldset class="min-w-0">
                 <legend class="sr-only">休み</legend>
                 <div class="form-row">
                     <span>休み</span>
@@ -94,13 +95,13 @@
             <!--シフト時間入力欄-->
             <!--終日休みなら時刻を入力できないようにする。
                 午前休・午後休なら時刻を空にできる-->
-            <fieldset>
+            <fieldset class="min-w-0">
                 <legend class="sr-only">シフト時間</legend>
                 <label class="form-row">
                     <span>シフト時刻</span>
-                    <span class="flex items-center gap-1">
-                        <input type="time" v-model="form.start_time" :disabled="offType === 'all'" class="field"/>
-                        ～<input type="time" v-model="form.end_time" :disabled="offType === 'all'" class="field"/>
+                    <span class="flex items-center gap-1 w-full min-w-0">
+                        <input type="time" v-model="form.start_time" :disabled="offType === 'all'" class="field min-w-0"/>
+                        ～<input type="time" v-model="form.end_time" :disabled="offType === 'all'" class="field min-w-0"/>
                     </span>
                 </label>
             </fieldset>
@@ -115,7 +116,6 @@
                 <PaperAirplaneIcon class="w-5 h-5"/>変更
             </button>
             <button @click="onClose()"
-                    aria-label="閉じる"
                     class="btn btn-outline border-line bg-surface text-ink">閉じる
             </button>
         </div>

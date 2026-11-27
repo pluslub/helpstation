@@ -299,7 +299,7 @@
                             @change="onChange($event)"
                             @keydown="onKeyDown()"
                             @blur="onBlur($event)"
-                            class="field w-full"
+                            class="field max-w-full"
                             :min="page.props.selectableMinDate"
                             :max="page.props.selectableMaxDate"/>
                 </label>
@@ -310,8 +310,8 @@
                     <label class="form-row">
                         <span>予約時間</span>
                         <span  class="flex items-center gap-1 w-full min-w-0 ">
-                            <input type="time" v-model="form.start_time" class="field flex-1 min-w-0"/>
-                            ～<input type="time" v-model="form.end_time" class="field flex-1 min-w-0"/>
+                            <input type="time" v-model="form.start_time" class="field min-w-0"/>
+                            ～<input type="time" v-model="form.end_time" class="field min-w-0"/>
                         </span>
                     </label>
                 </fieldset>
@@ -334,7 +334,7 @@
                                 autocorrect="off"
                                 autocapitalize="off"
                                 spellcheck="false"
-                                class="field w-full"/>
+                                class="field max-w-full"/>
                         <div v-else>{{ selectClientName }}</div>
                     </label>
                     <div v-if="form.errors.client_id" class="form-danger">{{ form.errors.client_id }}</div>
@@ -375,7 +375,7 @@
                                     @keydown="onKeydownStaff"
                                     @keydown.enter="onKeydownEnterStaff"
                                     @blur="onBlurStaff"
-                                    class="field w-full">
+                                    class="field max-w-full">
                                 <option :value="null">担当者を選択</option>
                                 <option v-for="s in unselectedStaffs" :key="s.id" :value="s.id">{{ s.name }}</option>
                             </select>
@@ -385,7 +385,7 @@
 
                 <label class="form-row">
                     <span>支援内容</span>
-                    <select v-model="form.support_type_id" class="field w-full">
+                    <select v-model="form.support_type_id" class="field max-w-full">
                         <option :value="null">支援内容を選択</option>
                         <option v-for="s in formSupportTypes" :key="s.id" :value="s.id">{{ s.name }}</option>
                     </select>
